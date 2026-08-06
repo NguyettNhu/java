@@ -1,3 +1,4 @@
+package chuong2;
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDateTime;
