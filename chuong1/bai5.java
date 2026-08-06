@@ -16,10 +16,8 @@ public class bai5 {
             } else if (i == 1) {
                 System.out.print(f1 + " ");
             } else {
-                // Số tiếp theo bằng tổng 2 số trước đó
                 int fn = f0 + f1;
                 System.out.print(fn + " ");
-                // Cập nhật lại giá trị cho vòng lặp sau
                 f0 = f1;
                 f1 = fn;
             }
