@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tạo tài khoản | Yukihira Books</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="auth-page">
+<main class="auth-shell wide">
+    <a class="back-link auth-home-link" th:href="@{/}">← Về trang chủ</a>
+    <a class="wordmark" th:href="@{/}">Yukihira <span>Books</span></a>
+    <section class="auth-card">
+        <p class="eyebrow">Thẻ độc giả mới</p>
+        <h1>Tạo tài khoản</h1>
+        <form th:action="@{/register}" th:object="${form}" method="post" class="stack-form">
+            <label>Họ và tên
+                <input type="text" th:field="*{fullName}" autocomplete="name" required>
+                <small class="field-error" th:errors="*{fullName}"></small>
+            </label>
+            <label>Email
+                <input type="email" th:field="*{email}" autocomplete="email" required>
+                <small class="field-error" th:errors="*{email}"></small>
+            </label>
+            <label>Số điện thoại <span class="optional">không bắt buộc</span>
+                <input type="tel" th:field="*{phone}" autocomplete="tel">
+                <small class="field-error" th:errors="*{phone}"></small>
+            </label>
+            <div class="form-grid">
+                <label>Mật khẩu
+                    <input type="password" th:field="*{password}" autocomplete="new-password" required>
+                    <small class="field-error" th:errors="*{password}"></small>
+                </label>
+                <label>Xác nhận mật khẩu
+                    <input type="password" th:field="*{confirmPassword}" autocomplete="new-password" required>
+                    <small class="field-error" th:errors="*{confirmPassword}"></small>
+                </label>
+            </div>
+            <button class="button primary" type="submit">Tạo tài khoản</button>
+        </form>
+        <p class="auth-switch">Đã có tài khoản? <a th:href="@{/login}">Đăng nhập</a></p>
+    </section>
+</main>
+</body>
+</html>

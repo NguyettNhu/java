@@ -1,0 +1,11 @@
+# Local credentials
+.env
+.env.*
+!.env.example
+
+# Local system analysis document
+PHAN_TICH_HE_THONG_VA_PROMPT.md
+
+# Local Spring configuration
+application-local.yml
+application-local.yaml

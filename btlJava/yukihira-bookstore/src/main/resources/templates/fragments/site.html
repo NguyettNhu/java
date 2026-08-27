@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header class="site-header" th:fragment="header">
+    <a class="site-brand" th:href="@{/}">
+        <span class="brand-mark">雪</span>
+        <span>Yukihira <small>Books</small></span>
+    </a>
+    <nav class="site-nav" aria-label="Điều hướng chính">
+        <a class="nav-home" th:href="@{/}">← Trang chủ</a>
+        <a th:href="@{/books}">Tủ sách</a>
+        <a th:if="${signedIn}" th:href="@{/orders}">Đơn hàng</a>
+        <a th:if="${signedIn}" th:href="@{/cart}">Giỏ sách</a>
+        <a th:if="${signedIn}" th:href="@{/profile}">Hồ sơ</a>
+        <a th:if="${isAdmin}" th:href="@{/admin}">Quản trị</a>
+        <a th:unless="${signedIn}" th:href="@{/login}">Đăng nhập</a>
+        <form th:if="${signedIn}" th:action="@{/logout}" method="post">
+            <button class="nav-button" type="submit">Đăng xuất</button>
+        </form>
+    </nav>
+</header>
+
+<div class="flash-wrap" th:fragment="flash">
+    <p class="form-alert success" th:if="${success}" th:text="${success}"></p>
+    <p class="form-alert error" th:if="${error}" th:text="${error}"></p>
+</div>
+
+<footer class="site-footer" th:fragment="footer">
+    <div>
+        <strong>Yukihira Books</strong>
+        <p>Chọn sách chậm rãi. Gửi đi cẩn thận.</p>
+    </div>
+    <p>Đồ án Java Spring Boot · 2026</p>
+</footer>
+</body>
+</html>

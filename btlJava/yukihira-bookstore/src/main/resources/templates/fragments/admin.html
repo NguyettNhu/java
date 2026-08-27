@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header class="admin-header" th:fragment="header">
+    <a class="site-brand inverse" th:href="@{/admin}">
+        <span class="brand-mark">雪</span>
+        <span>Yukihira <small>Back Office</small></span>
+    </a>
+    <nav class="admin-nav" aria-label="Điều hướng quản trị">
+        <a class="nav-home" th:href="@{/}">← Trang chủ</a>
+        <a th:href="@{/admin}">Tổng quan</a>
+        <a th:href="@{/admin/books}">Sách</a>
+        <a th:href="@{/admin/categories}">Thể loại</a>
+        <a th:href="@{/admin/authors}">Tác giả</a>
+        <a th:href="@{/admin/publishers}">NXB</a>
+        <a th:href="@{/admin/orders}">Đơn hàng</a>
+        <a th:href="@{/admin/users}">Khách hàng</a>
+        <a th:href="@{/admin/reports}">Báo cáo</a>
+    </nav>
+</header>
+</body>
+</html>

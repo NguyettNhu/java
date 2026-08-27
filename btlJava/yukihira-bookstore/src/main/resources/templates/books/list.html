@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tủ sách | Yukihira Books</title><link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header th:replace="~{fragments/site :: header}"></header>
+<main class="catalog-shell">
+    <header class="page-title"><p class="eyebrow">Yukihira catalog</p><h1>Tủ sách</h1><p><strong th:text="${books.totalElements}">0</strong> cuốn sách phù hợp với lựa chọn của bạn.</p></header>
+    <form class="filter-panel" th:action="@{/books}" method="get">
+        <label class="filter-search">Tìm kiếm<input type="search" name="keyword" th:value="${query.keyword}" placeholder="Tên sách, ISBN, tác giả..."></label>
+        <label>Thể loại<select name="categoryId"><option value="">Tất cả</option><option th:each="category : ${categories}" th:value="${category.id}" th:selected="${query.categoryId == category.id}" th:text="${category.name}"></option></select></label>
+        <label>Tác giả<select name="authorId"><option value="">Tất cả</option><option th:each="author : ${authors}" th:value="${author.id}" th:selected="${query.authorId == author.id}" th:text="${author.name}"></option></select></label>
+        <label>Giá từ<input type="number" name="minPrice" min="0" step="1000" th:value="${query.minPrice}"></label>
+        <label>Đến<input type="number" name="maxPrice" min="0" step="1000" th:value="${query.maxPrice}"></label>
+        <label>Sắp xếp<select name="sort"><option value="newest" th:selected="${query.sort == 'newest'}">Mới nhất</option><option value="price-asc" th:selected="${query.sort == 'price-asc'}">Giá tăng dần</option><option value="price-desc" th:selected="${query.sort == 'price-desc'}">Giá giảm dần</option><option value="title" th:selected="${query.sort == 'title'}">Tên A-Z</option></select></label>
+        <button class="button primary" type="submit">Áp dụng</button><a class="reset-link" th:href="@{/books}">Xóa bộ lọc</a>
+    </form>
+    <div class="book-grid catalog-grid" th:if="${books.hasContent()}">
+        <article class="book-card" th:each="book : ${books.content}">
+            <a class="book-cover" th:href="@{/books/{slug}(slug=${book.slug})}"><img th:if="${book.imageUrl != null}" th:src="${book.imageUrl}" th:alt="${book.title}"><span th:unless="${book.imageUrl != null}" class="cover-fallback"><small th:text="${book.categoryName}"></small><strong th:text="${book.title}"></strong></span></a>
+            <div class="book-meta"><p th:text="${book.authorLine()}"></p><h3><a th:href="@{/books/{slug}(slug=${book.slug})}" th:text="${book.title}"></a></h3><strong class="price" th:text="${#numbers.formatDecimal(book.price, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong></div>
+        </article>
+    </div>
+    <div class="empty-state" th:unless="${books.hasContent()}"><span>探</span><h2>Chưa tìm thấy cuốn phù hợp.</h2><p>Thử bỏ bớt bộ lọc hoặc tìm bằng một từ khóa ngắn hơn.</p></div>
+    <nav class="pagination" aria-label="Phân trang" th:if="${books.totalPages > 1}"><a th:if="${books.hasPrevious()}" th:href="@{/books(page=${books.number - 1},keyword=${query.keyword},categoryId=${query.categoryId},authorId=${query.authorId},minPrice=${query.minPrice},maxPrice=${query.maxPrice},sort=${query.sort})}">← Trước</a><span th:text="${'Trang ' + (books.number + 1) + ' / ' + books.totalPages}"></span><a th:if="${books.hasNext()}" th:href="@{/books(page=${books.number + 1},keyword=${query.keyword},categoryId=${query.categoryId},authorId=${query.authorId},minPrice=${query.minPrice},maxPrice=${query.maxPrice},sort=${query.sort})}">Sau →</a></nav>
+</main>
+<footer th:replace="~{fragments/site :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${book.title + ' | Yukihira Books'}">Chi tiết sách</title><link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header th:replace="~{fragments/site :: header}"></header>
+<main class="detail-shell">
+    <a class="back-link" th:href="@{/books}">← Trở lại tủ sách</a>
+    <section class="book-detail">
+        <div class="detail-cover book-cover"><img th:if="${book.imageUrl != null}" th:src="${book.imageUrl}" th:alt="${book.title}"><span th:unless="${book.imageUrl != null}" class="cover-fallback"><small th:text="${book.categoryName}"></small><strong th:text="${book.title}"></strong></span></div>
+        <div class="detail-copy"><p class="eyebrow" th:text="${book.categoryName}"></p><h1 th:text="${book.title}"></h1><p class="detail-author" th:text="${book.authorLine()}"></p><p class="detail-description" th:text="${book.description ?: 'Thông tin giới thiệu đang được cập nhật.'}"></p>
+            <dl class="book-facts"><div><dt>Nhà xuất bản</dt><dd th:text="${book.publisherName ?: 'Đang cập nhật'}"></dd></div><div><dt>ISBN</dt><dd th:text="${book.isbn ?: 'Chưa có'}"></dd></div><div><dt>Tình trạng</dt><dd th:text="${book.available() ? 'Còn ' + book.stock + ' cuốn' : 'Tạm hết hàng'}"></dd></div></dl>
+            <div class="purchase-row"><strong class="detail-price" th:text="${#numbers.formatDecimal(book.price, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><form th:if="${book.available()}" th:action="@{/cart/items}" method="post"><input type="hidden" name="bookId" th:value="${book.id}"><input class="quantity-input" type="number" name="quantity" value="1" min="1" th:max="${book.stock}" aria-label="Số lượng"><button class="button primary" type="submit">Thêm vào giỏ</button></form></div>
+        </div>
+    </section>
+</main>
+<footer th:replace="~{fragments/site :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đăng nhập | Yukihira Books</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="auth-page">
+<main class="auth-shell">
+    <a class="back-link auth-home-link" th:href="@{/}">← Về trang chủ</a>
+    <a class="wordmark" th:href="@{/}">Yukihira <span>Books</span></a>
+    <section class="auth-card">
+        <p class="eyebrow">Chào bạn trở lại</p>
+        <h1>Đăng nhập</h1>
+        <p class="form-alert success" th:if="${success}" th:text="${success}"></p>
+        <p class="form-alert error" th:if="${param.error}">Email hoặc mật khẩu chưa đúng.</p>
+        <p class="form-alert success" th:if="${param.logout}">Bạn đã đăng xuất an toàn.</p>
+        <form th:action="@{/login}" method="post" class="stack-form">
+            <label>Email
+                <input type="email" name="username" autocomplete="email" required autofocus>
+            </label>
+            <label>Mật khẩu
+                <input type="password" name="password" autocomplete="current-password" required>
+            </label>
+            <button class="button primary" type="submit">Đăng nhập</button>
+        </form>
+        <p class="auth-switch">Chưa có tài khoản? <a th:href="@{/register}">Tạo tài khoản</a></p>
+    </section>
+</main>
+</body>
+</html>

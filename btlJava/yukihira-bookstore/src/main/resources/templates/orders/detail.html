@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Chi tiết đơn | Yukihira Books</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<header th:replace="~{fragments/site :: header}"></header>
+<div th:replace="~{fragments/site :: flash}"></div>
+<main class="order-shell order-detail-page">
+    <a class="back-link order-back-link" th:href="@{/orders}">← Tất cả đơn hàng</a>
+
+    <header class="order-summary-header">
+        <div class="order-summary-copy">
+            <p class="eyebrow">Biên nhận Yukihira</p>
+            <h1>Chi tiết đơn hàng</h1>
+            <div class="order-meta">
+                <div>
+                    <span>Mã đơn</span>
+                    <strong class="order-code-chip" th:text="${order.orderCode}"></strong>
+                </div>
+                <div>
+                    <span>Thời gian đặt</span>
+                    <strong th:text="${order.createdAtLabel}"></strong>
+                </div>
+            </div>
+        </div>
+        <div class="order-status-panel">
+            <span>Trạng thái đơn hàng</span>
+            <strong class="status-stamp" th:classappend="${' order-status-' + #strings.toLowerCase(order.status.name())}" th:text="${order.statusLabel}"></strong>
+            <small>Cập nhật mới nhất từ Yukihira Books</small>
+        </div>
+    </header>
+
+    <div class="order-detail-grid">
+        <section class="order-items-card" aria-labelledby="order-items-title">
+            <header class="order-section-heading">
+                <div>
+                    <p class="eyebrow">Trong đơn hàng</p>
+                    <h2 id="order-items-title">Sách đã chọn</h2>
+                </div>
+                <span th:text="${#lists.size(order.items) + ' sản phẩm'}"></span>
+            </header>
+            <div class="receipt-lines">
+                <article th:each="item : ${order.items}">
+                    <a class="receipt-cover" th:href="@{/books/{slug}(slug=${item.slug})}">
+                        <img th:if="${item.imageUrl != null}" th:src="${item.imageUrl}" th:alt="${item.title}">
+                        <span th:unless="${item.imageUrl != null}">本</span>
+                    </a>
+                    <div class="receipt-item-copy">
+                        <h3 th:text="${item.title}"></h3>
+                        <p th:text="${item.quantity + ' cuốn × ' + #numbers.formatDecimal(item.unitPrice, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></p>
+                    </div>
+                    <strong th:text="${#numbers.formatDecimal(item.subtotal, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong>
+                </article>
+                <footer>
+                    <span>Tổng thanh toán</span>
+                    <strong th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong>
+                </footer>
+            </div>
+        </section>
+
+        <aside class="delivery-card">
+            <header>
+                <p class="eyebrow">Thông tin giao nhận</p>
+                <h2 th:text="${order.receiverName}"></h2>
+            </header>
+            <div class="delivery-contact">
+                <div>
+                    <span>Số điện thoại</span>
+                    <a th:href="${'tel:' + order.receiverPhone}" th:text="${order.receiverPhone}"></a>
+                </div>
+                <div>
+                    <span>Địa chỉ nhận hàng</span>
+                    <address th:text="${order.shippingAddress}"></address>
+                </div>
+            </div>
+            <p class="order-note" th:if="${order.note != null}" th:text="${'Ghi chú: ' + order.note}"></p>
+            <dl>
+                <div>
+                    <dt>Phương thức thanh toán</dt>
+                    <dd th:text="${order.paymentMethodLabel}"></dd>
+                </div>
+                <div>
+                    <dt>Thanh toán</dt>
+                    <dd th:text="${order.paymentStatusLabel}"></dd>
+                </div>
+            </dl>
+            <form th:if="${order.customerCanCancel}" th:action="@{/orders/{id}/cancel(id=${order.id})}" method="post">
+                <button class="button danger" type="submit">Hủy đơn hàng</button>
+            </form>
+        </aside>
+    </div>
+</main>
+<footer th:replace="~{fragments/site :: footer}"></footer>
+</body>
+</html>

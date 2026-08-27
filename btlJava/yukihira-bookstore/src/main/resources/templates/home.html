@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Yukihira Books - hiệu sách trực tuyến dành cho độc giả Việt.">
+    <title>Yukihira Books | Mở một trang mới</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header th:replace="~{fragments/site :: header}"></header>
+<div th:replace="~{fragments/site :: flash}"></div>
+<main>
+    <section class="hero">
+        <div class="hero-copy">
+            <p class="eyebrow">Hiệu sách Yukihira · Tuyển chọn mỗi tuần</p>
+            <h1>Mở một trang.<br><em>Đi thật xa.</em></h1>
+            <p>Những cuốn sách được chọn như một bữa ăn ngon: vừa đủ mới mẻ, vừa đủ thân quen, luôn để lại điều đáng nhớ.</p>
+            <div class="hero-actions">
+                <a class="button primary" th:href="@{/books}">Khám phá tủ sách</a>
+                <a class="text-link" th:href="@{/register}">Làm thẻ độc giả</a>
+            </div>
+        </div>
+        <div class="hero-seal" aria-hidden="true"><span>雪平</span><small>BOOKS</small></div>
+        <div class="shelf-rail" aria-hidden="true"><span></span><span></span><span></span></div>
+    </section>
+
+    <section class="category-strip" aria-labelledby="category-title">
+        <div class="section-heading compact"><div><p class="eyebrow">Lối vào nhanh</p><h2 id="category-title">Chọn một kệ sách</h2></div></div>
+        <div class="category-links" th:if="${!#lists.isEmpty(categories)}">
+            <a th:each="category : ${categories}" th:href="@{/books(categoryId=${category.id})}" th:text="${category.name}">Văn học</a>
+        </div>
+        <p class="empty-note" th:if="${#lists.isEmpty(categories)}">Các kệ sách đang được sắp xếp.</p>
+    </section>
+
+    <section class="book-section" aria-labelledby="featured-title">
+        <div class="section-heading">
+            <div><p class="eyebrow">Vừa lên kệ</p><h2 id="featured-title">Tám lời mời đọc</h2></div>
+            <a class="text-link" th:href="@{/books}">Xem toàn bộ</a>
+        </div>
+        <div class="book-grid" th:if="${!#lists.isEmpty(featuredBooks)}">
+            <article class="book-card" th:each="book : ${featuredBooks}">
+                <a class="book-cover" th:href="@{/books/{slug}(slug=${book.slug})}">
+                    <img th:if="${book.imageUrl != null}" th:src="${book.imageUrl}" th:alt="${book.title}">
+                    <span th:unless="${book.imageUrl != null}" class="cover-fallback"><small th:text="${book.categoryName}">Văn học</small><strong th:text="${book.title}">Tên sách</strong></span>
+                </a>
+                <div class="book-meta"><p th:text="${book.authorLine()}">Tác giả</p><h3><a th:href="@{/books/{slug}(slug=${book.slug})}" th:text="${book.title}">Tên sách</a></h3><strong class="price" th:text="${#numbers.formatDecimal(book.price, 0, 'POINT', 0, 'COMMA') + ' ₫'}">120.000 ₫</strong></div>
+            </article>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(featuredBooks)}"><span>棚</span><h3>Kệ sách đang chờ những cuốn đầu tiên.</h3><p>Quản trị viên có thể thêm sách từ khu vực quản lý.</p></div>
+    </section>
+</main>
+<footer th:replace="~{fragments/site :: footer}"></footer>
+</body>
+</html>
