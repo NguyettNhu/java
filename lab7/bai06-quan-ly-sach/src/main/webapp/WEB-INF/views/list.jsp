@@ -1,0 +1,35 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<h1>Quản lý sách</h1>
+<form>
+    <input name="q" value="${q}" placeholder="Tên sách hoặc tác giả">
+    <button>Tìm kiếm</button>
+</form>
+<a href="?action=new">Thêm sách</a>
+<table border="1" cellpadding="7">
+    <tr>
+        <th>Mã</th>
+        <th>Tên</th>
+        <th>Tác giả</th>
+        <th>Nhà xuất bản</th>
+        <th>Năm</th>
+        <th>Thao tác</th>
+    </tr>
+    <c:forEach var="s" items="${danhSach}">
+        <tr>
+            <td>${s.ma}</td>
+            <td>${s.ten}</td>
+            <td>${s.tacGia}</td>
+            <td>${s.nhaXuatBan}</td>
+            <td>${s.namXuatBan}</td>
+            <td>
+                <a href="?action=detail&ma=${s.ma}">Xem</a> <a href="?action=edit&ma=${s.ma}">Sửa</a>
+                <form method="post" style="display:inline">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="ma" value="${s.ma}">
+                    <button>Xóa</button>
+                </form>
+            </td>
+        </tr>
+    </c:forEach>
+</table>

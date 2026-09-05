@@ -19,6 +19,9 @@ spring:
           time_zone: UTC
   flyway:
     enabled: true
+    url: ${DIRECT_URL:${DATABASE_URL}}
+    user: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
     locations: classpath:db/migration
   thymeleaf:
     cache: false

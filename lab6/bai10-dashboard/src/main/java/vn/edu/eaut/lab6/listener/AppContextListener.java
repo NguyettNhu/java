@@ -22,7 +22,7 @@ public class AppContextListener implements ServletContextListener {
                 new Student("SV005", "Do Minh Duc", "DCCNTT14", "duc@example.com")
         );
 
-        StudentStore.replaceAll(samples);
+        StudentStore.replaceAll(samples);//nạp các sinh viên vào danh sách trong bộ nhớ
 
         ServletContext servletContext = sce.getServletContext();
         servletContext.setAttribute("students", StudentStore.findAll());

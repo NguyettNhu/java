@@ -91,7 +91,8 @@ erDiagram
 File thật nằm tại `btlJava/.env` và đã được `.gitignore` loại khỏi source control. Không đặt secret trong `application.yml`, HTML, JavaScript hoặc commit Git.
 
 ```dotenv
-DATABASE_URL=jdbc:postgresql://<host>:5432/postgres?sslmode=require
+DATABASE_URL=jdbc:postgresql://<transaction-pooler-host>:6543/postgres?pgbouncer=true&prepareThreshold=0&sslmode=require
+DIRECT_URL=jdbc:postgresql://<session-pooler-host>:5432/postgres?sslmode=require
 DATABASE_USERNAME=postgres
 DATABASE_PASSWORD=<database-password>
 ADMIN_EMAIL=<your-admin-email>
