@@ -1,5 +1,32 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Xử lý đơn | Yukihira Admin</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
-<body class="admin-page"><header th:replace="~{fragments/admin :: header}"></header><main class="admin-main"><div th:replace="~{fragments/site :: flash}"></div><a class="back-link" th:href="@{/admin/orders}">← Quay lại danh sách</a><header class="admin-title order-admin-title"><div><p class="eyebrow">Phiếu xử lý đơn</p><h1 th:text="${order.orderCode}"></h1><p th:text="${order.createdAtLabel + ' · ' + order.customerEmail}"></p></div><span class="status-stamp" th:classappend="${' order-status-' + #strings.toLowerCase(order.status.name())}" th:text="${order.statusLabel}"></span></header><div class="order-admin-grid"><section class="admin-order-card"><h2>Sách trong kiện</h2><article class="admin-order-line" th:each="item : ${order.items}"><div><strong th:text="${item.title}"></strong><small th:text="${item.quantity + ' × ' + #numbers.formatDecimal(item.unitPrice, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></small></div><b th:text="${#numbers.formatDecimal(item.subtotal, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></b></article><footer><span>Tổng đơn</span><strong th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong></footer></section><aside class="admin-order-card"><h2>Thông tin giao nhận</h2><dl class="admin-facts"><div><dt>Người nhận</dt><dd th:text="${order.receiverName}"></dd></div><div><dt>Điện thoại</dt><dd th:text="${order.receiverPhone}"></dd></div><div><dt>Địa chỉ</dt><dd th:text="${order.shippingAddress}"></dd></div><div><dt>Thanh toán</dt><dd th:text="${order.paymentMethodLabel + ' · ' + order.paymentStatusLabel}"></dd></div><div th:if="${order.note != null}"><dt>Ghi chú</dt><dd th:text="${order.note}"></dd></div></dl><form class="status-form" th:if="${!#lists.isEmpty(order.allowedTransitions)}" th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post"><label>Chuyển trạng thái<select name="status" required><option th:each="status : ${order.allowedTransitions}" th:value="${status}" th:text="${status.label}"></option></select></label><button class="button primary" type="submit">Cập nhật đơn</button></form><p class="terminal-note" th:if="${#lists.isEmpty(order.allowedTransitions)}">Đơn hàng đã kết thúc vòng xử lý.</p></aside></div></main></body>
+<head th:replace="~{fragments/admin :: head('Xử lý đơn hàng')}"></head>
+<body class="admin-page">
+<th:block th:replace="~{fragments/admin :: header}"></th:block>
+<main id="main-content" tabindex="-1" class="admin-main">
+    <div th:replace="~{fragments/admin :: flash}"></div>
+
+    <a class="back-link" th:href="@{/admin/orders}">Quay lại danh sách đơn hàng</a>
+    <header class="admin-title"><div><h1 th:text="${order.orderCode}"></h1><p th:text="${'Đặt lúc ' + order.createdAtLabel}"></p></div><div class="heading-actions"><span class="status-pill" th:classappend="${'order-status-' + #strings.toLowerCase(order.status.name())}" th:text="${order.statusLabel}"></span><button class="button ghost" type="button" data-print>In phiếu đơn</button></div></header>
+    <ol class="order-progress" aria-label="Tiến trình đơn hàng" th:if="${order.status.name() != 'CANCELLED'}">
+        <li th:each="step : ${T(com.yukihira.bookstore.order.OrderStatus).values()}" th:if="${step.name() != 'CANCELLED'}" th:classappend="${step == order.status ? 'current' : (step.ordinal() &lt; order.status.ordinal() ? 'completed' : '')}" th:attr="aria-current=${step == order.status ? 'step' : null}" th:text="${step.label}"></li>
+    </ol>
+    <div class="order-grid">
+        <section class="panel"><header class="panel-heading"><h2>Sách trong đơn</h2></header><div class="data-table-wrap" tabindex="0" role="region" aria-label="Các sách trong đơn">
+            <table class="data-table"><thead><tr><th scope="col">Sách</th><th scope="col" class="numeric">Đơn giá</th><th scope="col" class="numeric">Số lượng</th><th scope="col" class="numeric">Thành tiền</th></tr></thead><tbody>
+                <tr th:each="item : ${order.items}"><td><a th:href="@{/admin/books/{id}(id=${item.bookId})}" th:text="${item.title}"></a></td><td class="numeric" th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></td><td class="numeric" th:text="${item.quantity}"></td><td class="numeric" th:text="${#numbers.formatDecimal(item.subtotal, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></td></tr>
+            </tbody></table>
+        </div><footer class="order-total"><span>Tổng thanh toán</span><strong th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong></footer><p class="help-text panel-body">Tên sách và đơn giá được giữ theo thời điểm đặt hàng.</p></section>
+        <aside class="panel"><header class="panel-heading"><h2>Thông tin giao nhận</h2></header><div class="panel-body">
+            <dl class="facts"><div><dt>Người nhận</dt><dd th:text="${order.receiverName}"></dd></div><div><dt>Số điện thoại</dt><dd><a th:href="${'tel:' + order.receiverPhone}" th:text="${order.receiverPhone}"></a></dd></div><div><dt>Địa chỉ</dt><dd th:text="${order.shippingAddress}"></dd></div><div><dt>Khách đặt hàng</dt><dd th:text="${order.customerName + ' (' + order.customerEmail + ')'}"></dd></div><div><dt>Thanh toán</dt><dd th:text="${order.paymentMethodLabel + ' · ' + order.paymentStatusLabel}"></dd></div><div th:if="${order.note != null}"><dt>Ghi chú</dt><dd th:text="${order.note}"></dd></div></dl>
+            <form class="status-form" th:if="${!#lists.isEmpty(order.allowedTransitions)}" th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post" data-confirm="Cập nhật đơn sang trạng thái đã chọn? Hủy đơn sẽ hoàn tồn kho; đơn hoàn thành sẽ ghi nhận đã thanh toán.">
+                <label>Chuyển trạng thái<select name="status" required><option value="">Chọn bước xử lý tiếp theo</option><option th:each="status : ${order.allowedTransitions}" th:value="${status}" th:text="${status.label}"></option></select></label><button class="button primary" type="submit">Cập nhật đơn</button>
+            </form>
+            <p class="form-alert success" style="margin-top:20px" th:if="${order.status.name() == 'COMPLETED'}">Đơn đã hoàn thành và ghi nhận thanh toán.</p>
+            <p class="form-alert error" style="margin-top:20px" th:if="${order.status.name() == 'CANCELLED'}">Đơn đã hủy. Số lượng sách đã được hoàn lại kho.</p>
+        </div></aside>
+    </div>
+
+</main>
+</body>
 </html>

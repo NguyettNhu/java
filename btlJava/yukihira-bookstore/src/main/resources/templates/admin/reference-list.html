@@ -1,5 +1,30 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${type.label + ' | Yukihira Admin'}"></title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
-<body class="admin-page"><header th:replace="~{fragments/admin :: header}"></header><main class="admin-main"><div th:replace="~{fragments/site :: flash}"></div><header class="admin-title"><div><p class="eyebrow">Dữ liệu catalog</p><h1 th:text="${type.label}"></h1></div><a class="button primary" th:href="@{/admin/{type}/new(type=${type.path})}">Thêm mới</a></header><div class="data-table-wrap"><table class="data-table"><thead><tr><th>Tên</th><th th:text="${type.detailsLabel}"></th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody><tr th:each="item : ${items}"><td><strong th:text="${item.name}"></strong></td><td th:text="${item.details ?: '—'}"></td><td><span class="status-pill" th:classappend="${item.active ? 'active' : 'inactive'}" th:text="${item.active ? 'Đang dùng' : 'Tạm ẩn'}"></span></td><td class="table-actions"><a th:href="@{/admin/{type}/{id}/edit(type=${type.path},id=${item.id})}">Sửa</a><form th:action="@{/admin/{type}/{id}/delete(type=${type.path},id=${item.id})}" method="post"><button type="submit">Xóa/Ẩn</button></form></td></tr><tr th:if="${#lists.isEmpty(items)}"><td colspan="4">Chưa có dữ liệu. Hãy thêm mục đầu tiên.</td></tr></tbody></table></div></main></body>
+<head th:replace="~{fragments/admin :: head('Danh mục')}"></head>
+<body class="admin-page">
+<th:block th:replace="~{fragments/admin :: header}"></th:block>
+<main id="main-content" tabindex="-1" class="admin-main">
+    <div th:replace="~{fragments/admin :: flash}"></div>
+
+    <header class="admin-title"><div><h1 th:text="${type.label}"></h1><p>Quản lý thông tin dùng chung cho các cuốn sách trong cửa hàng.</p></div><a class="button primary" th:href="@{/admin/{type}/new(type=${type.path})}" th:text="${'+ Thêm ' + #strings.toLowerCase(type.label)}"></a></header>
+    <section class="panel">
+        <form class="filter-bar" th:action="@{/admin/{type}(type=${type.path})}" method="get">
+            <label class="filter-keyword">Tìm theo tên<input type="search" name="keyword" th:value="${keyword}" th:placeholder="${'Tên ' + #strings.toLowerCase(type.label)}"></label><button class="button primary" type="submit">Tìm kiếm</button><a class="button ghost" th:href="@{/admin/{type}(type=${type.path})}">Xóa lọc</a>
+        </form>
+        <div class="data-table-wrap" tabindex="0" role="region" th:attr="aria-label=${'Danh sách ' + type.label}">
+            <table class="data-table"><thead><tr><th scope="col">Tên</th><th scope="col" th:text="${type.detailsLabel}"></th><th scope="col" th:if="${type.path == 'categories'}">Trạng thái</th><th scope="col">Thao tác</th></tr></thead>
+                <tbody><tr th:each="item : ${items.content}">
+                    <td><strong th:text="${item.name}"></strong></td><td style="max-width:480px;overflow-wrap:anywhere" th:text="${item.details == null ? 'Chưa cập nhật' : #strings.abbreviate(item.details, 200)}"></td>
+                    <td th:if="${type.path == 'categories'}"><span class="status-pill" th:classappend="${item.active ? 'active' : 'inactive'}" th:text="${item.active ? 'Hiển thị' : 'Đang ẩn'}"></span></td>
+                    <td><div class="table-actions"><a th:href="@{/admin/{type}/{id}/edit(type=${type.path},id=${item.id})}">Xem / chỉnh sửa</a>
+                        <form th:action="@{/admin/{type}/{id}/delete(type=${type.path},id=${item.id})}" method="post" th:attr="data-confirm=${'Xóa “' + item.name + '”? Thể loại đang có sách sẽ được ẩn; tác giả và nhà xuất bản đang có sách sẽ không bị xóa.'}"><button class="danger-link" type="submit">Xóa</button></form>
+                    </div></td>
+                </tr><tr th:if="${!items.hasContent()}"><td th:colspan="${type.path == 'categories' ? 4 : 3}" class="empty-cell"><strong>Chưa có dữ liệu phù hợp</strong>Thử tên khác hoặc thêm mục đầu tiên.<br><a th:href="@{/admin/{type}/new(type=${type.path})}">Thêm mới</a></td></tr></tbody>
+            </table>
+        </div>
+    </section>
+    <nav th:replace="~{fragments/admin :: pagination(${items}, @{/admin/{type}(type=${type.path},page=${items.number - 1},keyword=${keyword})}, @{/admin/{type}(type=${type.path},page=${items.number + 1},keyword=${keyword})})}"></nav>
+
+</main>
+</body>
 </html>

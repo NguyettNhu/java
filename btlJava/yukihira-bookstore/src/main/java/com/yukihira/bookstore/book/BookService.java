@@ -1,6 +1,12 @@
 package com.yukihira.bookstore.book;
 
 import com.yukihira.bookstore.author.Author;
+import com.yukihira.bookstore.admin.catalog.CatalogValidationException;
+import com.yukihira.bookstore.cart.CartItemRepository;
+import com.yukihira.bookstore.order.OrderItemRepository;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
+import java.util.Objects;
 import com.yukihira.bookstore.author.AuthorRepository;
 import com.yukihira.bookstore.category.Category;
 import com.yukihira.bookstore.category.CategoryRepository;
@@ -19,19 +25,25 @@ import java.util.Locale;
 import java.util.Set;
 
 @Service
+@Validated
 public class BookService {
 
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
     private final AuthorRepository authorRepository;
     private final PublisherRepository publisherRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final CartItemRepository cartItemRepository;
 
     public BookService(BookRepository bookRepository, CategoryRepository categoryRepository,
-                       AuthorRepository authorRepository, PublisherRepository publisherRepository) {
+                       AuthorRepository authorRepository, PublisherRepository publisherRepository,
+                       OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository) {
         this.bookRepository = bookRepository;
         this.categoryRepository = categoryRepository;
         this.authorRepository = authorRepository;
         this.publisherRepository = publisherRepository;
+        this.orderItemRepository = orderItemRepository;
+        this.cartItemRepository = cartItemRepository;
     }
 
     @Transactional(readOnly = true)
@@ -47,6 +59,27 @@ public class BookService {
     }
 
     @Transactional(readOnly = true)
+    public Page<BookView> searchAdmin(BookSearchQuery filter, BookStatus status, String stock, int page, int size) {
+        var spec = BookSpecifications.from(filter, false);
+        if (status != null) spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
+        if ("low".equals(stock)) spec = spec.and((root, query, cb) -> cb.and(
+                cb.between(root.get("stock"), 1, 5), cb.notEqual(root.get("status"), BookStatus.INACTIVE)));
+        if ("empty".equals(stock)) spec = spec.and((root, query, cb) -> cb.equal(root.get("stock"), 0));
+        return bookRepository.findAll(spec, PageRequest.of(Math.max(0, page), Math.clamp(size, 1, 48),
+                sort(filter.sort()).and(Sort.by("id")))).map(this::toView);
+    }
+
+    @Transactional(readOnly = true)
+    public BookView adminBook(Long id) {
+        return toView(bookRepository.findById(id).orElseThrow());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Category> adminCategories() {
+        return categoryRepository.findAll(Sort.by("name"));
+    }
+
+    @Transactional(readOnly = true)
     public BookView findActiveBySlug(String slug) {
         Book book = bookRepository.findBySlug(slug).orElseThrow();
         if (book.getStatus() != BookStatus.ACTIVE) throw new java.util.NoSuchElementException();
@@ -58,6 +91,8 @@ public class BookService {
         Book book = bookRepository.findById(id).orElseThrow();
         BookForm form = new BookForm();
         form.setId(book.getId());
+        form.setVersion(book.getVersion());
+        form.setSlug(book.getSlug());
         form.setTitle(book.getTitle());
         form.setIsbn(book.getIsbn());
         form.setDescription(book.getDescription());
@@ -72,18 +107,24 @@ public class BookService {
     }
 
     @Transactional
-    public Book save(BookForm form) {
+    public Book save(@Valid BookForm form) {
         String isbn = blankToNull(form.getIsbn());
-        bookRepository.findAll().stream()
-                .filter(book -> isbn != null && isbn.equalsIgnoreCase(book.getIsbn()))
+        if (isbn != null) bookRepository.findByIsbnIgnoreCase(isbn)
                 .filter(book -> !book.getId().equals(form.getId()))
-                .findFirst()
-                .ifPresent(book -> { throw new IllegalArgumentException("ISBN đã tồn tại"); });
+                .ifPresent(book -> { throw new CatalogValidationException("isbn", "ISBN đã tồn tại"); });
 
-        Category category = categoryRepository.findById(form.getCategoryId()).orElseThrow();
+        Category category = categoryRepository.findById(form.getCategoryId())
+                .orElseThrow(() -> new CatalogValidationException("categoryId", "Thể loại không còn tồn tại"));
         Book book = form.getId() == null
                 ? new Book(form.getTitle().trim(), uniqueSlug(form.getTitle()), form.getPrice(), form.getStock(), category)
-                : bookRepository.findById(form.getId()).orElseThrow();
+                : bookRepository.findForUpdate(form.getId()).orElseThrow();
+        if (form.getId() != null) checkVersion(book, form.getVersion());
+        String slug = blankToNull(form.getSlug());
+        if (slug != null) {
+            bookRepository.findBySlug(slug).filter(item -> !Objects.equals(item.getId(), form.getId()))
+                    .ifPresent(item -> { throw new CatalogValidationException("slug", "Đường dẫn đã tồn tại"); });
+            book.setSlug(slug);
+        }
         book.setTitle(form.getTitle().trim());
         book.setIsbn(isbn);
         book.setDescription(blankToNull(form.getDescription()));
@@ -92,18 +133,53 @@ public class BookService {
         book.setImageUrl(blankToNull(form.getImageUrl()));
         book.setCategory(category);
         book.setPublisher(form.getPublisherId() == null ? null
-                : publisherRepository.findById(form.getPublisherId()).orElseThrow());
+                : publisherRepository.findById(form.getPublisherId())
+                    .orElseThrow(() -> new CatalogValidationException("publisherId", "Nhà xuất bản không còn tồn tại")));
         Set<Author> authors = new LinkedHashSet<>(authorRepository.findAllById(form.getAuthorIds()));
+        if (authors.size() != form.getAuthorIds().size()) {
+            throw new CatalogValidationException("authorIds", "Một tác giả đã bị xóa. Hãy chọn lại tác giả.");
+        }
         book.setAuthors(authors);
-        book.setStatus(form.getStock() == 0 && form.getStatus() == BookStatus.ACTIVE
-                ? BookStatus.OUT_OF_STOCK : form.getStatus());
-        return bookRepository.save(book);
+        book.setStatus(normalizeStatus(form.getStatus(), form.getStock()));
+        return bookRepository.saveAndFlush(book);
     }
 
     @Transactional
     public void deactivate(Long id) {
-        Book book = bookRepository.findById(id).orElseThrow();
+        Book book = bookRepository.findForUpdate(id).orElseThrow();
         book.setStatus(BookStatus.INACTIVE);
+    }
+
+    @Transactional
+    public String delete(Long id) {
+        Book book = bookRepository.findForUpdate(id).orElseThrow();
+        if (orderItemRepository.existsByBookId(id) || cartItemRepository.existsByBookId(id)) {
+            book.setStatus(BookStatus.INACTIVE);
+            return "Sách đã có trong đơn hàng hoặc giỏ hàng nên được chuyển sang ngừng bán để giữ lịch sử.";
+        }
+        bookRepository.delete(book);
+        bookRepository.flush();
+        return "Đã xóa sách chưa phát sinh giao dịch.";
+    }
+
+    @Transactional
+    public void updateStock(Long id, @Valid StockForm form) {
+        Book book = bookRepository.findForUpdate(id).orElseThrow();
+        checkVersion(book, form.getVersion());
+        book.setStock(form.getStock());
+        book.setStatus(normalizeStatus(book.getStatus(), form.getStock()));
+        bookRepository.flush();
+    }
+
+    private void checkVersion(Book book, Long version) {
+        if (version == null || version != book.getVersion()) {
+            throw new CatalogValidationException("version",
+                    "Sách hoặc tồn kho đã thay đổi. Hãy tải lại trang rồi nhập lại thay đổi của bạn.");
+        }
+    }
+
+    private BookStatus normalizeStatus(BookStatus status, int stock) {
+        return status == BookStatus.INACTIVE ? status : (stock == 0 ? BookStatus.OUT_OF_STOCK : BookStatus.ACTIVE);
     }
 
     @Transactional(readOnly = true)
@@ -125,7 +201,7 @@ public class BookService {
         return new BookView(book.getId(), book.getTitle(), book.getSlug(), book.getIsbn(), book.getDescription(),
                 book.getPrice(), book.getStock(), book.getImageUrl(), book.getStatus(), book.getCategory().getId(),
                 book.getCategory().getName(), book.getPublisher() == null ? null : book.getPublisher().getName(),
-                book.getAuthors().stream().map(Author::getName).sorted().toList());
+                book.getAuthors().stream().map(Author::getName).sorted().toList(), book.getVersion());
     }
 
     private Sort sort(String value) {
@@ -139,6 +215,7 @@ public class BookService {
 
     private String uniqueSlug(String title) {
         String base = Slugifier.toSlug(title);
+        if (base.isEmpty()) base = "sach";
         String slug = base;
         int suffix = 2;
         while (bookRepository.existsBySlug(slug)) slug = base + "-" + suffix++;

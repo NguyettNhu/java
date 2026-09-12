@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
+import org.springframework.data.domain.Page;
 
 @Controller
 public class AdminOrderController {
@@ -24,8 +27,17 @@ public class AdminOrderController {
     @GetMapping("/admin/orders")
     public String list(@RequestParam(required = false) String keyword,
                        @RequestParam(required = false) OrderStatus status,
+                       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
                        @RequestParam(defaultValue = "0") int page, Model model) {
-        model.addAttribute("orders", orderService.search(new OrderSearchQuery(keyword, status), page, 20));
+        try {
+            model.addAttribute("orders", orderService.search(new OrderSearchQuery(keyword, status, from, to), page, 20));
+        } catch (IllegalArgumentException exception) {
+            model.addAttribute("orders", Page.empty());
+            model.addAttribute("error", exception.getMessage());
+        }
+        model.addAttribute("from", from);
+        model.addAttribute("to", to);
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("statuses", OrderStatus.values());
@@ -34,7 +46,11 @@ public class AdminOrderController {
 
     @GetMapping("/admin/orders/{id}")
     public String detail(@PathVariable Long id, Model model) {
-        model.addAttribute("order", orderService.adminOrder(id));
+        try {
+            model.addAttribute("order", orderService.adminOrder(id));
+        } catch (OrderException exception) {
+            throw new java.util.NoSuchElementException();
+        }
         return "admin/order-detail";
     }
 

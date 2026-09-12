@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/admin :: head('Tồn kho')}"></head>
+<body class="admin-page">
+<th:block th:replace="~{fragments/admin :: header}"></th:block>
+<main id="main-content" tabindex="-1" class="admin-main">
+    <div th:replace="~{fragments/admin :: flash}"></div>
+
+    <header class="admin-title"><div><h1>Tồn kho</h1><p>Đối chiếu và cập nhật số cuốn thực tế. Sách sắp hết có từ 1 đến 5 cuốn.</p></div><a class="button ghost" th:href="@{/admin/books/new}">Thêm đầu sách</a></header>
+    <section class="panel"><form class="filter-bar" th:action="@{/admin/inventory}" method="get">
+        <label class="filter-keyword">Tìm sách<input type="search" name="keyword" th:value="${keyword}" placeholder="Tên sách, ISBN hoặc tác giả"></label>
+        <label>Mức tồn kho<select name="stock"><option value="">Tất cả</option><option value="low" th:selected="${stockFilter == 'low'}">Sắp hết (1–5 cuốn)</option><option value="empty" th:selected="${stockFilter == 'empty'}">Hết hàng</option></select></label>
+        <button class="button primary" type="submit">Lọc tồn kho</button><a class="button ghost" th:href="@{/admin/inventory}">Xóa lọc</a>
+    </form><div class="data-table-wrap" tabindex="0" role="region" aria-label="Bảng tồn kho"><table class="data-table"><thead><tr><th scope="col">Sách</th><th scope="col" class="numeric">Hiện có</th><th scope="col">Trạng thái</th><th scope="col">Tồn kho sau cập nhật</th></tr></thead><tbody>
+        <tr th:each="book : ${books.content}"><td><div class="book-cell"><div th:replace="~{fragments/admin :: cover(${book})}"></div><div class="cell-copy"><a th:href="@{/admin/books/{id}(id=${book.id})}" th:text="${book.title}"></a><small th:text="${book.isbn ?: 'Chưa có ISBN'}"></small></div></div></td>
+            <td class="numeric" th:classappend="${book.stock == 0 ? 'stock-empty' : (book.stock &lt;= 5 ? 'stock-low' : '')}" th:text="${book.stock}"></td>
+            <td><span class="status-pill" th:classappend="${#strings.toLowerCase(book.status.name())}" th:text="${book.status.label}"></span></td>
+            <td><form class="inline-stock" th:action="@{/admin/inventory/{id}(id=${book.id})}" method="post" th:attr="data-confirm=${'Cập nhật số lượng tồn kho thực tế cho “' + book.title + '”?'}">
+                <input type="hidden" name="version" th:value="${book.version}"><label><span class="sr-only" th:text="${'Tồn kho mới của ' + book.title}"></span><input type="number" name="stock" min="0" max="2147483647" th:value="${book.stock}" required></label><button class="button ghost small" type="submit">Lưu kho</button>
+            </form></td>
+        </tr><tr th:if="${!books.hasContent()}"><td colspan="4" class="empty-cell"><strong>Không có sách ở mức tồn kho này</strong>Thử đổi bộ lọc hoặc thêm đầu sách mới.</td></tr>
+    </tbody></table></div></section>
+    <nav th:replace="~{fragments/admin :: pagination(${books}, @{/admin/inventory(page=${books.number - 1},keyword=${keyword},stock=${stockFilter})}, @{/admin/inventory(page=${books.number + 1},keyword=${keyword},stock=${stockFilter})})}"></nav>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Trang chủ bài thực hành Spring Boot và Thymeleaf">
+    <title th:text="${pageTitle}">Trang chủ Lab 11</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" th:href="@{/}" aria-label="Về trang chủ">
+        <span class="brand-symbol" aria-hidden="true">L11</span>
+        <span>Java Web Lab</span>
+    </a>
+    <span class="server-status"><i aria-hidden="true"></i> Cổng 8080 đang hoạt động</span>
+</header>
+
+<main>
+    <section class="hero" aria-labelledby="main-heading">
+        <div class="hero-content">
+            <p class="lesson-label">Bài thực hành Spring Boot</p>
+            <h1 id="main-heading" th:text="${greeting}">Ứng dụng Spring Boot đã sẵn sàng!</h1>
+            <p class="lead" th:text="${message}">
+                Dữ liệu được gửi từ Controller sang giao diện thông qua Model.
+            </p>
+
+            <div class="controller-note">
+                <span>Người học</span>
+                <strong th:text="${studentName}">Sinh viên Java Web</strong>
+            </div>
+        </div>
+
+        <aside class="exercise-sheet" aria-label="Trạng thái bài tập">
+            <div class="sheet-heading">
+                <span>Lab 11</span>
+                <strong>Đã hoàn thành</strong>
+            </div>
+
+            <ol class="exercise-list">
+                <li>
+                    <span class="check" aria-hidden="true">✓</span>
+                    <div>
+                        <strong>Bài 1. Tạo project</strong>
+                        <p>Spring Web, Thymeleaf và DevTools.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="check" aria-hidden="true">✓</span>
+                    <div>
+                        <strong>Bài 2. Tạo trang chủ</strong>
+                        <p>Đường dẫn <code>/</code> nhận dữ liệu từ Controller.</p>
+                    </div>
+                </li>
+            </ol>
+        </aside>
+    </section>
+
+    <section class="data-flow" aria-labelledby="flow-heading">
+        <div class="flow-heading">
+            <p class="lesson-label">Dữ liệu đang hiển thị</p>
+            <h2 id="flow-heading">Controller → Model → Thymeleaf</h2>
+        </div>
+
+        <div class="flow-content">
+            <p>Các dependency được Controller truyền sang trang chủ:</p>
+            <ul class="technology-list">
+                <li th:each="technology : ${technologies}" th:text="${technology}">Spring Web</li>
+            </ul>
+            <p class="explanation">
+                Khi truy cập <code>/</code>, phương thức <code>home(Model model)</code> trả về view
+                <code>home</code>. Thymeleaf đọc dữ liệu trong Model và render nội dung bạn đang thấy.
+            </p>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <span>Lab 11 · Spring Boot MVC</span>
+    <span th:text="'Năm học ' + ${currentYear}">Năm học 2026</span>
+</footer>
+</body>
+</html>

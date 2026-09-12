@@ -1,5 +1,46 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Biên tập sách | Yukihira Admin</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
-<body class="admin-page"><header th:replace="~{fragments/admin :: header}"></header><main class="admin-main narrow"><a class="back-link" th:href="@{/admin/books}">← Quay lại danh sách</a><header class="admin-title"><div><p class="eyebrow">Phiếu nhập sách</p><h1 th:text="${form.id == null ? 'Thêm sách mới' : 'Chỉnh sửa sách'}"></h1></div></header><form class="editor-form" th:action="@{/admin/books/save}" th:object="${form}" method="post"><input type="hidden" th:field="*{id}"><div class="editor-grid two"><label>Tên sách<input type="text" th:field="*{title}" required><small class="field-error" th:errors="*{title}"></small></label><label>ISBN<input type="text" th:field="*{isbn}"><small class="field-error" th:errors="*{isbn}"></small></label></div><label>Mô tả<textarea th:field="*{description}" rows="8"></textarea><small class="field-error" th:errors="*{description}"></small></label><div class="editor-grid three"><label>Giá bán<input type="number" th:field="*{price}" min="0" step="1000" required><small class="field-error" th:errors="*{price}"></small></label><label>Tồn kho<input type="number" th:field="*{stock}" min="0" required><small class="field-error" th:errors="*{stock}"></small></label><label>Trạng thái<select th:field="*{status}"><option th:each="status : ${statuses}" th:value="${status}" th:text="${status}"></option></select></label></div><label>URL ảnh bìa<input type="url" th:field="*{imageUrl}" placeholder="https://..."><small class="field-error" th:errors="*{imageUrl}"></small></label><div class="editor-grid two"><label>Thể loại<select th:field="*{categoryId}" required><option value="">Chọn thể loại</option><option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}"></option></select><small class="field-error" th:errors="*{categoryId}"></small></label><label>Nhà xuất bản<select th:field="*{publisherId}"><option value="">Chưa xác định</option><option th:each="publisher : ${publishers}" th:value="${publisher.id}" th:text="${publisher.name}"></option></select></label></div><fieldset><legend>Tác giả</legend><div class="checkbox-grid"><label th:each="author : ${authors}"><input type="checkbox" th:field="*{authorIds}" th:value="${author.id}"><span th:text="${author.name}"></span></label></div></fieldset><div class="form-actions"><button class="button primary" type="submit">Lưu sách</button><a class="button ghost" th:href="@{/admin/books}">Hủy</a></div></form></main></body>
+<head th:replace="~{fragments/admin :: head('Biên tập sách')}"></head>
+<body class="admin-page">
+<th:block th:replace="~{fragments/admin :: header}"></th:block>
+<main id="main-content" tabindex="-1" class="admin-main narrow">
+    <div th:replace="~{fragments/admin :: flash}"></div>
+
+    <a class="back-link" th:href="@{/admin/books}">Quay lại danh sách sách</a>
+    <header class="admin-title"><div><h1 th:text="${form.id == null ? 'Thêm sách mới' : 'Chỉnh sửa sách'}"></h1><p>Các trường có dấu * là bắt buộc. Thông tin sẽ được cập nhật trên cửa hàng sau khi lưu.</p></div></header>
+    <form class="editor-form" th:action="@{/admin/books/save}" th:object="${form}" method="post">
+        <input type="hidden" th:field="*{id}"><input type="hidden" th:field="*{version}">
+        <div th:replace="~{fragments/admin :: formErrors}"></div>
+        <p th:if="${#fields.hasErrors('version')}" class="help-text"><a th:href="@{/admin/books/{id}/edit(id=${form.id})}">Tải lại dữ liệu mới nhất</a> rồi nhập lại thay đổi cần lưu.</p>
+        <section class="form-section">
+            <h2>Thông tin cuốn sách</h2>
+            <div class="editor-grid two">
+                <label>Tên sách *<input th:field="*{title}" maxlength="255" required th:errorclass="field-invalid"><small class="field-error" th:errors="*{title}"></small></label>
+                <label>ISBN<input th:field="*{isbn}" maxlength="20" th:errorclass="field-invalid"><small class="field-error" th:errors="*{isbn}"></small></label>
+                <label>Đường dẫn sách<input th:field="*{slug}" maxlength="280" placeholder="VD: rung-na-uy" th:errorclass="field-invalid"><small class="help-text">Để trống để tự tạo từ tên sách. Dùng chữ không dấu, số và dấu gạch ngang.</small><small class="field-error" th:errors="*{slug}"></small></label>
+                <label>Thể loại *<select th:field="*{categoryId}" required th:errorclass="field-invalid"><option value="">Chọn thể loại</option><option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name + (category.active ? '' : ' (đang ẩn)')}"></option></select><small class="field-error" th:errors="*{categoryId}"></small><a class="help-text" th:if="${#lists.isEmpty(categories)}" th:href="@{/admin/categories/new}">Tạo thể loại trước khi thêm sách</a></label>
+                <label>Nhà xuất bản<select th:field="*{publisherId}"><option value="">Chưa xác định</option><option th:each="publisher : ${publishers}" th:value="${publisher.id}" th:text="${publisher.name}"></option></select><small class="field-error" th:errors="*{publisherId}"></small></label>
+            </div>
+            <label style="margin-top:22px">Mô tả<textarea th:field="*{description}" rows="6" maxlength="5000" th:errorclass="field-invalid"></textarea><small class="field-error" th:errors="*{description}"></small></label>
+        </section>
+        <section class="form-section">
+            <h2>Giá bán và tồn kho</h2>
+            <div class="editor-grid three">
+                <label>Giá bán (₫) *<input type="number" th:field="*{price}" min="0" max="9999999999999.99" step="0.01" required th:errorclass="field-invalid"><small class="field-error" th:errors="*{price}"></small></label>
+                <label>Tồn kho (cuốn) *<input type="number" th:field="*{stock}" min="0" max="2147483647" required th:errorclass="field-invalid"><small class="field-error" th:errors="*{stock}"></small></label>
+                <label>Trạng thái *<select th:field="*{status}" required><option th:each="status : ${statuses}" th:value="${status}" th:text="${status.label}"></option></select><small class="field-error" th:errors="*{status}"></small></label>
+            </div>
+            <p class="help-text" style="margin-top:14px">Sách mở bán có tồn kho bằng 0 tự chuyển thành “Hết hàng”. Khi nhập thêm, sách hết hàng tự mở bán lại; sách ngừng bán vẫn giữ nguyên trạng thái.</p>
+        </section>
+        <section class="form-section"><h2>Ảnh bìa</h2><div class="cover-editor">
+            <div class="cover-preview" data-image-preview></div>
+            <label>Đường dẫn ảnh<input th:field="*{imageUrl}" data-image-url maxlength="500" placeholder="https://..." th:errorclass="field-invalid"><small class="help-text">Dùng URL ảnh http/https hoặc ảnh có sẵn trong /images/.</small><small class="field-error" th:errors="*{imageUrl}"></small></label>
+        </div></section>
+        <section class="form-section"><fieldset><legend>Tác giả</legend><div class="checkbox-grid"><label th:each="author : ${authors}"><input type="checkbox" th:field="*{authorIds}" th:value="${author.id}"><span th:text="${author.name}"></span></label></div>
+            <p class="help-text" th:if="${#lists.isEmpty(authors)}">Chưa có tác giả. Bạn có thể bổ sung sau khi lưu sách.</p><small class="field-error" th:errors="*{authorIds}"></small></fieldset></section>
+        <footer class="form-footer"><p>Giá và tên trong đơn hàng cũ được giữ nguyên.</p><div class="form-actions"><a class="button ghost" th:href="@{/admin/books}">Hủy</a><button class="button primary" type="submit">Lưu sách</button></div></footer>
+    </form>
+
+</main>
+</body>
 </html>

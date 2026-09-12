@@ -10,10 +10,24 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
     @Query("""
             select new com.yukihira.bookstore.admin.report.TopSellingBookView(
-                item.book.id, item.bookTitle, sum(item.quantity), sum(item.subtotal))
+                item.book.id, item.book.title, sum(item.quantity), sum(item.subtotal))
             from OrderItem item
             where item.order.status = com.yukihira.bookstore.order.OrderStatus.COMPLETED
-            group by item.book.id, item.bookTitle
+              and item.order.createdAt >= :from and item.order.createdAt < :to
+            group by item.book.id, item.book.title
+            order by sum(item.quantity) desc, sum(item.subtotal) desc, item.book.id
+            """)
+    List<com.yukihira.bookstore.admin.report.TopSellingBookView> topSellingBooksInPeriod(
+            @org.springframework.data.repository.query.Param("from") java.time.Instant from,
+            @org.springframework.data.repository.query.Param("to") java.time.Instant to,
+            org.springframework.data.domain.Pageable pageable);
+
+    @Query("""
+            select new com.yukihira.bookstore.admin.report.TopSellingBookView(
+                item.book.id, item.book.title, sum(item.quantity), sum(item.subtotal))
+            from OrderItem item
+            where item.order.status = com.yukihira.bookstore.order.OrderStatus.COMPLETED
+            group by item.book.id, item.book.title
             order by sum(item.quantity) desc, sum(item.subtotal) desc
             """)
     List<com.yukihira.bookstore.admin.report.TopSellingBookView> topSellingBooks(

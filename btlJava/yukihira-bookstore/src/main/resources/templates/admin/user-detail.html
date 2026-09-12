@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/admin :: head('Hồ sơ khách hàng')}"></head>
+<body class="admin-page">
+<th:block th:replace="~{fragments/admin :: header}"></th:block>
+<main id="main-content" tabindex="-1" class="admin-main">
+    <div th:replace="~{fragments/admin :: flash}"></div>
+
+    <a class="back-link" th:href="@{/admin/users}">Quay lại danh sách khách hàng</a>
+    <header class="admin-title"><div><h1 th:text="${customer.fullName}"></h1><p th:text="${customer.email}"></p></div><span class="status-pill" th:classappend="${customer.status.name() == 'ACTIVE' ? 'active' : 'inactive'}" th:text="${customer.status.label}"></span></header>
+    <section class="panel"><div class="panel-body"><dl class="facts detail-facts"><div><dt>Điện thoại</dt><dd th:text="${customer.phone ?: 'Chưa cập nhật'}"></dd></div><div><dt>Ngày tham gia</dt><dd th:text="${customer.createdAtLabel}"></dd></div><div><dt>Địa chỉ</dt><dd th:text="${customer.address ?: 'Chưa cập nhật'}"></dd></div><div><dt>Tài khoản</dt><dd>Khách hàng</dd></div></dl></div></section>
+    <section class="panel"><header class="panel-heading"><h2>Lịch sử mua sách</h2><span class="muted" th:text="${#lists.size(orders) + ' đơn hàng'}"></span></header><div th:replace="~{fragments/admin-tables :: orders(${orders})}"></div></section>
+
+</main>
+</body>
+</html>

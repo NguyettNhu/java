@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -20,10 +22,12 @@ public class AdminReferenceController {
     }
 
     @GetMapping("/admin/{type:categories|authors|publishers}")
-    public String list(@PathVariable String type, Model model) {
+    public String list(@PathVariable String type, @RequestParam(required = false) String keyword,
+                       @RequestParam(defaultValue = "0") int page, Model model) {
         ReferenceType referenceType = ReferenceType.fromPath(type);
         addTypeModel(model, referenceType);
-        model.addAttribute("items", service.list(referenceType));
+        model.addAttribute("items", service.search(referenceType, keyword, page));
+        model.addAttribute("keyword", keyword);
         return "admin/reference-list";
     }
 
@@ -53,8 +57,10 @@ public class AdminReferenceController {
                 service.save(referenceType, form);
                 redirectAttributes.addFlashAttribute("success", referenceType.getLabel() + " đã được lưu.");
                 return "redirect:/admin/" + type;
-            } catch (IllegalArgumentException exception) {
-                bindingResult.rejectValue("name", "duplicate", exception.getMessage());
+            } catch (CatalogValidationException exception) {
+                bindingResult.rejectValue(exception.getField(), "catalog", exception.getMessage());
+            } catch (DataIntegrityViolationException exception) {
+                bindingResult.rejectValue("name", "duplicate", "Tên hoặc đường dẫn đã tồn tại. Hãy kiểm tra lại.");
             }
         }
         addTypeModel(model, referenceType);
@@ -66,10 +72,11 @@ public class AdminReferenceController {
                          RedirectAttributes redirectAttributes) {
         ReferenceType referenceType = ReferenceType.fromPath(type);
         try {
-            service.delete(referenceType, id);
-            redirectAttributes.addFlashAttribute("success", referenceType.getLabel() + " đã được cập nhật.");
+            redirectAttributes.addFlashAttribute("success", service.delete(referenceType, id));
         } catch (IllegalStateException exception) {
             redirectAttributes.addFlashAttribute("error", exception.getMessage());
+        } catch (DataIntegrityViolationException exception) {
+            redirectAttributes.addFlashAttribute("error", "Mục này vừa được liên kết với sách, chưa thể xóa.");
         }
         return "redirect:/admin/" + type;
     }

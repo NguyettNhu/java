@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Đăng nhập | Yukihira Books</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/yukihira.svg}">
 </head>
 <body class="auth-page">
 <main class="auth-shell">
@@ -15,6 +16,7 @@
         <h1>Đăng nhập</h1>
         <p class="form-alert success" th:if="${success}" th:text="${success}"></p>
         <p class="form-alert error" th:if="${param.error}">Email hoặc mật khẩu chưa đúng.</p>
+        <p class="form-alert error" role="alert" th:if="${param.locked}">Tài khoản đã bị khóa. Vui lòng liên hệ cửa hàng để được hỗ trợ.</p>
         <p class="form-alert success" th:if="${param.logout}">Bạn đã đăng xuất an toàn.</p>
         <form th:action="@{/login}" method="post" class="stack-form">
             <label>Email

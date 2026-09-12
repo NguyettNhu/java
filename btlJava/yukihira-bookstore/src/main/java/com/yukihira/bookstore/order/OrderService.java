@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Comparator;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -63,7 +64,7 @@ public class OrderService {
         order.setNote(cleanNullable(form.getNote()));
         order.setPaymentMethod(form.getPaymentMethod());
 
-        for (CartItem cartItem : cartItems) {
+        for (CartItem cartItem : cartItems.stream().sorted(Comparator.comparing(item -> item.getBook().getId())).toList()) {
             Book book = bookRepository.findForUpdate(cartItem.getBook().getId())
                     .orElseThrow(() -> new OrderException("Một cuốn sách trong giỏ không còn tồn tại"));
             if (book.getStatus() != BookStatus.ACTIVE) {
@@ -98,7 +99,8 @@ public class OrderService {
 
     @Transactional
     public void cancelByCustomer(String email, Long orderId) {
-        CustomerOrder order = orderRepository.findOwnedDetailedById(orderId, email)
+        CustomerOrder order = orderRepository.findForUpdate(orderId)
+                .filter(item -> item.getUser().getEmail().equalsIgnoreCase(email))
                 .orElseThrow(() -> new OrderException("Không tìm thấy đơn hàng của bạn"));
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new OrderException("Chỉ có thể hủy đơn đang chờ xác nhận");
@@ -122,7 +124,7 @@ public class OrderService {
 
     @Transactional
     public void updateStatus(Long orderId, OrderStatus target) {
-        CustomerOrder order = orderRepository.findDetailedById(orderId)
+        CustomerOrder order = orderRepository.findForUpdate(orderId)
                 .orElseThrow(() -> new OrderException("Không tìm thấy đơn hàng"));
         transition(order, target);
     }
@@ -139,7 +141,7 @@ public class OrderService {
 
     private void restoreStock(CustomerOrder order) {
         if (order.isStockRestored()) return;
-        for (OrderItem item : order.getItems()) {
+        for (OrderItem item : order.getItems().stream().sorted(Comparator.comparing(item -> item.getBook().getId())).toList()) {
             Book book = bookRepository.findForUpdate(item.getBook().getId())
                     .orElseThrow(() -> new OrderException("Không thể hoàn kho cho sách đã bị xóa"));
             book.increaseStock(item.getQuantity());

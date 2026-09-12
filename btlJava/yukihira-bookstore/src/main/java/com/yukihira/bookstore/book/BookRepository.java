@@ -19,6 +19,7 @@ public interface BookRepository extends JpaRepository<Book, Long>, JpaSpecificat
 
     boolean existsBySlug(String slug);
     boolean existsByIsbn(String isbn);
+    Optional<Book> findByIsbnIgnoreCase(String isbn);
     List<Book> findTop8ByStatusOrderByCreatedAtDesc(BookStatus status);
     long countByStatus(BookStatus status);
     long countByCategoryId(Long categoryId);

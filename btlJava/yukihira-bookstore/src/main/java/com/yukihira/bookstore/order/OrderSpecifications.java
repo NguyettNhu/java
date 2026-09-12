@@ -10,7 +10,13 @@ final class OrderSpecifications {
     }
 
     static Specification<CustomerOrder> from(OrderSearchQuery query) {
-        return Specification.allOf(keywordContains(query.keyword()), hasStatus(query.status()));
+        Specification<CustomerOrder> spec = Specification.allOf(keywordContains(query.keyword()), hasStatus(query.status()));
+        var zone = com.yukihira.bookstore.admin.report.ReportPeriod.ZONE;
+        if (query.from() != null) spec = spec.and((root, criteria, cb) ->
+                cb.greaterThanOrEqualTo(root.get("createdAt"), query.from().atStartOfDay(zone).toInstant()));
+        if (query.to() != null) spec = spec.and((root, criteria, cb) ->
+                cb.lessThan(root.get("createdAt"), query.to().plusDays(1).atStartOfDay(zone).toInstant()));
+        return spec;
     }
 
     private static Specification<CustomerOrder> keywordContains(String keyword) {

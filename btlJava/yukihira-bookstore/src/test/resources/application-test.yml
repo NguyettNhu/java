@@ -10,6 +10,9 @@ spring:
     open-in-view: false
   flyway:
     enabled: false
+    url: ${spring.datasource.url}
+    user: sa
+    password:
   thymeleaf:
     cache: false
 logging:

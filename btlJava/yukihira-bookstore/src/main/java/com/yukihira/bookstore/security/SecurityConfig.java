@@ -11,8 +11,10 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, com.yukihira.bookstore.user.UserRepository users) throws Exception {
         http
+                .addFilterAfter(new AccountStatusFilter(users),
+                        org.springframework.security.web.authentication.AnonymousAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/books/**", "/register", "/login",
                                 "/access-denied", "/css/**", "/js/**", "/images/**", "/error/**")
@@ -21,7 +23,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/", false)
+                        .successHandler(new RoleLoginSuccessHandler())
                         .failureUrl("/login?error")
                         .permitAll())
                 .logout(logout -> logout

@@ -34,4 +34,14 @@ public class ReportService {
                 bookRepository.countByStatus(BookStatus.ACTIVE),
                 orderItemRepository.topSellingBooks(PageRequest.of(0, 5)));
     }
+
+    @Transactional(readOnly = true)
+    public ReportView report(ReportPeriod period) {
+        var totals = orderRepository.reportTotals(period.start(), period.endExclusive());
+        var byStatus = totals.stream().collect(java.util.stream.Collectors.toMap(OrderStatusTotal::status, row -> row));
+        var rows = java.util.Arrays.stream(OrderStatus.values()).map(status -> byStatus.getOrDefault(status,
+                new OrderStatusTotal(status, 0L, java.math.BigDecimal.ZERO))).toList();
+        return new ReportView(period, rows,
+                orderItemRepository.topSellingBooksInPeriod(period.start(), period.endExclusive(), PageRequest.of(0, 10)));
+    }
 }

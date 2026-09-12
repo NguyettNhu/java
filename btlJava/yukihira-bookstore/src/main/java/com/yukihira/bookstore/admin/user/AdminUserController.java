@@ -15,9 +15,19 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AdminUserController {
 
     private final UserService userService;
+    private final com.yukihira.bookstore.order.OrderService orderService;
 
-    public AdminUserController(UserService userService) {
+    public AdminUserController(UserService userService, com.yukihira.bookstore.order.OrderService orderService) {
         this.userService = userService;
+        this.orderService = orderService;
+    }
+
+    @GetMapping("/admin/users/{id}")
+    public String detail(@PathVariable Long id, Model model) {
+        var customer = userService.customer(id);
+        model.addAttribute("customer", customer);
+        model.addAttribute("orders", orderService.customerOrders(customer.email()));
+        return "admin/user-detail";
     }
 
     @GetMapping("/admin/users")

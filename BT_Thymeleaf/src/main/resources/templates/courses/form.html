@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${pageTitle} + ' · Không gian học'">Biểu mẫu khóa học</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" th:href="@{/courses}" aria-label="Trang quản lý khóa học">
+        <span class="brand-mark" aria-hidden="true">K</span>
+        <span>Không gian học</span>
+    </a>
+    <span class="header-note">Spring Boot · Thymeleaf</span>
+</header>
+
+<main class="form-shell">
+    <a class="back-link" th:href="@{/courses}">← Trở về danh sách</a>
+
+    <section class="form-layout" aria-labelledby="form-heading">
+        <div class="form-intro">
+            <p class="section-label" th:text="${course.id == null ? 'Khóa học mới' : 'Chỉnh sửa nội dung'}">Khóa học mới</p>
+            <h1 id="form-heading" th:text="${pageTitle}">Thêm khóa học</h1>
+            <p>Điền thông tin cần thiết. Các trường có dấu <span aria-hidden="true">*</span> là bắt buộc.</p>
+        </div>
+
+        <form class="course-form" method="post" th:action="@{/courses/save}" th:object="${course}" novalidate>
+            <input type="hidden" th:field="*{id}">
+
+            <div class="field field-wide">
+                <label for="name">Tên khóa học <span aria-hidden="true">*</span></label>
+                <input id="name" type="text" th:field="*{name}" maxlength="100"
+                       th:classappend="${#fields.hasErrors('name')} ? ' invalid'"
+                       aria-describedby="name-error" autofocus>
+                <p id="name-error" class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+            </div>
+
+            <div class="field">
+                <label for="instructor">Giảng viên <span aria-hidden="true">*</span></label>
+                <input id="instructor" type="text" th:field="*{instructor}" maxlength="80"
+                       th:classappend="${#fields.hasErrors('instructor')} ? ' invalid'"
+                       aria-describedby="instructor-error">
+                <p id="instructor-error" class="field-error" th:if="${#fields.hasErrors('instructor')}" th:errors="*{instructor}"></p>
+            </div>
+
+            <div class="field">
+                <label for="level">Trình độ <span aria-hidden="true">*</span></label>
+                <select id="level" th:field="*{level}"
+                        th:classappend="${#fields.hasErrors('level')} ? ' invalid'"
+                        aria-describedby="level-error">
+                    <option value="">Chọn trình độ</option>
+                    <option value="Cơ bản">Cơ bản</option>
+                    <option value="Trung cấp">Trung cấp</option>
+                    <option value="Nâng cao">Nâng cao</option>
+                </select>
+                <p id="level-error" class="field-error" th:if="${#fields.hasErrors('level')}" th:errors="*{level}"></p>
+            </div>
+
+            <div class="field field-wide">
+                <label for="price">Học phí (VNĐ) <span aria-hidden="true">*</span></label>
+                <input id="price" type="number" min="0" step="1000" th:field="*{price}"
+                       th:classappend="${#fields.hasErrors('price')} ? ' invalid'"
+                       aria-describedby="price-help price-error">
+                <small id="price-help">Nhập số tiền, ví dụ: 890000</small>
+                <p id="price-error" class="field-error" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></p>
+            </div>
+
+            <div class="field field-wide">
+                <label for="description">Mô tả ngắn</label>
+                <textarea id="description" rows="4" maxlength="300" th:field="*{description}"
+                          th:classappend="${#fields.hasErrors('description')} ? ' invalid'"
+                          aria-describedby="description-error"></textarea>
+                <p id="description-error" class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></p>
+            </div>
+
+            <div class="form-actions field-wide">
+                <a class="button button-quiet" th:href="@{/courses}">Hủy</a>
+                <button class="button button-primary" type="submit"
+                        th:text="${course.id == null ? 'Thêm khóa học' : 'Lưu thay đổi'}">Lưu</button>
+            </div>
+        </form>
+    </section>
+</main>
+
+<footer>BT Thymeleaf · Dữ liệu được lưu tạm trong bộ nhớ</footer>
+</body>
+</html>

@@ -17,10 +17,13 @@ public final class BookSpecifications {
         }
         if (filter.keyword() != null && !filter.keyword().isBlank()) {
             String pattern = "%" + filter.keyword().trim().toLowerCase(Locale.ROOT) + "%";
-            spec = spec.and((root, query, cb) -> cb.or(
+            spec = spec.and((root, query, cb) -> {
+                query.distinct(true);
+                return cb.or(
                     cb.like(cb.lower(root.get("title")), pattern),
                     cb.like(cb.lower(root.get("isbn")), pattern),
-                    cb.like(cb.lower(root.join("authors", JoinType.LEFT).get("name")), pattern)));
+                    cb.like(cb.lower(root.join("authors", JoinType.LEFT).get("name")), pattern));
+            });
         }
         if (filter.categoryId() != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("category").get("id"), filter.categoryId()));

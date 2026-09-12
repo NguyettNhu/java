@@ -10,6 +10,18 @@ Website bán sách dạng modular monolith, xây dựng bằng Java 21, Spring B
 - Checkout an toàn: khóa bi quan từng sách, đọc lại giá/tồn kho, tạo snapshot OrderItem, trừ kho và xóa giỏ trong cùng transaction.
 - Bảo mật: BCrypt, session login, CSRF, phân quyền URL và kiểm tra ownership tại service.
 
+### Trang quản trị
+
+- Layout riêng: sidebar, menu mobile, bộ lọc/phân trang, thông báo lỗi và hộp xác nhận thao tác.
+- Sách: thêm, xem, sửa, xóa; quản lý ISBN, slug, thể loại, nhiều tác giả, nhà xuất bản, URL ảnh bìa, giá và trạng thái.
+- Thể loại/tác giả/nhà xuất bản: tạo, sửa, tìm kiếm, phân trang và xóa theo ràng buộc liên kết.
+- Tồn kho: cập nhật số cuốn thực tế, lọc sắp hết/hết hàng, tự chuyển trạng thái theo số lượng. Kiểm tra phiên bản ngăn tab cũ ghi đè dữ liệu mới.
+- Đơn hàng: tìm theo mã/khách, lọc trạng thái/khoảng ngày, chi tiết, chuyển bước hợp lệ, in phiếu.
+- Khách hàng: hồ sơ, lịch sử đơn, khóa/mở khóa. Khóa có hiệu lực với phiên đang mở ở lần truy cập tiếp theo; không cấp quyền admin hoặc xóa lịch sử từ màn hình này.
+- Dashboard/báo cáo: đơn chờ, doanh thu hoàn thành, sách đang bán, khách hàng, cảnh báo tồn kho và top 10 sách bán chạy theo kỳ. Khoảng ngày tính theo **ngày đặt hàng**, múi giờ Việt Nam.
+
+Xóa an toàn: sách có trong đơn hoặc giỏ được **ngừng bán**; thể loại có sách được **ẩn**; tác giả/NXB đang liên kết bị từ chối xóa. Tên và giá trong đơn cũ không thay đổi khi sửa sách.
+
 ## Kiến trúc
 
 ```text
@@ -128,6 +140,15 @@ mvn spring-boot:run
 
 Ứng dụng mở tại `http://localhost:8080`.
 
+Nếu cổng 8080 đang được dùng, chạy cổng 8081:
+
+```powershell
+$env:SERVER_PORT = '8081'
+powershell -ExecutionPolicy Bypass -File .\scripts\run-dev.ps1
+```
+
+Vào `http://localhost:8081/login`. Tài khoản có role `ADMIN` được chuyển đến `/admin` sau đăng nhập (hoặc trở lại trang đã yêu cầu trước đó).
+
 ## Kiểm thử
 
 ```powershell
@@ -135,7 +156,24 @@ mvn test
 mvn clean verify
 ```
 
-Suite hiện có 22 test bao phủ context, Flyway trên schema trống, mapping JPA, đăng ký/BCrypt, security URL, catalog, giỏ hàng, checkout, rollback thiếu kho, ownership đơn, transition, hoàn kho một lần, hồ sơ và báo cáo.
+Suite hiện có **47 test** dùng H2 độc lập với `.env`/Supabase: context, Flyway trên schema trống, mapping, BCrypt, phân quyền/CSRF, form CRUD admin, ISBN/slug/giá/liên kết, chống ghi đè tab cũ, giỏ hàng, checkout, rollback, ownership, chuyển trạng thái, hủy đồng thời chỉ hoàn kho một lần, khóa phiên khách và báo cáo theo ngày.
+
+Chi tiết kết quả: [docs/ADMIN_VERIFICATION.md](docs/ADMIN_VERIFICATION.md).
+
+Để thử CRUD không đụng dữ liệu thật, mở **PowerShell mới** tại thư mục project, đặt tài khoản thử rồi chạy H2 tạm:
+
+```powershell
+$env:ADMIN_EMAIL = 'qa-admin@example.test'
+$env:ADMIN_PASSWORD = '<mat-khau-thu-rieng-it-nhat-12-ky-tu>'
+$env:APP_SEED_DEMO = 'true'
+$env:SERVER_PORT = '8082'
+$env:SERVER_ADDRESS = '127.0.0.1'
+$env:SPRING_PROFILES_ACTIVE = 'test'
+$env:SPRING_CONFIG_ADDITIONAL_LOCATION = 'file:./src/test/resources/'
+mvn '-Dspring-boot.run.useTestClasspath=true' spring-boot:run
+```
+
+Không chạy `run-dev.ps1` trong cửa sổ QA này. `useTestClasspath` cung cấp H2; `SPRING_CONFIG_ADDITIONAL_LOCATION` nạp cấu hình test. Dữ liệu thử chỉ ở RAM và mất khi dừng server. Đóng cửa sổ QA trước khi chạy Supabase trong cửa sổ khác.
 
 Luồng tích hợp đã kiểm tra với Supabase thật:
 
@@ -150,7 +188,8 @@ home -> register -> login -> book detail -> add cart -> checkout -> order detail
 | Public | `/`, `/books`, `/books/{slug}`, `/register`, `/login` |
 | Thành viên | `/profile`, `/cart`, `/checkout`, `/orders`, `/orders/{id}` |
 | Quản trị | `/admin`, `/admin/books`, `/admin/categories`, `/admin/authors`, `/admin/publishers` |
-| Quản trị | `/admin/orders`, `/admin/users`, `/admin/reports` |
+| Quản trị | `/admin/inventory`, `/admin/orders`, `/admin/users`, `/admin/reports` |
+| Chi tiết admin | `/admin/books/{id}`, `/admin/books/{id}/edit`, `/admin/orders/{id}`, `/admin/users/{id}` |
 
 ## Quy tắc đơn hàng
 
@@ -174,5 +213,5 @@ src/main/java/com/yukihira/bookstore
 src/main/resources
 ├── db/migration
 ├── templates
-└── static/css
+└── static/css, static/js
 ```

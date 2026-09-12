@@ -1,6 +1,8 @@
 package com.yukihira.bookstore.book;
 
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,6 +15,11 @@ import java.util.Set;
 public class BookForm {
 
     private Long id;
+    private Long version;
+
+    @Size(max = 280, message = "Đường dẫn không quá 280 ký tự")
+    @Pattern(regexp = "^$|^[a-z0-9]+(?:-[a-z0-9]+)*$", message = "Đường dẫn chỉ dùng chữ thường không dấu, số và dấu gạch ngang")
+    private String slug;
 
     @NotBlank(message = "Vui lòng nhập tên sách")
     @Size(max = 255, message = "Tên sách không quá 255 ký tự")
@@ -26,12 +33,14 @@ public class BookForm {
 
     @NotNull(message = "Vui lòng nhập giá")
     @DecimalMin(value = "0", message = "Giá không được âm")
+    @Digits(integer = 13, fraction = 2, message = "Giá tối đa 13 chữ số và 2 chữ số thập phân")
     private BigDecimal price;
 
     @Min(value = 0, message = "Tồn kho không được âm")
     private int stock;
 
     @Size(max = 500, message = "URL ảnh không quá 500 ký tự")
+    @Pattern(regexp = "^(https?://[^\\s]+|/images/[^\\s]+)?$", message = "Dùng URL http/https hoặc đường dẫn /images/")
     private String imageUrl;
 
     @NotNull(message = "Vui lòng chọn thể loại")
@@ -39,7 +48,13 @@ public class BookForm {
 
     private Long publisherId;
     private Set<Long> authorIds = new LinkedHashSet<>();
+    @NotNull(message = "Vui lòng chọn trạng thái")
     private BookStatus status = BookStatus.ACTIVE;
+
+    public Long getVersion() { return version; }
+    public void setVersion(Long version) { this.version = version; }
+    public String getSlug() { return slug; }
+    public void setSlug(String slug) { this.slug = slug; }
 
     public Long getId() { return id; }
     public String getTitle() { return title; }

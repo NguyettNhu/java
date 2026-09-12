@@ -44,11 +44,18 @@ public class UserService {
 
     @Transactional
     public void updateCustomerStatus(Long userId, UserStatus status) {
+        if (status == null) throw new IllegalArgumentException("Vui lòng chọn trạng thái tài khoản");
         User user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
         if (user.getRole() != Role.CUSTOMER) {
             throw new IllegalArgumentException("Chỉ được cập nhật trạng thái tài khoản khách hàng");
         }
         user.setStatus(status);
+    }
+
+    @Transactional(readOnly = true)
+    public UserView customer(Long id) {
+        return userRepository.findById(id).filter(user -> user.getRole() == Role.CUSTOMER)
+                .map(this::toView).orElseThrow(NoSuchElementException::new);
     }
 
     private User requireByEmail(String email) {

@@ -1,5 +1,24 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${type.label + ' | Yukihira Admin'}"></title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
-<body class="admin-page"><header th:replace="~{fragments/admin :: header}"></header><main class="admin-main narrow"><a class="back-link" th:href="@{/admin/{type}(type=${type.path})}">← Quay lại danh sách</a><header class="admin-title"><div><p class="eyebrow">Biểu mẫu catalog</p><h1 th:text="${form.id == null ? 'Thêm ' + type.label.toLowerCase() : 'Chỉnh sửa ' + type.label.toLowerCase()}"></h1></div></header><form class="editor-form" th:action="@{/admin/{type}/save(type=${type.path})}" th:object="${form}" method="post"><input type="hidden" th:field="*{id}"><label>Tên<input type="text" th:field="*{name}" required autofocus><small class="field-error" th:errors="*{name}"></small></label><label th:text="${type.detailsLabel}"></label><textarea th:field="*{details}" rows="7"></textarea><small class="field-error" th:errors="*{details}"></small><label class="check-row" th:if="${type.path == 'categories'}"><input type="checkbox" th:field="*{active}"> Hiển thị thể loại này</label><div class="form-actions"><button class="button primary" type="submit">Lưu thay đổi</button><a class="button ghost" th:href="@{/admin/{type}(type=${type.path})}">Hủy</a></div></form></main></body>
+<head th:replace="~{fragments/admin :: head('Biên tập danh mục')}"></head>
+<body class="admin-page">
+<th:block th:replace="~{fragments/admin :: header}"></th:block>
+<main id="main-content" tabindex="-1" class="admin-main narrow">
+    <div th:replace="~{fragments/admin :: flash}"></div>
+
+    <a class="back-link" th:href="@{/admin/{type}(type=${type.path})}" th:text="${'Quay lại ' + #strings.toLowerCase(type.label)}"></a>
+    <header class="admin-title"><div><h1 th:text="${(form.id == null ? 'Thêm ' : 'Chỉnh sửa ') + #strings.toLowerCase(type.label)}"></h1><p>Thông tin này được dùng khi biên tập sách. Trường có dấu * là bắt buộc.</p></div></header>
+    <form class="editor-form" th:action="@{/admin/{type}/save(type=${type.path})}" th:object="${form}" method="post">
+        <input type="hidden" th:field="*{id}">
+        <div th:replace="~{fragments/admin :: formErrors}"></div>
+        <section class="form-section">
+            <label>Tên *<input th:field="*{name}" th:maxlength="${type.path == 'categories' ? 100 : 150}" required th:errorclass="field-invalid"><small class="field-error" th:errors="*{name}"></small></label>
+            <label><span th:text="${type.detailsLabel}"></span><textarea th:field="*{details}" rows="7" th:maxlength="${type.path == 'publishers' ? 255 : 2000}" th:errorclass="field-invalid"></textarea><small class="field-error" th:errors="*{details}"></small></label>
+            <label class="check-row" th:if="${type.path == 'categories'}"><input type="checkbox" th:field="*{active}">Hiển thị thể loại trong bộ lọc cửa hàng</label>
+        </section>
+        <footer class="form-footer"><p>Chỉnh sửa tên không làm mất liên kết với sách.</p><div class="form-actions"><a class="button ghost" th:href="@{/admin/{type}(type=${type.path})}">Hủy</a><button class="button primary" type="submit">Lưu thay đổi</button></div></footer>
+    </form>
+
+</main>
+</body>
 </html>

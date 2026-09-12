@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý khóa học</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" th:href="@{/courses}" aria-label="Trang quản lý khóa học">
+        <span class="brand-mark" aria-hidden="true">K</span>
+        <span>Không gian học</span>
+    </a>
+    <span class="header-note">Spring Boot · Thymeleaf</span>
+</header>
+
+<main class="page-shell">
+    <section class="hero" aria-labelledby="page-heading">
+        <div class="hero-copy">
+            <p class="section-label">Danh mục đào tạo</p>
+            <h1 id="page-heading">Quản lý khóa học, gọn trong một màn hình.</h1>
+            <p>Theo dõi nội dung, giảng viên và học phí của các lớp đang mở.</p>
+        </div>
+        <div class="course-count" aria-label="Tổng số khóa học">
+            <strong th:text="${totalCourses}">3</strong>
+            <span>khóa học<br>đang quản lý</span>
+        </div>
+    </section>
+
+    <div th:if="${successMessage}" class="alert alert-success" role="status" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-error" role="alert" th:text="${errorMessage}"></div>
+
+    <section class="workspace" aria-labelledby="course-list-heading">
+        <div class="toolbar">
+            <div>
+                <h2 id="course-list-heading">Danh sách khóa học</h2>
+                <p th:text="${#lists.size(courses)} + ' kết quả hiển thị'">3 kết quả hiển thị</p>
+            </div>
+            <a class="button button-primary" th:href="@{/courses/new}">Thêm khóa học</a>
+        </div>
+
+        <form class="search-form" method="get" th:action="@{/courses}" role="search">
+            <label for="keyword">Tìm theo tên khóa học hoặc giảng viên</label>
+            <div class="search-row">
+                <input id="keyword" name="keyword" type="search" th:value="${keyword}"
+                       placeholder="Ví dụ: Spring Boot">
+                <button class="button button-dark" type="submit">Tìm kiếm</button>
+                <a th:if="${!#strings.isEmpty(keyword)}" class="button button-quiet" th:href="@{/courses}">Xóa lọc</a>
+            </div>
+        </form>
+
+        <div th:if="${#lists.isEmpty(courses)}" class="empty-state">
+            <strong>Không có khóa học phù hợp.</strong>
+            <p>Thử từ khóa khác hoặc xóa bộ lọc để xem toàn bộ danh sách.</p>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(courses)}" class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>Khóa học</th>
+                    <th>Giảng viên</th>
+                    <th>Trình độ</th>
+                    <th>Học phí</th>
+                    <th><span class="visually-hidden">Thao tác</span></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="course : ${courses}">
+                    <td data-label="Khóa học">
+                        <strong th:text="${course.name}">Spring Boot căn bản</strong>
+                        <span th:text="${course.description}">Mô tả khóa học</span>
+                    </td>
+                    <td data-label="Giảng viên" th:text="${course.instructor}">Nguyễn Minh An</td>
+                    <td data-label="Trình độ"><span class="level" th:text="${course.level}">Cơ bản</span></td>
+                    <td data-label="Học phí" class="price"
+                        th:text="${#numbers.formatDecimal(course.price, 0, 'POINT', 0, 'COMMA')} + ' ₫'">890.000 ₫</td>
+                    <td class="actions">
+                        <a class="text-link" th:href="@{/courses/{id}/edit(id=${course.id})}">Sửa</a>
+                        <form method="post" th:action="@{/courses/{id}/delete(id=${course.id})}"
+                              onsubmit="return confirm('Bạn chắc chắn muốn xóa khóa học này?')">
+                            <button class="text-link danger" type="submit">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<footer>BT Thymeleaf · Dữ liệu được lưu tạm trong bộ nhớ</footer>
+</body>
+</html>

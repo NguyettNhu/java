@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/admin :: head('Chi tiết sách')}"></head>
+<body class="admin-page">
+<th:block th:replace="~{fragments/admin :: header}"></th:block>
+<main id="main-content" tabindex="-1" class="admin-main">
+    <div th:replace="~{fragments/admin :: flash}"></div>
+
+    <a class="back-link" th:href="@{/admin/books}">Quay lại danh sách sách</a>
+    <header class="admin-title"><div><h1 th:text="${book.title}"></h1><p th:text="${book.authorLine()}"></p></div>
+        <div class="heading-actions"><a class="button ghost" th:if="${book.available()}" th:href="@{/books/{slug}(slug=${book.slug})}">Xem trên cửa hàng</a><a class="button primary" th:href="@{/admin/books/{id}/edit(id=${book.id})}">Chỉnh sửa sách</a></div>
+    </header>
+    <section class="panel"><div class="panel-body book-detail-layout">
+        <div class="book-cover-large"><img th:if="${book.imageUrl != null}" th:src="${book.imageUrl}" th:alt="${'Bìa ' + book.title}" referrerpolicy="no-referrer"><span th:unless="${book.imageUrl != null}" aria-hidden="true">本</span></div>
+        <div><span class="status-pill" th:classappend="${#strings.toLowerCase(book.status.name())}" th:text="${book.status.label}"></span>
+            <dl class="facts detail-facts" style="margin-top:20px"><div><dt>Giá bán</dt><dd th:text="${#numbers.formatDecimal(book.price, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></dd></div><div><dt>Tồn kho</dt><dd th:text="${book.stock + ' cuốn'}"></dd></div>
+                <div><dt>ISBN</dt><dd th:text="${book.isbn ?: 'Chưa cập nhật'}"></dd></div><div><dt>Thể loại</dt><dd th:text="${book.categoryName}"></dd></div><div><dt>Nhà xuất bản</dt><dd th:text="${book.publisherName ?: 'Chưa cập nhật'}"></dd></div><div><dt>Đường dẫn</dt><dd th:text="${book.slug}"></dd></div></dl>
+            <h2 style="margin-top:24px">Giới thiệu sách</h2><p class="description" th:text="${book.description ?: 'Chưa có mô tả.'}"></p>
+        </div>
+    </div></section>
+
+</main>
+</body>
+</html>

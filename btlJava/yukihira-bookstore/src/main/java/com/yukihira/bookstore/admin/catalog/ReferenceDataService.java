@@ -9,12 +9,19 @@ import com.yukihira.bookstore.common.util.Slugifier;
 import com.yukihira.bookstore.publisher.Publisher;
 import com.yukihira.bookstore.publisher.PublisherRepository;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
+import java.util.Locale;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Validated
 public class ReferenceDataService {
 
     private final CategoryRepository categoryRepository;
@@ -44,6 +51,24 @@ public class ReferenceDataService {
     }
 
     @Transactional(readOnly = true)
+    public Page<ReferenceView> search(ReferenceType type, String keyword, int page) {
+        var pageable = PageRequest.of(Math.max(0, page), 20, Sort.by("name").and(Sort.by("id")));
+        return switch (type) {
+            case CATEGORIES -> categoryRepository.findAll(named(keyword), pageable)
+                    .map(item -> new ReferenceView(item.getId(), item.getName(), item.getDescription(), item.isActive()));
+            case AUTHORS -> authorRepository.findAll(named(keyword), pageable)
+                    .map(item -> new ReferenceView(item.getId(), item.getName(), item.getBiography(), true));
+            case PUBLISHERS -> publisherRepository.findAll(named(keyword), pageable)
+                    .map(item -> new ReferenceView(item.getId(), item.getName(), item.getAddress(), true));
+        };
+    }
+
+    private <T> Specification<T> named(String keyword) {
+        return (root, query, cb) -> keyword == null || keyword.isBlank() ? cb.conjunction()
+                : cb.like(cb.lower(root.get("name")), "%" + keyword.trim().toLowerCase(Locale.ROOT) + "%");
+    }
+
+    @Transactional(readOnly = true)
     public ReferenceForm getForm(ReferenceType type, Long id) {
         ReferenceForm form = new ReferenceForm();
         form.setId(id);
@@ -69,8 +94,14 @@ public class ReferenceDataService {
     }
 
     @Transactional
-    public void save(ReferenceType type, ReferenceForm form) {
+    public void save(ReferenceType type, @Valid ReferenceForm form) {
         String name = form.getName().trim();
+        if (type == ReferenceType.CATEGORIES && name.length() > 100) {
+            throw new CatalogValidationException("name", "Tên thể loại không quá 100 ký tự");
+        }
+        if (type == ReferenceType.PUBLISHERS && form.getDetails() != null && form.getDetails().length() > 255) {
+            throw new CatalogValidationException("details", "Địa chỉ nhà xuất bản không quá 255 ký tự");
+        }
         switch (type) {
             case CATEGORIES -> saveCategory(form, name);
             case AUTHORS -> saveAuthor(form, name);
@@ -79,42 +110,49 @@ public class ReferenceDataService {
     }
 
     @Transactional
-    public void delete(ReferenceType type, Long id) {
-        switch (type) {
+    public String delete(ReferenceType type, Long id) {
+        return switch (type) {
             case CATEGORIES -> {
                 Category item = categoryRepository.findById(id).orElseThrow();
                 if (bookRepository.countByCategoryId(id) > 0) {
                     item.setActive(false);
+                    yield "Thể loại đang có sách nên đã được tạm ẩn.";
                 } else {
                     categoryRepository.delete(item);
+                    categoryRepository.flush();
+                    yield "Đã xóa thể loại.";
                 }
             }
             case AUTHORS -> {
                 if (bookRepository.countByAuthorsId(id) > 0) {
                     throw new IllegalStateException("Tác giả đang được gắn với sách");
                 }
-                authorRepository.deleteById(id);
+                authorRepository.delete(authorRepository.findById(id).orElseThrow());
+                authorRepository.flush();
+                yield "Đã xóa tác giả.";
             }
             case PUBLISHERS -> {
                 if (bookRepository.countByPublisherId(id) > 0) {
                     throw new IllegalStateException("Nhà xuất bản đang được gắn với sách");
                 }
-                publisherRepository.deleteById(id);
+                publisherRepository.delete(publisherRepository.findById(id).orElseThrow());
+                publisherRepository.flush();
+                yield "Đã xóa nhà xuất bản.";
             }
-        }
+        };
     }
 
     private void saveCategory(ReferenceForm form, String name) {
         categoryRepository.findByNameIgnoreCase(name)
                 .filter(existing -> !existing.getId().equals(form.getId()))
-                .ifPresent(existing -> { throw new IllegalArgumentException("Tên thể loại đã tồn tại"); });
+                .ifPresent(existing -> { throw new CatalogValidationException("name", "Tên thể loại đã tồn tại"); });
         Category item = form.getId() == null
                 ? new Category(name, uniqueCategorySlug(name))
                 : categoryRepository.findById(form.getId()).orElseThrow();
         item.setName(name);
         item.setDescription(blankToNull(form.getDetails()));
         item.setActive(form.isActive());
-        categoryRepository.save(item);
+        categoryRepository.saveAndFlush(item);
     }
 
     private void saveAuthor(ReferenceForm form, String name) {
@@ -122,22 +160,23 @@ public class ReferenceDataService {
                 : authorRepository.findById(form.getId()).orElseThrow();
         item.setName(name);
         item.setBiography(blankToNull(form.getDetails()));
-        authorRepository.save(item);
+        authorRepository.saveAndFlush(item);
     }
 
     private void savePublisher(ReferenceForm form, String name) {
         publisherRepository.findByNameIgnoreCase(name)
                 .filter(existing -> !existing.getId().equals(form.getId()))
-                .ifPresent(existing -> { throw new IllegalArgumentException("Tên nhà xuất bản đã tồn tại"); });
+                .ifPresent(existing -> { throw new CatalogValidationException("name", "Tên nhà xuất bản đã tồn tại"); });
         Publisher item = form.getId() == null ? new Publisher(name)
                 : publisherRepository.findById(form.getId()).orElseThrow();
         item.setName(name);
         item.setAddress(blankToNull(form.getDetails()));
-        publisherRepository.save(item);
+        publisherRepository.saveAndFlush(item);
     }
 
     private String uniqueCategorySlug(String name) {
         String base = Slugifier.toSlug(name);
+        if (base.isEmpty()) base = "the-loai";
         String slug = base;
         int suffix = 2;
         while (categoryRepository.existsBySlug(slug)) slug = base + "-" + suffix++;

@@ -1,5 +1,38 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản lý sách | Yukihira Admin</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
-<body class="admin-page"><header th:replace="~{fragments/admin :: header}"></header><main class="admin-main"><div th:replace="~{fragments/site :: flash}"></div><header class="admin-title"><div><p class="eyebrow">Kho catalog</p><h1>Sách</h1></div><a class="button primary" th:href="@{/admin/books/new}">Thêm sách</a></header><form class="admin-search" th:action="@{/admin/books}" method="get"><input type="search" name="keyword" th:value="${keyword}" placeholder="Tìm theo tên, ISBN, tác giả"><button class="button primary">Tìm</button></form><div class="data-table-wrap"><table class="data-table"><thead><tr><th>Sách</th><th>Thể loại</th><th>Giá</th><th>Kho</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody><tr th:each="book : ${books.content}"><td><strong th:text="${book.title}"></strong><small th:text="${book.authorLine()}"></small></td><td th:text="${book.categoryName}"></td><td th:text="${#numbers.formatDecimal(book.price, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></td><td th:text="${book.stock}"></td><td><span class="status-pill" th:classappend="${book.status.name() == 'ACTIVE' ? 'active' : 'inactive'}" th:text="${book.status}"></span></td><td class="table-actions"><a th:href="@{/admin/books/{id}/edit(id=${book.id})}">Sửa</a><form th:action="@{/admin/books/{id}/deactivate(id=${book.id})}" method="post"><button type="submit">Ngừng bán</button></form></td></tr><tr th:if="${!books.hasContent()}"><td colspan="6">Chưa có sách phù hợp.</td></tr></tbody></table></div><nav class="pagination" th:if="${books.totalPages > 1}"><a th:if="${books.hasPrevious()}" th:href="@{/admin/books(page=${books.number - 1},keyword=${keyword})}">← Trước</a><span th:text="${'Trang ' + (books.number + 1) + '/' + books.totalPages}"></span><a th:if="${books.hasNext()}" th:href="@{/admin/books(page=${books.number + 1},keyword=${keyword})}">Sau →</a></nav></main></body>
+<head th:replace="~{fragments/admin :: head('Quản lý sách')}"></head>
+<body class="admin-page">
+<th:block th:replace="~{fragments/admin :: header}"></th:block>
+<main id="main-content" tabindex="-1" class="admin-main">
+    <div th:replace="~{fragments/admin :: flash}"></div>
+
+    <header class="admin-title"><div><h1>Sách</h1><p>Biên tập từng cuốn sách, giá bán và trạng thái trên cửa hàng.</p></div><a class="button primary" th:href="@{/admin/books/new}">+ Thêm sách</a></header>
+    <section class="panel">
+        <form class="filter-bar" th:action="@{/admin/books}" method="get">
+            <label class="filter-keyword">Tìm sách<input type="search" name="keyword" th:value="${keyword}" placeholder="Tên sách, ISBN hoặc tác giả"></label>
+            <label>Thể loại<select name="categoryId"><option value="">Tất cả thể loại</option><option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}" th:selected="${category.id == categoryId}"></option></select></label>
+            <label>Trạng thái<select name="status"><option value="">Tất cả trạng thái</option><option th:each="status : ${statuses}" th:value="${status}" th:text="${status.label}" th:selected="${status == selectedStatus}"></option></select></label>
+            <label>Tồn kho<select name="stock"><option value="">Tất cả</option><option value="low" th:selected="${stockFilter == 'low'}">Sắp hết (1–5 cuốn)</option><option value="empty" th:selected="${stockFilter == 'empty'}">Hết hàng</option></select></label>
+            <label>Sắp xếp<select name="sort"><option value="newest" th:selected="${sort == 'newest'}">Mới nhất</option><option value="title" th:selected="${sort == 'title'}">Tên A–Z</option><option value="price-asc" th:selected="${sort == 'price-asc'}">Giá tăng dần</option><option value="price-desc" th:selected="${sort == 'price-desc'}">Giá giảm dần</option></select></label>
+            <button class="button primary" type="submit">Lọc sách</button><a class="button ghost" th:href="@{/admin/books}">Xóa lọc</a>
+        </form>
+        <div class="data-table-wrap" tabindex="0" role="region" aria-label="Danh sách sách">
+            <table class="data-table"><thead><tr><th scope="col">Sách / Tác giả</th><th scope="col">Thể loại</th><th scope="col" class="numeric">Giá bán</th><th scope="col" class="numeric">Tồn kho</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead>
+                <tbody><tr th:each="book : ${books.content}">
+                    <td><div class="book-cell"><div th:replace="~{fragments/admin :: cover(${book})}"></div><div class="cell-copy"><a th:href="@{/admin/books/{id}(id=${book.id})}" th:text="${book.title}"></a><small th:text="${book.authorLine()}"></small><small th:text="${book.isbn ?: 'Chưa có ISBN'}"></small></div></div></td>
+                    <td th:text="${book.categoryName}"></td><td class="numeric" th:text="${#numbers.formatDecimal(book.price, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></td>
+                    <td class="numeric" th:classappend="${book.stock == 0 ? 'stock-empty' : (book.stock &lt;= 5 ? 'stock-low' : '')}" th:text="${book.stock}"></td>
+                    <td><span class="status-pill" th:classappend="${#strings.toLowerCase(book.status.name())}" th:text="${book.status.label}"></span></td>
+                    <td><div class="table-actions"><a th:href="@{/admin/books/{id}/edit(id=${book.id})}">Chỉnh sửa</a>
+                        <form th:if="${book.status.name() != 'INACTIVE'}" th:action="@{/admin/books/{id}/deactivate(id=${book.id})}" method="post" th:attr="data-confirm=${'Ngừng bán sách “' + book.title + '”? Bạn có thể mở bán lại trong biểu mẫu chỉnh sửa.'}"><button type="submit">Ngừng bán</button></form>
+                        <form th:action="@{/admin/books/{id}/delete(id=${book.id})}" method="post" th:attr="data-confirm=${'Xóa sách “' + book.title + '”? Nếu sách đã có trong đơn hàng hoặc giỏ hàng, hệ thống sẽ chuyển sang ngừng bán.'}"><button class="danger-link" type="submit">Xóa</button></form>
+                    </div></td>
+                </tr><tr th:if="${!books.hasContent()}"><td colspan="6" class="empty-cell"><strong>Chưa có sách phù hợp</strong>Thử đổi bộ lọc hoặc thêm cuốn sách đầu tiên.<br><a th:href="@{/admin/books/new}">Thêm sách mới</a></td></tr></tbody>
+            </table>
+        </div>
+    </section>
+    <nav th:replace="~{fragments/admin :: pagination(${books}, @{/admin/books(page=${books.number - 1},keyword=${keyword},categoryId=${categoryId},status=${selectedStatus},stock=${stockFilter},sort=${sort})}, @{/admin/books(page=${books.number + 1},keyword=${keyword},categoryId=${categoryId},status=${selectedStatus},stock=${stockFilter},sort=${sort})})}"></nav>
+
+</main>
+</body>
 </html>
