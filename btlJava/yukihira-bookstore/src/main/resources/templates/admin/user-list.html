@@ -7,6 +7,8 @@
     <div th:replace="~{fragments/admin :: flash}"></div>
 
     <header class="admin-title"><div><h1>Khách hàng</h1><p>Tra cứu hồ sơ, lịch sử mua sách và kiểm soát quyền đăng nhập.</p></div></header>
+    <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
+
     <section class="panel"><form class="filter-bar" th:action="@{/admin/users}" method="get">
         <label class="filter-keyword">Tìm khách hàng<input type="search" name="keyword" th:value="${keyword}" placeholder="Họ tên, email, số điện thoại"></label><label>Trạng thái<select name="status"><option value="">Tất cả trạng thái</option><option th:each="status : ${statuses}" th:value="${status}" th:text="${status.label}" th:selected="${status == selectedStatus}"></option></select></label>
         <button class="button primary" type="submit">Lọc khách hàng</button><a class="button ghost" th:href="@{/admin/users}">Xóa lọc</a>

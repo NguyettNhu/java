@@ -60,6 +60,7 @@ public class BookService {
 
     @Transactional(readOnly = true)
     public Page<BookView> searchAdmin(BookSearchQuery filter, BookStatus status, String stock, int page, int size) {
+        // Lọc sách admin theo trạng thái và mức tồn kho để tạo cảnh báo dashboard.
         var spec = BookSpecifications.from(filter, false);
         if (status != null) spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
         if ("low".equals(stock)) spec = spec.and((root, query, cb) -> cb.and(
@@ -100,6 +101,7 @@ public class BookService {
         form.setStock(book.getStock());
         form.setImageUrl(book.getImageUrl());
         form.setCategoryId(book.getCategory().getId());
+        form.setCategoryName(book.getCategory().getName());
         form.setPublisherId(book.getPublisher() == null ? null : book.getPublisher().getId());
         form.setAuthorIds(book.getAuthors().stream().map(Author::getId).collect(java.util.stream.Collectors.toSet()));
         form.setStatus(book.getStatus());
@@ -113,8 +115,12 @@ public class BookService {
                 .filter(book -> !book.getId().equals(form.getId()))
                 .ifPresent(book -> { throw new CatalogValidationException("isbn", "ISBN đã tồn tại"); });
 
-        Category category = categoryRepository.findById(form.getCategoryId())
-                .orElseThrow(() -> new CatalogValidationException("categoryId", "Thể loại không còn tồn tại"));
+        var enteredAuthors = form.getAuthorNames() == null ? List.<String>of()
+                : form.getAuthorNames().lines().map(String::trim).filter(name -> !name.isEmpty()).toList();
+        if (enteredAuthors.stream().anyMatch(name -> name.length() > 150)) {
+            throw new CatalogValidationException("authorNames", "Mỗi tên tác giả không quá 150 ký tự");
+        }
+        Category category = resolveCategory(form);
         Book book = form.getId() == null
                 ? new Book(form.getTitle().trim(), uniqueSlug(form.getTitle()), form.getPrice(), form.getStock(), category)
                 : bookRepository.findForUpdate(form.getId()).orElseThrow();
@@ -138,6 +144,10 @@ public class BookService {
         Set<Author> authors = new LinkedHashSet<>(authorRepository.findAllById(form.getAuthorIds()));
         if (authors.size() != form.getAuthorIds().size()) {
             throw new CatalogValidationException("authorIds", "Một tác giả đã bị xóa. Hãy chọn lại tác giả.");
+        }
+        for (String name : enteredAuthors) {
+            authors.add(authorRepository.findByNameIgnoreCase(name)
+                    .orElseGet(() -> authorRepository.save(new Author(name))));
         }
         book.setAuthors(authors);
         book.setStatus(normalizeStatus(form.getStatus(), form.getStock()));
@@ -208,6 +218,8 @@ public class BookService {
         return switch (value == null ? "newest" : value.toLowerCase(Locale.ROOT)) {
             case "price-asc" -> Sort.by("price").ascending();
             case "price-desc" -> Sort.by("price").descending();
+            case "stock-desc" -> Sort.by("stock").descending();
+            case "stock-asc" -> Sort.by("stock").ascending();
             case "title" -> Sort.by("title").ascending();
             default -> Sort.by("createdAt").descending();
         };
@@ -220,6 +232,22 @@ public class BookService {
         int suffix = 2;
         while (bookRepository.existsBySlug(slug)) slug = base + "-" + suffix++;
         return slug;
+    }
+
+    private Category resolveCategory(BookForm form) {
+        String name = blankToNull(form.getCategoryName());
+        if (name == null) {
+            return categoryRepository.findById(form.getCategoryId())
+                    .orElseThrow(() -> new CatalogValidationException("categoryId", "Thể loại không còn tồn tại"));
+        }
+        return categoryRepository.findByNameIgnoreCase(name).orElseGet(() -> {
+            String base = Slugifier.toSlug(name);
+            if (base.isEmpty()) base = "the-loai";
+            String slug = base;
+            int suffix = 2;
+            while (categoryRepository.existsBySlug(slug)) slug = base + "-" + suffix++;
+            return categoryRepository.save(new Category(name, slug));
+        });
     }
 
     private String blankToNull(String value) {

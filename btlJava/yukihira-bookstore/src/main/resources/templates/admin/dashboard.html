@@ -7,6 +7,8 @@
     <div th:replace="~{fragments/admin :: flash}"></div>
 
     <header class="admin-title"><div><h1>Một ngày ở Yukihira</h1><p>Các đơn đang chờ và những cuốn sách cần bổ sung trên kệ.</p></div><a class="button primary" th:href="@{/admin/books/new}">+ Thêm sách</a></header>
+    <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
+
     <section class="metric-grid" aria-label="Tổng quan cửa hàng">
         <article class="metric-card revenue"><span>Doanh thu hoàn thành</span><strong th:text="${#numbers.formatDecimal(dashboard.completedRevenue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><small>Tổng từ các đơn đã hoàn thành</small></article>
         <article class="metric-card"><span>Đơn chờ xác nhận</span><strong th:text="${dashboard.pendingOrders}"></strong><small><a th:href="@{/admin/orders(status='PENDING')}">Đến bàn xử lý đơn</a></small></article>

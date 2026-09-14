@@ -29,13 +29,27 @@ public class AdminBookController {
     @GetMapping("/admin/books")
     public String list(@RequestParam(required = false) String keyword,
                        @RequestParam(required = false) Long categoryId,
+                       @RequestParam(required = false) Long publisherId,
+                       @RequestParam(required = false) Long authorId,
+                       @RequestParam(required = false) java.math.BigDecimal minPrice,
+                       @RequestParam(required = false) java.math.BigDecimal maxPrice,
                        @RequestParam(required = false) BookStatus status,
                        @RequestParam(defaultValue = "") String stock,
                        @RequestParam(defaultValue = "newest") String sort,
                        @RequestParam(defaultValue = "0") int page, Model model) {
-        model.addAttribute("books", bookService.searchAdmin(
-                new BookSearchQuery(keyword, categoryId, null, null, null, sort), status, stock, page, 20));
+        if ((minPrice != null && minPrice.signum() < 0) || (maxPrice != null && maxPrice.signum() < 0)
+                || (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0)) {
+            model.addAttribute("books", org.springframework.data.domain.Page.empty());
+            model.addAttribute("error", "Giá phải không âm và giá tối đa phải lớn hơn hoặc bằng giá tối thiểu.");
+        } else {
+            model.addAttribute("books", bookService.searchAdmin(
+                    new BookSearchQuery(keyword, categoryId, authorId, minPrice, maxPrice, sort, publisherId), status, stock, page, 20));
+        }
         model.addAttribute("keyword", keyword);
+        model.addAttribute("publisherId", publisherId);
+        model.addAttribute("authorId", authorId);
+        model.addAttribute("minPrice", minPrice);
+        model.addAttribute("maxPrice", maxPrice);
         model.addAttribute("categoryId", categoryId);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("stockFilter", stock);
@@ -102,7 +116,7 @@ public class AdminBookController {
             } catch (CatalogValidationException exception) {
                 bindingResult.rejectValue(exception.getField(), "catalog", exception.getMessage());
             } catch (DataIntegrityViolationException exception) {
-                bindingResult.reject("conflict", "ISBN hoặc đường dẫn vừa được sử dụng. Hãy kiểm tra lại.");
+                bindingResult.reject("conflict", "ISBN, đường dẫn hoặc thể loại vừa được sử dụng. Hãy kiểm tra và lưu lại.");
             }
         }
         addReferences(model);

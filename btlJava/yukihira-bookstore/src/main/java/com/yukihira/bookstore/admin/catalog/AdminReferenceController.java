@@ -23,11 +23,25 @@ public class AdminReferenceController {
 
     @GetMapping("/admin/{type:categories|authors|publishers}")
     public String list(@PathVariable String type, @RequestParam(required = false) String keyword,
+                       @RequestParam(required = false) String details,
+                       @RequestParam(defaultValue = "0") int minBooks,
+                       @RequestParam(defaultValue = "all") String activity,
+                       @RequestParam(defaultValue = "all") String availability,
+                       @RequestParam(defaultValue = "all") String visibility,
+                       @RequestParam(defaultValue = "name") String sort,
                        @RequestParam(defaultValue = "0") int page, Model model) {
         ReferenceType referenceType = ReferenceType.fromPath(type);
         addTypeModel(model, referenceType);
-        model.addAttribute("items", service.search(referenceType, keyword, page));
+        var analytics = (com.yukihira.bookstore.admin.report.AnalyticsView) model.getAttribute("analytics");
+        var rows = analytics == null ? java.util.List.<com.yukihira.bookstore.admin.report.AnalyticsView.ReferenceStats>of() : analytics.references();
+        model.addAttribute("items", ReferenceAnalyticsSearch.search(rows, keyword, details, minBooks, activity, availability, visibility, sort, page));
         model.addAttribute("keyword", keyword);
+        model.addAttribute("details", details);
+        model.addAttribute("minBooks", Math.max(0, minBooks));
+        model.addAttribute("activity", activity);
+        model.addAttribute("availability", availability);
+        model.addAttribute("visibility", visibility);
+        model.addAttribute("sort", sort);
         return "admin/reference-list";
     }
 

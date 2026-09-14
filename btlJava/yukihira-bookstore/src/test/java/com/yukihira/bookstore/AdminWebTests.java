@@ -93,12 +93,64 @@ class AdminWebTests {
     void invalidFormShowsFieldErrorsAndDuplicateIsbnIsNotSaved() throws Exception {
         mvc.perform(post("/admin/books/save").with(user("admin").roles("ADMIN")).with(csrf())
                 .param("title", " ").param("price", "-1").param("stock", "-1"))
-                .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("form", "title", "price", "stock", "categoryId"));
+                .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("form", "title", "price", "stock", "categoryProvided"));
         var book = fixture();
         mvc.perform(post("/admin/books/save").with(user("admin").roles("ADMIN")).with(csrf())
                 .param("title", "Sách trùng").param("price", "10000").param("stock", "1")
                 .param("categoryId", book.getCategory().getId().toString()).param("isbn", book.getIsbn()))
                 .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("form", "isbn"));
+    }
+
+    @Test
+    void bookFormAcceptsTypedReferencesAndReusesThemOnEdit() throws Exception {
+        String suffix = UUID.randomUUID().toString();
+        String title = "Sách nhập tên " + suffix;
+        String category = "Thể loại " + suffix;
+        String author = "Tác giả " + suffix;
+        mvc.perform(get("/admin/books/new").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("list=\"category-suggestions\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"authorNames\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("id=\"isbn-help\"")));
+        mvc.perform(post("/admin/books/save").with(user("admin").roles("ADMIN")).with(csrf())
+                .param("title", title).param("price", "120000").param("stock", "5")
+                .param("categoryName", "  " + category + "  ")
+                .param("authorNames", author + "\n" + author.toUpperCase(java.util.Locale.ROOT)))
+                .andExpect(redirectedUrl("/admin/books"));
+        var saved = books.searchAdmin(new BookSearchQuery(title, null, null, null, null, "title"), null, "", 0, 20)
+                .getContent().getFirst();
+        assertThat(saved.categoryName()).isEqualTo(category);
+        assertThat(saved.authors()).containsExactly(author);
+        var edit = books.getForm(saved.id());
+        assertThat(edit.getCategoryName()).isEqualTo(category);
+        mvc.perform(post("/admin/books/save").with(user("admin").roles("ADMIN")).with(csrf())
+                .param("id", saved.id().toString()).param("version", edit.getVersion().toString())
+                .param("title", title).param("price", "130000").param("stock", "5")
+                .param("categoryName", category.toUpperCase(java.util.Locale.ROOT))
+                .param("authorIds", edit.getAuthorIds().iterator().next().toString())
+                .param("authorNames", author + "\nNgười viết thêm " + suffix))
+                .andExpect(redirectedUrl("/admin/books"));
+        var updated = books.adminBook(saved.id());
+        assertThat(updated.categoryId()).isEqualTo(saved.categoryId());
+        assertThat(updated.authors()).containsExactlyInAnyOrder(author, "Người viết thêm " + suffix);
+        mvc.perform(get("/books/" + saved.slug())).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(category)))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(author)));
+    }
+
+    @Test
+    void invalidTypedReferencesKeepInputAndDoNotCreateCategory() throws Exception {
+        String category = "Chưa được lưu " + UUID.randomUUID();
+        mvc.perform(post("/admin/books/save").with(user("admin").roles("ADMIN")).with(csrf())
+                .param("title", "Sách lỗi").param("price", "120000").param("stock", "5")
+                .param("categoryName", category).param("authorNames", "a".repeat(151)))
+                .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("form", "authorNames"))
+                .andExpect(model().attribute("form", org.hamcrest.Matchers.hasProperty("categoryName", org.hamcrest.Matchers.is(category))));
+        assertThat(categories.existsByNameIgnoreCase(category)).isFalse();
+        mvc.perform(post("/admin/books/save").with(user("admin").roles("ADMIN")).with(csrf())
+                .param("title", "Sách lỗi").param("price", "120000").param("stock", "5")
+                .param("categoryName", "a".repeat(101)))
+                .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("form", "categoryName"));
     }
 
     @Test
@@ -111,6 +163,31 @@ class AdminWebTests {
         mvc.perform(post("/admin/books/" + book.getId() + "/delete").with(user("admin").roles("ADMIN")).with(csrf()))
                 .andExpect(redirectedUrl("/admin/books"));
         assertThat(bookRepository.existsById(book.getId())).isFalse();
+    }
+
+    @Test
+    void analyticsFiltersRenderResolvedPeriodsAndRecoverFromInvalidInput() throws Exception {
+        for (String period : new String[]{"day", "week", "month", "quarter", "year"}) {
+            mvc.perform(get("/admin/reports").param("period", period).param("date", "2024-02-29")
+                            .with(user("admin").roles("ADMIN")))
+                    .andExpect(status().isOk()).andExpect(model().attributeExists("analytics"))
+                    .andExpect(content().string(org.hamcrest.Matchers.containsString("data-chart-type=\"pie\"")))
+                    .andExpect(content().string(org.hamcrest.Matchers.containsString("Top 5 khách chi tiêu nhiều nhất")));
+        }
+        for (String query : new String[]{"period=custom&from=2024-02-29&to=2024-02-01", "period=custom", "date=not-a-date", "period=bad", "groupBy=bad"}) {
+            mvc.perform(get("/admin/reports?" + query).with(user("admin").roles("ADMIN")))
+                    .andExpect(status().isOk()).andExpect(model().attributeExists("analyticsError"))
+                    .andExpect(model().attributeDoesNotExist("analytics"));
+        }
+        var book = fixture();
+        mvc.perform(get("/admin/books").param("minPrice", "150000").param("maxPrice", "100000")
+                        .with(user("admin").roles("ADMIN"))).andExpect(status().isOk()).andExpect(model().attributeExists("error"));
+        mvc.perform(get("/admin/books").param("sort", "stock-desc").param("minPrice", "100000").param("maxPrice", "150000")
+                        .with(user("admin").roles("ADMIN"))).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(book.getTitle())));
+        mvc.perform(get("/admin/publishers").param("details", "Hà Nội").param("sort", "revenue")
+                        .param("activity", "selling").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk()).andExpect(model().attributeExists("items"));
     }
 
     @Test

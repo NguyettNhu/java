@@ -7,6 +7,8 @@
     <div th:replace="~{fragments/admin :: flash}"></div>
 
     <header class="admin-title"><div><h1>Đơn hàng</h1><p>Theo dõi từ lúc tiếp nhận đến khi giao sách thành công.</p></div></header>
+    <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
+
     <section class="panel">
         <form class="filter-bar" th:action="@{/admin/orders}" method="get">
             <label class="filter-keyword">Tìm đơn hàng<input type="search" name="keyword" th:value="${keyword}" placeholder="Mã đơn, người nhận, email"></label>

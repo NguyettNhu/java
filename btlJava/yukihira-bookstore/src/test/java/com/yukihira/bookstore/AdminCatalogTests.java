@@ -50,6 +50,21 @@ class AdminCatalogTests {
     }
 
     @Test
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
+    void failedBookSaveRollsBackNewCategory() {
+        String name = "Thể loại rollback " + token();
+        var form = new BookForm();
+        form.setTitle("Sách chưa lưu " + token());
+        form.setPrice(new BigDecimal("10000"));
+        form.setStock(1);
+        form.setCategoryName(name);
+        form.setPublisherId(Long.MAX_VALUE);
+        assertThatThrownBy(() -> books.save(form)).isInstanceOf(CatalogValidationException.class)
+                .extracting("field").isEqualTo("publisherId");
+        assertThat(categories.existsByNameIgnoreCase(name)).isFalse();
+    }
+
+    @Test
     void duplicateIsbnAndSlugAttachToCorrectFields() {
         var first = books.save(form());
         var second = form();

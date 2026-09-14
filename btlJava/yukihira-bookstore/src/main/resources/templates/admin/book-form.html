@@ -8,7 +8,7 @@
 
     <a class="back-link" th:href="@{/admin/books}">Quay lại danh sách sách</a>
     <header class="admin-title"><div><h1 th:text="${form.id == null ? 'Thêm sách mới' : 'Chỉnh sửa sách'}"></h1><p>Các trường có dấu * là bắt buộc. Thông tin sẽ được cập nhật trên cửa hàng sau khi lưu.</p></div></header>
-    <form class="editor-form" th:action="@{/admin/books/save}" th:object="${form}" method="post">
+    <form class="editor-form book-editor" th:action="@{/admin/books/save}" th:object="${form}" method="post">
         <input type="hidden" th:field="*{id}"><input type="hidden" th:field="*{version}">
         <div th:replace="~{fragments/admin :: formErrors}"></div>
         <p th:if="${#fields.hasErrors('version')}" class="help-text"><a th:href="@{/admin/books/{id}/edit(id=${form.id})}">Tải lại dữ liệu mới nhất</a> rồi nhập lại thay đổi cần lưu.</p>
@@ -16,9 +16,9 @@
             <h2>Thông tin cuốn sách</h2>
             <div class="editor-grid two">
                 <label>Tên sách *<input th:field="*{title}" maxlength="255" required th:errorclass="field-invalid"><small class="field-error" th:errors="*{title}"></small></label>
-                <label>ISBN<input th:field="*{isbn}" maxlength="20" th:errorclass="field-invalid"><small class="field-error" th:errors="*{isbn}"></small></label>
+                <label>ISBN (không bắt buộc)<input th:field="*{isbn}" maxlength="20" aria-describedby="isbn-help" th:errorclass="field-invalid"><small id="isbn-help" class="help-text">ISBN (International Standard Book Number) là mã số tiêu chuẩn quốc tế nhận diện một ấn bản sách, gồm 13 chữ số (sách cũ có thể dùng 10 chữ số). Nhập mã in trên sách; có thể để trống nếu chưa có.</small><small class="field-error" th:errors="*{isbn}"></small></label>
                 <label>Đường dẫn sách<input th:field="*{slug}" maxlength="280" placeholder="VD: rung-na-uy" th:errorclass="field-invalid"><small class="help-text">Để trống để tự tạo từ tên sách. Dùng chữ không dấu, số và dấu gạch ngang.</small><small class="field-error" th:errors="*{slug}"></small></label>
-                <label>Thể loại *<select th:field="*{categoryId}" required th:errorclass="field-invalid"><option value="">Chọn thể loại</option><option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name + (category.active ? '' : ' (đang ẩn)')}"></option></select><small class="field-error" th:errors="*{categoryId}"></small><a class="help-text" th:if="${#lists.isEmpty(categories)}" th:href="@{/admin/categories/new}">Tạo thể loại trước khi thêm sách</a></label>
+                <label>Thể loại *<input th:field="*{categoryName}" list="category-suggestions" maxlength="100" required placeholder="Nhập hoặc chọn thể loại" aria-describedby="category-help" th:errorclass="field-invalid"><datalist id="category-suggestions"><option th:each="category : ${categories}" th:value="${category.name}" th:label="${category.active ? category.name : category.name + ' (đang ẩn)'}"></option></datalist><small id="category-help" class="help-text">Chọn tên có sẵn hoặc nhập tên mới. Thể loại mới được tạo khi lưu sách.</small><small class="field-error" th:errors="*{categoryName}"></small><small class="field-error" th:errors="*{categoryProvided}"></small><small class="field-error" th:errors="*{categoryId}"></small></label>
                 <label>Nhà xuất bản<select th:field="*{publisherId}"><option value="">Chưa xác định</option><option th:each="publisher : ${publishers}" th:value="${publisher.id}" th:text="${publisher.name}"></option></select><small class="field-error" th:errors="*{publisherId}"></small></label>
             </div>
             <label style="margin-top:22px">Mô tả<textarea th:field="*{description}" rows="6" maxlength="5000" th:errorclass="field-invalid"></textarea><small class="field-error" th:errors="*{description}"></small></label>
@@ -36,8 +36,11 @@
             <div class="cover-preview" data-image-preview></div>
             <label>Đường dẫn ảnh<input th:field="*{imageUrl}" data-image-url maxlength="500" placeholder="https://..." th:errorclass="field-invalid"><small class="help-text">Dùng URL ảnh http/https hoặc ảnh có sẵn trong /images/.</small><small class="field-error" th:errors="*{imageUrl}"></small></label>
         </div></section>
-        <section class="form-section"><fieldset><legend>Tác giả</legend><div class="checkbox-grid"><label th:each="author : ${authors}"><input type="checkbox" th:field="*{authorIds}" th:value="${author.id}"><span th:text="${author.name}"></span></label></div>
-            <p class="help-text" th:if="${#lists.isEmpty(authors)}">Chưa có tác giả. Bạn có thể bổ sung sau khi lưu sách.</p><small class="field-error" th:errors="*{authorIds}"></small></fieldset></section>
+        <section class="form-section"><fieldset><legend>Tác giả</legend>
+            <label>Nhập tác giả<textarea th:field="*{authorNames}" rows="3" maxlength="3000" placeholder="Ví dụ: Nguyễn Nhật Ánh" aria-describedby="authors-help" th:errorclass="field-invalid"></textarea><small id="authors-help" class="help-text">Mỗi tác giả một dòng, tối đa 150 ký tự mỗi tên. Tên đã có sẽ được dùng lại; tên mới được tạo khi lưu sách.</small><small class="field-error" th:errors="*{authorNames}"></small></label>
+            <p class="help-text" style="margin-top:16px" th:unless="${#lists.isEmpty(authors)}">Hoặc chọn tác giả có sẵn bên dưới. Các tác giả được chọn sẽ được lưu cùng tên bạn nhập.</p>
+            <div class="checkbox-grid"><label th:each="author : ${authors}"><input type="checkbox" th:field="*{authorIds}" th:value="${author.id}"><span th:text="${author.name}"></span></label></div>
+            <small class="field-error" th:errors="*{authorIds}"></small></fieldset></section>
         <footer class="form-footer"><p>Giá và tên trong đơn hàng cũ được giữ nguyên.</p><div class="form-actions"><a class="button ghost" th:href="@{/admin/books}">Hủy</a><button class="button primary" type="submit">Lưu sách</button></div></footer>
     </form>
 

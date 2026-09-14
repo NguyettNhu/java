@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"><body>
+<section th:fragment="analytics" th:if="${analyticsPath != null}" class="admin-analytics" aria-label="Phân tích dữ liệu">
+    <div class="panel analytics-filters">
+        <header class="panel-heading"><div><h2>Phân tích dữ liệu</h2><p>Bộ lọc này áp dụng cho các chỉ số và biểu đồ bên dưới. Tồn kho và danh mục là số liệu hiện tại.</p></div></header>
+        <form method="get" th:action="@{${analyticsPath}}" class="filter-bar" data-analytics-filter>
+            <label>Kỳ thống kê<select name="period" data-period>
+                <option value="day" th:selected="${aperiod == 'day'}">Ngày</option>
+                <option value="week" th:selected="${aperiod == 'week'}">Tuần (thứ Hai – Chủ nhật)</option>
+                <option value="month" th:selected="${aperiod == 'month'}">Tháng</option>
+                <option value="quarter" th:selected="${aperiod == 'quarter'}">Quý</option>
+                <option value="year" th:selected="${aperiod == 'year'}">Năm</option>
+                <option value="custom" th:selected="${aperiod == 'custom'}">Khoảng ngày tùy chọn</option>
+            </select></label>
+            <label>Ngày thuộc kỳ<input type="date" name="date" th:value="${adate}" min="1900-01-01" max="9998-12-31" data-anchor aria-describedby="analytics-date-help"></label>
+            <label>Ngày bắt đầu<input type="date" name="from" th:value="${afrom}" min="1900-01-01" max="9998-12-31" data-range></label>
+            <label>Ngày kết thúc<input type="date" name="to" th:value="${ato}" min="1900-01-01" max="9998-12-31" data-range></label>
+            <label>Nhóm biểu đồ theo<select name="groupBy">
+                <option value="day" th:selected="${agroupBy == 'day'}">Ngày</option><option value="week" th:selected="${agroupBy == 'week'}">Tuần</option>
+                <option value="month" th:selected="${agroupBy == 'month'}">Tháng</option><option value="quarter" th:selected="${agroupBy == 'quarter'}">Quý</option><option value="year" th:selected="${agroupBy == 'year'}">Năm</option>
+            </select></label>
+            <label>Nhà xuất bản<select name="reportPublisher"><option value="">Tất cả nhà xuất bản</option><option th:each="r : ${reportPublishers}" th:value="${r.id}" th:text="${r.name}" th:selected="${areportPublisher == #strings.toString(r.id)}"></option></select></label>
+            <label>Thể loại<select name="reportCategory"><option value="">Tất cả thể loại</option><option th:each="r : ${reportCategories}" th:value="${r.id}" th:text="${r.name}" th:selected="${areportCategory == #strings.toString(r.id)}"></option></select></label>
+            <label>Tác giả<select name="reportAuthor"><option value="">Tất cả tác giả</option><option th:each="r : ${reportAuthors}" th:value="${r.id}" th:text="${r.name}" th:selected="${areportAuthor == #strings.toString(r.id)}"></option></select></label>
+            <div class="analytics-filter-actions"><button class="button primary" type="submit">Áp dụng thống kê</button><a class="button ghost" th:href="@{${analyticsPath}}">Đặt lại</a></div>
+            <p id="analytics-date-help" class="help-text analytics-filter-help">Ngày thuộc kỳ: chọn một ngày trong tuần, tháng, quý hoặc năm cần xem. Để lọc ngày bắt đầu và kết thúc riêng, chọn “Khoảng ngày tùy chọn”.</p>
+        </form>
+    </div>
+    <p th:if="${analyticsError != null}" class="form-alert error" role="alert" th:text="${analyticsError}"></p>
+    <th:block th:if="${analytics != null}" th:with="a=${analytics}">
+        <p class="analytics-scope"><strong th:text="${#temporals.format(a.filter.range.from, 'dd/MM/yyyy') + ' – ' + #temporals.format(a.filter.range.to, 'dd/MM/yyyy')}"></strong>
+            · Theo ngày đặt hàng, giờ Việt Nam. Chỉ đơn hoàn thành được cộng doanh thu.
+            <span th:if="${analyticsDetail}">Số liệu bán hàng chỉ thuộc mục đang xem.</span>
+            <span th:if="${areportPublisher != null or areportCategory != null or areportAuthor != null}">Khi lọc danh mục, doanh thu chỉ cộng tiền những sách khớp bộ lọc trong đơn.</span>
+        </p>
+        <section class="metric-grid" aria-label="Số liệu trong kỳ">
+            <article class="metric-card revenue"><span>Doanh thu trong kỳ</span><strong th:text="${#numbers.formatDecimal(a.revenue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><small th:text="${a.completedOrders + ' đơn hoàn thành'}"></small></article>
+            <article class="metric-card"><span>Số cuốn đã bán</span><strong th:text="${a.quantitySold}"></strong><small>Trong đơn hoàn thành</small></article>
+            <article class="metric-card"><span>Khách đã mua</span><strong th:text="${a.buyers}"></strong><small>Mỗi khách chỉ tính một lần</small></article>
+            <article class="metric-card"><span>Giá trị trung bình / đơn hoàn thành</span><strong th:text="${#numbers.formatDecimal(a.averageOrderValue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><small th:text="${a.totalOrders + ' tổng đơn trong kỳ (mọi trạng thái)'}"></small></article>
+        </section>
+        <section th:if="${analyticsCatalog}" class="metric-grid" aria-label="Danh mục và tồn kho hiện tại">
+            <article class="metric-card"><span>Tổng số sách</span><strong th:text="${a.totalBooks}"></strong><small>Đầu sách hiện tại trong phạm vi lọc</small></article>
+            <article class="metric-card"><span>Tổng số loại sách</span><strong th:text="${a.totalCategories}"></strong><small>Thể loại, gồm cả loại đang ẩn</small></article>
+            <article class="metric-card"><span>Tổng tồn kho</span><strong th:text="${a.stock + ' cuốn'}"></strong><small th:text="${a.lowStock + ' đầu sách sắp hết · ' + a.emptyStock + ' hết hàng'}"></small></article>
+            <article class="metric-card"><span>Giá trị tồn theo giá bán</span><strong th:text="${#numbers.formatDecimal(a.stockValue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><small>Số lượng hiện tại × giá bán hiện tại</small></article>
+        </section>
+        <details class="analytics-details" open>
+            <summary>Biểu đồ và bảng số liệu chi tiết <span class="help-text">Có thể thu gọn để xem bảng quản lý bên dưới.</span></summary>
+            <div class="analytics-chart-grid">
+                <article class="panel analytics-chart" th:each="chart : ${a.charts}" th:attr="data-chart-type=${chart.type},data-unit=${chart.unit}">
+                    <header class="panel-heading"><div><h2 th:text="${chart.title}"></h2><p th:text="${chart.note}"></p></div></header>
+                    <div class="chart-visual" aria-hidden="true"></div>
+                    <p class="chart-empty" hidden>Chưa có dữ liệu trong phạm vi này. Hãy chọn kỳ hoặc danh mục khác.</p>
+                    <details class="chart-data" open><summary>Xem số liệu chính xác</summary>
+                        <div class="data-table-wrap" tabindex="0" role="region" th:attr="aria-label=${chart.title}"><table class="data-table">
+                            <thead><tr><th scope="col">Mục</th><th scope="col" class="numeric" th:text="${chart.unit}"></th></tr></thead>
+                            <tbody><tr th:each="point : ${chart.points}" th:attr="data-chart-label=${point.label},data-chart-value=${point.value}">
+                                <td><a th:if="${point.url != null}" th:href="@{${point.url}}" th:text="${point.label}"></a><span th:unless="${point.url != null}" th:text="${point.label}"></span></td>
+                                <td class="numeric" th:text="${#numbers.formatDecimal(point.value, 0, 'POINT', 0, 'COMMA') + ' ' + chart.unit}"></td>
+                            </tr><tr th:if="${#lists.isEmpty(chart.points)}"><td colspan="2">Chưa có dữ liệu phù hợp trong kỳ.</td></tr></tbody>
+                        </table></div>
+                    </details>
+                </article>
+            </div>
+        </details>
+    </th:block>
+</section>
+<th:block th:fragment="preserve">
+    <input type="hidden" name="period" th:value="${aperiod}"><input type="hidden" name="date" th:value="${adate}">
+    <input type="hidden" name="from" th:value="${afrom}"><input type="hidden" name="to" th:value="${ato}">
+    <input type="hidden" name="groupBy" th:value="${agroupBy}"><input type="hidden" name="reportPublisher" th:value="${areportPublisher}">
+    <input type="hidden" name="reportCategory" th:value="${areportCategory}"><input type="hidden" name="reportAuthor" th:value="${areportAuthor}">
+</th:block>
+</body></html>

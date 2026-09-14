@@ -8,6 +8,8 @@
 
     <a class="back-link" th:href="@{/admin/users}">Quay lại danh sách khách hàng</a>
     <header class="admin-title"><div><h1 th:text="${customer.fullName}"></h1><p th:text="${customer.email}"></p></div><span class="status-pill" th:classappend="${customer.status.name() == 'ACTIVE' ? 'active' : 'inactive'}" th:text="${customer.status.label}"></span></header>
+    <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
+
     <section class="panel"><div class="panel-body"><dl class="facts detail-facts"><div><dt>Điện thoại</dt><dd th:text="${customer.phone ?: 'Chưa cập nhật'}"></dd></div><div><dt>Ngày tham gia</dt><dd th:text="${customer.createdAtLabel}"></dd></div><div><dt>Địa chỉ</dt><dd th:text="${customer.address ?: 'Chưa cập nhật'}"></dd></div><div><dt>Tài khoản</dt><dd>Khách hàng</dd></div></dl></div></section>
     <section class="panel"><header class="panel-heading"><h2>Lịch sử mua sách</h2><span class="muted" th:text="${#lists.size(orders) + ' đơn hàng'}"></span></header><div th:replace="~{fragments/admin-tables :: orders(${orders})}"></div></section>
 

@@ -1,5 +1,7 @@
 param(
-    [switch]$SeedDemo
+    [switch]$SeedDemo,
+    [ValidateRange(1024, 65535)]
+    [int]$Port = 8080
 )
 
 $ErrorActionPreference = "Stop"
@@ -32,7 +34,9 @@ if ($SeedDemo) {
 
 Push-Location $projectRoot
 try {
-    & mvn spring-boot:run
+    $runArguments = "--server.port=$Port"
+    if ($SeedDemo) { $runArguments += " --APP_SEED_DEMO=true" }
+    & mvn spring-boot:run "-Dspring-boot.run.arguments=$runArguments"
     exit $LASTEXITCODE
 } finally {
     Pop-Location

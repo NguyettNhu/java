@@ -29,6 +29,7 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public DashboardView dashboard() {
+        // Tính các chỉ số tổng quan và top sách bán chạy cho dashboard.
         return new DashboardView(orderRepository.count(), orderRepository.countByStatus(OrderStatus.PENDING),
                 orderRepository.completedRevenue(), userRepository.countByRole(Role.CUSTOMER),
                 bookRepository.countByStatus(BookStatus.ACTIVE),

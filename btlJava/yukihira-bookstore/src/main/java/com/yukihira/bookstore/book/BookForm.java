@@ -1,6 +1,7 @@
 package com.yukihira.bookstore.book;
 
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Min;
@@ -43,8 +44,23 @@ public class BookForm {
     @Pattern(regexp = "^(https?://[^\\s]+|/images/[^\\s]+)?$", message = "Dùng URL http/https hoặc đường dẫn /images/")
     private String imageUrl;
 
-    @NotNull(message = "Vui lòng chọn thể loại")
     private Long categoryId;
+
+    @Size(max = 100, message = "Tên thể loại không quá 100 ký tự")
+    private String categoryName;
+
+    @Size(max = 3000, message = "Danh sách tác giả không quá 3000 ký tự")
+    private String authorNames;
+
+    @AssertTrue(message = "Vui lòng nhập hoặc chọn thể loại")
+    public boolean isCategoryProvided() {
+        return categoryId != null || (categoryName != null && !categoryName.isBlank());
+    }
+
+    public String getCategoryName() { return categoryName; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
+    public String getAuthorNames() { return authorNames; }
+    public void setAuthorNames(String authorNames) { this.authorNames = authorNames; }
 
     private Long publisherId;
     private Set<Long> authorIds = new LinkedHashSet<>();

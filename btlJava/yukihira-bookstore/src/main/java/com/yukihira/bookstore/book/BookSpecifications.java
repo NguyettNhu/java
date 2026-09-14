@@ -29,7 +29,13 @@ public final class BookSpecifications {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("category").get("id"), filter.categoryId()));
         }
         if (filter.authorId() != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.join("authors").get("id"), filter.authorId()));
+            spec = spec.and((root, query, cb) -> {
+                query.distinct(true);
+                return cb.equal(root.join("authors").get("id"), filter.authorId());
+            });
+        }
+        if (filter.publisherId() != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("publisher").get("id"), filter.publisherId()));
         }
         if (filter.minPrice() != null) {
             spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("price"), filter.minPrice()));

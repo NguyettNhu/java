@@ -7,19 +7,30 @@
     <div th:replace="~{fragments/admin :: flash}"></div>
 
     <header class="admin-title"><div><h1 th:text="${type.label}"></h1><p>Quản lý thông tin dùng chung cho các cuốn sách trong cửa hàng.</p></div><a class="button primary" th:href="@{/admin/{type}/new(type=${type.path})}" th:text="${'+ Thêm ' + #strings.toLowerCase(type.label)}"></a></header>
+    <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
+
     <section class="panel">
         <form class="filter-bar" th:action="@{/admin/{type}(type=${type.path})}" method="get">
+            <th:block th:replace="~{fragments/admin-analytics :: preserve}"></th:block>
+            <label><span th:text="${type.detailsLabel}"></span><input type="search" name="details" th:value="${details}" placeholder="Nhập nội dung cần tìm"></label>
+            <label>Số đầu sách tối thiểu<input type="number" name="minBooks" min="0" th:value="${minBooks}"></label>
+            <label>Bán hàng trong kỳ<select name="activity"><option value="all">Tất cả</option><option value="selling" th:selected="${activity == 'selling'}">Có sách đã bán</option><option value="unsold" th:selected="${activity == 'unsold'}">Chưa bán trong kỳ</option></select></label>
+            <label>Tồn kho hiện tại<select name="availability"><option value="all">Tất cả</option><option value="available" th:selected="${availability == 'available'}">Còn sách trong kho</option><option value="empty" th:selected="${availability == 'empty'}">Không còn tồn kho</option></select></label>
+            <label th:if="${type.path == 'categories'}">Hiển thị<select name="visibility"><option value="all">Tất cả</option><option value="active" th:selected="${visibility == 'active'}">Hiển thị</option><option value="hidden" th:selected="${visibility == 'hidden'}">Đang ẩn</option></select></label>
+            <label>Sắp xếp<select name="sort"><option value="name" th:selected="${sort == 'name'}">Tên A–Z</option><option value="books" th:selected="${sort == 'books'}">Nhiều đầu sách nhất</option><option value="stock" th:selected="${sort == 'stock'}">Tồn kho nhiều nhất</option><option value="sold" th:selected="${sort == 'sold'}">Bán nhiều nhất trong kỳ</option><option value="revenue" th:selected="${sort == 'revenue'}">Doanh thu cao nhất trong kỳ</option></select></label>
             <label class="filter-keyword">Tìm theo tên<input type="search" name="keyword" th:value="${keyword}" th:placeholder="${'Tên ' + #strings.toLowerCase(type.label)}"></label><button class="button primary" type="submit">Tìm kiếm</button><a class="button ghost" th:href="@{/admin/{type}(type=${type.path})}">Xóa lọc</a>
         </form>
         <div class="data-table-wrap" tabindex="0" role="region" th:attr="aria-label=${'Danh sách ' + type.label}">
-            <table class="data-table"><thead><tr><th scope="col">Tên</th><th scope="col" th:text="${type.detailsLabel}"></th><th scope="col" th:if="${type.path == 'categories'}">Trạng thái</th><th scope="col">Thao tác</th></tr></thead>
+            <table class="data-table"><thead><tr><th scope="col">Tên</th><th scope="col" th:text="${type.detailsLabel}"></th><th scope="col" th:if="${type.path == 'categories'}">Trạng thái</th><th scope="col" class="numeric">Đầu sách</th><th scope="col" class="numeric">Tồn kho (cuốn)</th><th scope="col" class="numeric">Đã bán trong kỳ</th><th scope="col" class="numeric">Doanh thu trong kỳ</th><th scope="col">Thao tác</th></tr></thead>
                 <tbody><tr th:each="item : ${items.content}">
                     <td><strong th:text="${item.name}"></strong></td><td style="max-width:480px;overflow-wrap:anywhere" th:text="${item.details == null ? 'Chưa cập nhật' : #strings.abbreviate(item.details, 200)}"></td>
                     <td th:if="${type.path == 'categories'}"><span class="status-pill" th:classappend="${item.active ? 'active' : 'inactive'}" th:text="${item.active ? 'Hiển thị' : 'Đang ẩn'}"></span></td>
+                    <td class="numeric" th:text="${item.bookCount}"></td><td class="numeric" th:text="${item.stock}"></td><td class="numeric" th:text="${item.sold}"></td><td class="numeric" th:text="${#numbers.formatDecimal(item.revenue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></td>
                     <td><div class="table-actions"><a th:href="@{/admin/{type}/{id}/edit(type=${type.path},id=${item.id})}">Xem / chỉnh sửa</a>
+                        <a th:href="@{/admin/{type}(type=${type.path},period=${aperiod},date=${adate},from=${afrom},to=${ato},groupBy=${agroupBy},reportPublisher=${type.path == 'publishers' ? item.id : areportPublisher},reportCategory=${type.path == 'categories' ? item.id : areportCategory},reportAuthor=${type.path == 'authors' ? item.id : areportAuthor})}">Phân tích riêng</a>
                         <form th:action="@{/admin/{type}/{id}/delete(type=${type.path},id=${item.id})}" method="post" th:attr="data-confirm=${'Xóa “' + item.name + '”? Thể loại đang có sách sẽ được ẩn; tác giả và nhà xuất bản đang có sách sẽ không bị xóa.'}"><button class="danger-link" type="submit">Xóa</button></form>
                     </div></td>
-                </tr><tr th:if="${!items.hasContent()}"><td th:colspan="${type.path == 'categories' ? 4 : 3}" class="empty-cell"><strong>Chưa có dữ liệu phù hợp</strong>Thử tên khác hoặc thêm mục đầu tiên.<br><a th:href="@{/admin/{type}/new(type=${type.path})}">Thêm mới</a></td></tr></tbody>
+                </tr><tr th:if="${!items.hasContent()}"><td th:colspan="${type.path == 'categories' ? 8 : 7}" class="empty-cell"><strong>Chưa có dữ liệu phù hợp</strong>Thử tên khác hoặc thêm mục đầu tiên.<br><a th:href="@{/admin/{type}/new(type=${type.path})}">Thêm mới</a></td></tr></tbody>
             </table>
         </div>
     </section>

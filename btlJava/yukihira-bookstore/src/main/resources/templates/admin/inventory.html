@@ -7,6 +7,8 @@
     <div th:replace="~{fragments/admin :: flash}"></div>
 
     <header class="admin-title"><div><h1>Tồn kho</h1><p>Đối chiếu và cập nhật số cuốn thực tế. Sách sắp hết có từ 1 đến 5 cuốn.</p></div><a class="button ghost" th:href="@{/admin/books/new}">Thêm đầu sách</a></header>
+    <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
+
     <section class="panel"><form class="filter-bar" th:action="@{/admin/inventory}" method="get">
         <label class="filter-keyword">Tìm sách<input type="search" name="keyword" th:value="${keyword}" placeholder="Tên sách, ISBN hoặc tác giả"></label>
         <label>Mức tồn kho<select name="stock"><option value="">Tất cả</option><option value="low" th:selected="${stockFilter == 'low'}">Sắp hết (1–5 cuốn)</option><option value="empty" th:selected="${stockFilter == 'empty'}">Hết hàng</option></select></label>

@@ -3,5 +3,8 @@ package com.yukihira.bookstore.book;
 import java.math.BigDecimal;
 
 public record BookSearchQuery(String keyword, Long categoryId, Long authorId,
-                              BigDecimal minPrice, BigDecimal maxPrice, String sort) {
+                              BigDecimal minPrice, BigDecimal maxPrice, String sort, Long publisherId) {
+    public BookSearchQuery(String keyword, Long categoryId, Long authorId, BigDecimal minPrice, BigDecimal maxPrice, String sort) {
+        this(keyword, categoryId, authorId, minPrice, maxPrice, sort, null);
+    }
 }

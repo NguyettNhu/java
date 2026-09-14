@@ -15,6 +15,7 @@ public interface OrderRepository extends JpaRepository<CustomerOrder, Long>, Jpa
     @Query("select o from CustomerOrder o where o.id = :id")
     Optional<CustomerOrder> findForUpdate(@Param("id") Long id);
 
+        // Tổng hợp số đơn và giá trị đơn theo từng trạng thái trong khoảng thời gian.
     @Query("select new com.yukihira.bookstore.admin.report.OrderStatusTotal(o.status, count(o), sum(o.totalAmount)) "
             + "from CustomerOrder o where o.createdAt >= :from and o.createdAt < :to group by o.status")
     List<com.yukihira.bookstore.admin.report.OrderStatusTotal> reportTotals(
@@ -34,6 +35,7 @@ public interface OrderRepository extends JpaRepository<CustomerOrder, Long>, Jpa
 
     long countByStatus(OrderStatus status);
 
+        // Chỉ cộng doanh thu của các đơn đã hoàn thành.
     @Query("select coalesce(sum(customerOrder.totalAmount), 0) from CustomerOrder customerOrder "
             + "where customerOrder.status = com.yukihira.bookstore.order.OrderStatus.COMPLETED")
     BigDecimal completedRevenue();

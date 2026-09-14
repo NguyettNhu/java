@@ -7,20 +7,27 @@
     <div th:replace="~{fragments/admin :: flash}"></div>
 
     <header class="admin-title"><div><h1>Sách</h1><p>Biên tập từng cuốn sách, giá bán và trạng thái trên cửa hàng.</p></div><a class="button primary" th:href="@{/admin/books/new}">+ Thêm sách</a></header>
+    <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
+
     <section class="panel">
         <form class="filter-bar" th:action="@{/admin/books}" method="get">
+            <th:block th:replace="~{fragments/admin-analytics :: preserve}"></th:block>
+            <label>Nhà xuất bản<select name="publisherId"><option value="">Tất cả</option><option th:each="r : ${publishers}" th:value="${r.id}" th:text="${r.name}" th:selected="${r.id == publisherId}"></option></select></label>
+            <label>Tác giả<select name="authorId"><option value="">Tất cả</option><option th:each="r : ${authors}" th:value="${r.id}" th:text="${r.name}" th:selected="${r.id == authorId}"></option></select></label>
+            <label>Giá từ (₫)<input type="number" name="minPrice" min="0" step="0.01" th:value="${minPrice}"></label>
+            <label>Giá đến (₫)<input type="number" name="maxPrice" min="0" step="0.01" th:value="${maxPrice}"></label>
             <label class="filter-keyword">Tìm sách<input type="search" name="keyword" th:value="${keyword}" placeholder="Tên sách, ISBN hoặc tác giả"></label>
             <label>Thể loại<select name="categoryId"><option value="">Tất cả thể loại</option><option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}" th:selected="${category.id == categoryId}"></option></select></label>
             <label>Trạng thái<select name="status"><option value="">Tất cả trạng thái</option><option th:each="status : ${statuses}" th:value="${status}" th:text="${status.label}" th:selected="${status == selectedStatus}"></option></select></label>
             <label>Tồn kho<select name="stock"><option value="">Tất cả</option><option value="low" th:selected="${stockFilter == 'low'}">Sắp hết (1–5 cuốn)</option><option value="empty" th:selected="${stockFilter == 'empty'}">Hết hàng</option></select></label>
-            <label>Sắp xếp<select name="sort"><option value="newest" th:selected="${sort == 'newest'}">Mới nhất</option><option value="title" th:selected="${sort == 'title'}">Tên A–Z</option><option value="price-asc" th:selected="${sort == 'price-asc'}">Giá tăng dần</option><option value="price-desc" th:selected="${sort == 'price-desc'}">Giá giảm dần</option></select></label>
+            <label>Sắp xếp<select name="sort"><option value="stock-desc" th:selected="${sort == 'stock-desc'}">Tồn kho giảm dần</option><option value="stock-asc" th:selected="${sort == 'stock-asc'}">Tồn kho tăng dần</option><option value="newest" th:selected="${sort == 'newest'}">Mới nhất</option><option value="title" th:selected="${sort == 'title'}">Tên A–Z</option><option value="price-asc" th:selected="${sort == 'price-asc'}">Giá tăng dần</option><option value="price-desc" th:selected="${sort == 'price-desc'}">Giá giảm dần</option></select></label>
             <button class="button primary" type="submit">Lọc sách</button><a class="button ghost" th:href="@{/admin/books}">Xóa lọc</a>
         </form>
         <div class="data-table-wrap" tabindex="0" role="region" aria-label="Danh sách sách">
             <table class="data-table"><thead><tr><th scope="col">Sách / Tác giả</th><th scope="col">Thể loại</th><th scope="col" class="numeric">Giá bán</th><th scope="col" class="numeric">Tồn kho</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead>
                 <tbody><tr th:each="book : ${books.content}">
                     <td><div class="book-cell"><div th:replace="~{fragments/admin :: cover(${book})}"></div><div class="cell-copy"><a th:href="@{/admin/books/{id}(id=${book.id})}" th:text="${book.title}"></a><small th:text="${book.authorLine()}"></small><small th:text="${book.isbn ?: 'Chưa có ISBN'}"></small></div></div></td>
-                    <td th:text="${book.categoryName}"></td><td class="numeric" th:text="${#numbers.formatDecimal(book.price, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></td>
+                    <td><span th:text="${book.categoryName}"></span><small th:text="${book.publisherName ?: 'Chưa có nhà xuất bản'}"></small></td><td class="numeric" th:text="${#numbers.formatDecimal(book.price, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></td>
                     <td class="numeric" th:classappend="${book.stock == 0 ? 'stock-empty' : (book.stock &lt;= 5 ? 'stock-low' : '')}" th:text="${book.stock}"></td>
                     <td><span class="status-pill" th:classappend="${#strings.toLowerCase(book.status.name())}" th:text="${book.status.label}"></span></td>
                     <td><div class="table-actions"><a th:href="@{/admin/books/{id}/edit(id=${book.id})}">Chỉnh sửa</a>
