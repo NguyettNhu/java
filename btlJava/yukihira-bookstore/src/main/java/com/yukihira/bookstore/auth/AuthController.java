@@ -1,6 +1,8 @@
 package com.yukihira.bookstore.auth;
 
 import jakarta.validation.Valid;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,8 +21,13 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    public String login() {
-        return "auth/login";
+    public String login(Authentication authentication) {
+        return isSignedIn(authentication) ? signedInDestination(authentication) : "auth/login";
+    }
+
+    @PostMapping("/login")
+    public String repeatedLogin(Authentication authentication) {
+        return isSignedIn(authentication) ? signedInDestination(authentication) : "redirect:/login?error";
     }
 
     @GetMapping("/register")
@@ -53,5 +60,16 @@ public class AuthController {
     @GetMapping("/access-denied")
     public String accessDenied() {
         return "error/403";
+    }
+
+    private boolean isSignedIn(Authentication authentication) {
+        return authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken);
+    }
+
+    private String signedInDestination(Authentication authentication) {
+        boolean admin = authentication.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
+        return admin ? "redirect:/admin" : "redirect:/";
     }
 }

@@ -11,8 +11,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -74,5 +77,14 @@ class SecurityWebTests {
     void authenticatedRequestToUnknownPageReturnsNotFound() throws Exception {
         mockMvc.perform(get("/khong-ton-tai").with(user("customer").roles("CUSTOMER")))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void repeatedLoginRequestRedirectsAuthenticatedUserInsteadOfReturning405() throws Exception {
+        mockMvc.perform(post("/login").with(user("admin").roles("ADMIN")).with(csrf()))
+                .andExpect(status().is3xxRedirection());
+        mockMvc.perform(get("/login").with(user("customer").roles("CUSTOMER")))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/"));
     }
 }

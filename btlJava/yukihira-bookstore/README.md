@@ -156,7 +156,7 @@ mvn test
 mvn clean verify
 ```
 
-Suite hiện có **47 test** dùng H2 độc lập với `.env`/Supabase: context, Flyway trên schema trống, mapping, BCrypt, phân quyền/CSRF, form CRUD admin, ISBN/slug/giá/liên kết, chống ghi đè tab cũ, giỏ hàng, checkout, rollback, ownership, chuyển trạng thái, hủy đồng thời chỉ hoàn kho một lần, khóa phiên khách và báo cáo theo ngày.
+Suite hiện có **66 test** dùng H2 độc lập với `.env`/Supabase: context, Flyway trên schema trống, mapping, BCrypt, phân quyền/CSRF, JSON API và session login, form CRUD admin, ISBN/slug/giá/liên kết, chống ghi đè tab cũ, giỏ hàng, checkout, rollback, ownership, chuyển trạng thái, hủy đồng thời chỉ hoàn kho một lần, khóa phiên khách và báo cáo theo ngày.
 
 Chi tiết kết quả: [docs/ADMIN_VERIFICATION.md](docs/ADMIN_VERIFICATION.md).
 
@@ -190,6 +190,33 @@ home -> register -> login -> book detail -> add cart -> checkout -> order detail
 | Quản trị | `/admin`, `/admin/books`, `/admin/categories`, `/admin/authors`, `/admin/publishers` |
 | Quản trị | `/admin/inventory`, `/admin/orders`, `/admin/users`, `/admin/reports` |
 | Chi tiết admin | `/admin/books/{id}`, `/admin/books/{id}/edit`, `/admin/orders/{id}`, `/admin/users/{id}` |
+
+## JSON API
+
+Các endpoint REST được tách khỏi route giao diện và luôn trả JSON:
+
+| Dữ liệu | Endpoint |
+|---|---|
+| Danh sách/tìm kiếm sách | `GET /api/v1/books` |
+| Chi tiết sách | `GET /api/v1/books/{slug}` |
+| Thể loại | `GET /api/v1/categories` |
+| Tác giả | `GET /api/v1/authors` |
+| Nhà xuất bản | `GET /api/v1/publishers` |
+| Lấy CSRF token | `GET /api/v1/auth/csrf` |
+| Đăng nhập bằng JSON | `POST /api/v1/auth/login` |
+
+Ví dụ: `GET /api/v1/books?keyword=java&page=0&size=12&sort=price-asc`.
+Lỗi API trả về `application/problem+json`; các route giao diện cũ vẫn trả HTML.
+
+API đăng nhập dùng session hiện có của Spring Security. Client gọi endpoint CSRF trước,
+giữ cookie `JSESSIONID`, rồi gửi token qua header được trả về khi gọi login:
+
+```json
+{
+  "email": "user@example.com",
+  "password": "your-password"
+}
+```
 
 ## Quy tắc đơn hàng
 
