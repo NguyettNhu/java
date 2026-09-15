@@ -19,7 +19,7 @@ body {
     background:
         linear-gradient(90deg, transparent 0 7%, rgba(24, 51, 47, .06) 7% 7.1%, transparent 7.1%),
         var(--paper);
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: "Times New Roman", Times, serif;
 }
 
 a { color: inherit; }
@@ -50,7 +50,7 @@ a { color: inherit; }
 
 .hero { position: relative; display: grid; width: min(1240px, calc(100% - 40px)); min-height: 660px; margin: 0 auto; grid-template-columns: minmax(0, 1fr) 280px; align-items: center; overflow: hidden; }
 .hero-copy { position: relative; z-index: 2; padding: 80px 0 130px 8%; }
-.hero-copy h1, .page-title h1, .detail-copy h1, .admin-title h1 { margin: 0; font-family: "Bodoni 72", "Iowan Old Style", Georgia, serif; font-size: clamp(4rem, 9vw, 8.2rem); font-weight: 500; line-height: .86; letter-spacing: -.065em; }
+.hero-copy h1, .page-title h1, .detail-copy h1, .admin-title h1 { margin: 0; font-family: "Times New Roman", Times, serif; font-size: clamp(4rem, 9vw, 8.2rem); font-weight: 500; line-height: .86; letter-spacing: -.035em; }
 .hero-copy h1 em { color: var(--seal); font-weight: 400; }
 .hero-copy > p:not(.eyebrow) { max-width: 570px; margin: 38px 0; color: var(--muted); font: 1.05rem/1.75 "Avenir Next", "Trebuchet MS", sans-serif; }
 .hero-actions, .form-actions, .purchase-row { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
@@ -68,7 +68,7 @@ a { color: inherit; }
 .category-strip { display: grid; grid-template-columns: 300px 1fr; gap: 60px; border-bottom: 1px solid var(--line); }
 .section-heading { display: flex; margin-bottom: 42px; align-items: end; justify-content: space-between; }
 .section-heading.compact { margin: 0; }
-.section-heading h2, .empty-state h2, .empty-state h3 { margin: 0; font-family: "Bodoni 72", "Iowan Old Style", Georgia, serif; font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 500; letter-spacing: -.04em; }
+.section-heading h2, .empty-state h2, .empty-state h3 { margin: 0; font-family: "Times New Roman", Times, serif; font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 500; letter-spacing: -.025em; }
 .category-links { display: flex; gap: 12px; align-content: center; flex-wrap: wrap; }
 .category-links a { padding: 11px 16px; border: 1px solid var(--line); border-radius: 999px; font: 700 .8rem/1.2 "Trebuchet MS", sans-serif; text-decoration: none; }
 .category-links a:hover { color: var(--paper); background: var(--ink); }

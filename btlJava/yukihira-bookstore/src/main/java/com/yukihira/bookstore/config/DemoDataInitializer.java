@@ -18,9 +18,52 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class DemoDataInitializer implements ApplicationRunner {
+
+    private static final String OPEN_LIBRARY_COVER = "https://covers.openlibrary.org/b/id/%s-L.jpg";
+    private static final Map<String, String> DEMO_COVER_IDS = Map.ofEntries(
+            Map.entry("rung-na-uy", "2237620"),
+            Map.entry("kafka-ben-bo-bien", "4982600"),
+            Map.entry("thoi-quen-nguyen-tu", "12539702"),
+            Map.entry("hoang-tu-be", "10708272"),
+            Map.entry("phia-nam-bien-gioi", "2272110"),
+            Map.entry("thay-doi-ti-hon", "12539702"),
+            Map.entry("mau-nhat-ky-ben-cua-so", "8157718"),
+            Map.entry("mau-mot-buoi-chieu-co-nang", "8281954"),
+            Map.entry("mau-duong-ve-mua-ha", "13300802"),
+            Map.entry("mau-nhung-la-thu-chua-gui", "12356249"),
+            Map.entry("mau-lang-nghe-chinh-minh", "211529"),
+            Map.entry("mau-sap-xep-mot-ngay-ban-ron", "6553019"),
+            Map.entry("mau-hoc-cach-noi-loi-cam-on", "14570194"),
+            Map.entry("mau-ghi-chep-de-truong-thanh", "10043864"),
+            Map.entry("mau-khu-vuon-cua-ban-tho", "10527843"),
+            Map.entry("mau-chuyen-tau-den-dao-cau-vong", "12875748"),
+            Map.entry("mau-be-kham-pha-bon-mua", "368541"),
+            Map.entry("mau-chu-meo-hoc-dem", "552443"),
+            Map.entry("mau-bat-dau-lap-trinh-java", "1094406"),
+            Map.entry("mau-du-lieu-quanh-ta", "66176"),
+            Map.entry("mau-thiet-ke-ung-dung-dau-tien", "299637"),
+            Map.entry("mau-thuc-hanh-tu-duy-thuat-toan", "15111450"),
+            Map.entry("mau-van-hanh-mot-cua-hang-nho", "4849549"),
+            Map.entry("mau-ke-cau-chuyen-thuong-hieu", "6268048"),
+            Map.entry("mau-lap-ke-hoach-cho-y-tuong-moi", "9165528"),
+            Map.entry("mau-hieu-khach-hang-moi-ngay", "14542536"),
+            Map.entry("mau-dao-buoc-qua-pho-co", "12707846"),
+            Map.entry("mau-chuyen-ke-tu-bao-tang", "14348537"),
+            Map.entry("mau-dau-xua-trong-nep-nha", "14314858"),
+            Map.entry("mau-nhung-trang-su-ben-dong-song", "5654516"),
+            Map.entry("mau-vi-sao-bau-troi-doi-mau", "10432365"),
+            Map.entry("mau-the-gioi-nho-duoi-kinh-lup", "12725620"),
+            Map.entry("mau-mot-ngay-cung-cac-hanh-tinh", "95763"),
+            Map.entry("mau-thi-nghiem-trong-can-bep", "11320163"),
+            Map.entry("mau-qua-nhung-mien-xanh", "8243006"),
+            Map.entry("mau-cuoi-tuan-o-thanh-pho-la", "8665393"),
+            Map.entry("mau-hanh-trang-cho-chuyen-di", "7338455"),
+            Map.entry("mau-nhung-cung-duong-ven-bien", "9168732")
+    );
 
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
@@ -41,7 +84,10 @@ public class DemoDataInitializer implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        if (!enabled) return;
+        if (!enabled) {
+            upgradeDemoCovers();
+            return;
+        }
         long before = bookRepository.count();
 
         Category literature = category("Văn học", "van-hoc", "Tiểu thuyết và truyện kể chọn lọc.");
@@ -67,6 +113,7 @@ public class DemoDataInitializer implements ApplicationRunner {
                 new BigDecimal("159000"), 22, skills, yukihira, clear,
                 "Cẩm nang thiết kế hệ thống thói quen dễ bắt đầu và dễ duy trì.");
         seedExpandedCatalog();
+        upgradeDemoCovers();
         org.slf4j.LoggerFactory.getLogger(getClass()).info("Demo catalog: added {} books; total {} books, {} categories, {} publishers, {} authors",
                 bookRepository.count() - before, bookRepository.count(), categoryRepository.count(), publisherRepository.count(), authorRepository.count());
     }
@@ -112,8 +159,16 @@ public class DemoDataInitializer implements ApplicationRunner {
                     author(writers[i % writers.length], "Tác giả minh họa trong bộ dữ liệu mẫu của nhà sách Yukihira."),
                     "Sách mẫu thuộc tủ sách " + genre[0].toLowerCase(java.util.Locale.ROOT) + ". " + genre[2]
                             + " Dữ liệu minh họa để trải nghiệm danh mục, tìm kiếm và quản lý tồn kho.");
-            bookRepository.findBySlug(slug).ifPresent(b -> b.setImageUrl("/images/demo-covers/" + genre[1] + ".svg"));
         }
+    }
+
+    private void upgradeDemoCovers() {
+        DEMO_COVER_IDS.forEach((slug, coverId) -> bookRepository.findBySlug(slug).ifPresent(book -> {
+            String currentImage = book.getImageUrl();
+            if (currentImage == null || currentImage.startsWith("/images/demo-covers/")) {
+                book.setImageUrl(OPEN_LIBRARY_COVER.formatted(coverId));
+            }
+        }));
     }
 
     private Category category(String name, String slug, String description) {
