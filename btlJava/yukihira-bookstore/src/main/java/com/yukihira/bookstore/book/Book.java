@@ -17,6 +17,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashSet;
@@ -66,6 +67,8 @@ public class Book extends BaseEntity {
     @JoinColumn(name = "publisher_id")
     private Publisher publisher;
 
+    // Nạp danh sách tác giả của nhiều sách trong một truy vấn thay vì một truy vấn cho mỗi sách.
+    @BatchSize(size = 64)
     @ManyToMany
     @JoinTable(name = "book_authors",
             joinColumns = @JoinColumn(name = "book_id"),

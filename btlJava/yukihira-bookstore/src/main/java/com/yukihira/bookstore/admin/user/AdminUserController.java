@@ -34,6 +34,7 @@ public class AdminUserController {
     public String list(@RequestParam(required = false) String keyword,
                        @RequestParam(required = false) UserStatus status,
                        @RequestParam(defaultValue = "0") int page, Model model) {
+                // Tải danh sách khách hàng theo từ khóa, trạng thái và trang hiện tại.
         model.addAttribute("users", userService.searchCustomers(new UserSearchQuery(keyword, status), page, 20));
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedStatus", status);
@@ -44,6 +45,7 @@ public class AdminUserController {
     @PostMapping("/admin/users/{id}/status")
     public String updateStatus(@PathVariable Long id, @RequestParam UserStatus status,
                                RedirectAttributes redirectAttributes) {
+        // Cập nhật trạng thái tài khoản và phản hồi kết quả qua redirect.
         try {
             userService.updateCustomerStatus(id, status);
             redirectAttributes.addFlashAttribute("success", "Trạng thái tài khoản đã được cập nhật.");

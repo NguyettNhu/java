@@ -22,8 +22,11 @@ public class AdminBookController {
 
     private final BookService bookService;
 
-    public AdminBookController(BookService bookService) {
+    private final ReferenceDataService references;
+
+    public AdminBookController(BookService bookService, ReferenceDataService references) {
         this.bookService = bookService;
+        this.references = references;
     }
 
     @GetMapping("/admin/books")
@@ -37,6 +40,7 @@ public class AdminBookController {
                        @RequestParam(defaultValue = "") String stock,
                        @RequestParam(defaultValue = "newest") String sort,
                        @RequestParam(defaultValue = "0") int page, Model model) {
+                // Từ chối khoảng giá không hợp lệ trước khi truy vấn danh sách sách.
         if ((minPrice != null && minPrice.signum() < 0) || (maxPrice != null && maxPrice.signum() < 0)
                 || (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0)) {
             model.addAttribute("books", org.springframework.data.domain.Page.empty());
@@ -78,6 +82,7 @@ public class AdminBookController {
     @PostMapping("/admin/inventory/{id}")
     public String updateStock(@PathVariable Long id, @Valid @ModelAttribute StockForm form,
                               BindingResult errors, RedirectAttributes redirect) {
+        // Cập nhật tồn kho và đưa kết quả thao tác về trang danh sách.
         if (errors.hasErrors()) {
             redirect.addFlashAttribute("error", errors.getAllErrors().getFirst().getDefaultMessage());
         } else {
@@ -108,6 +113,7 @@ public class AdminBookController {
     @PostMapping("/admin/books/save")
     public String save(@Valid @ModelAttribute("form") BookForm form, BindingResult bindingResult,
                        Model model, RedirectAttributes redirectAttributes) {
+        // Lưu sách khi form hợp lệ và giữ lại form nếu nghiệp vụ bị từ chối.
         if (!bindingResult.hasErrors()) {
             try {
                 bookService.save(form);
@@ -141,9 +147,10 @@ public class AdminBookController {
     }
 
     private void addReferences(Model model) {
-        model.addAttribute("categories", bookService.adminCategories());
-        model.addAttribute("authors", bookService.authors());
-        model.addAttribute("publishers", bookService.publishers());
+        // Dùng dữ liệu tham chiếu đã cache thay vì ba truy vấn riêng cho mỗi lần mở trang.
+        model.addAttribute("categories", references.list(ReferenceType.CATEGORIES));
+        model.addAttribute("authors", references.list(ReferenceType.AUTHORS));
+        model.addAttribute("publishers", references.list(ReferenceType.PUBLISHERS));
         model.addAttribute("statuses", BookStatus.values());
     }
 }

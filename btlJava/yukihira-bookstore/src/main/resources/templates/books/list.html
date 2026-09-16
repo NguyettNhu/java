@@ -19,7 +19,7 @@
     </form>
     <div class="book-grid catalog-grid" th:if="${books.hasContent()}">
         <article class="book-card" th:each="book : ${books.content}">
-            <a class="book-cover" th:href="@{/books/{slug}(slug=${book.slug})}"><img th:if="${book.imageUrl != null}" th:src="${book.imageUrl}" th:alt="${book.title}" loading="lazy" referrerpolicy="no-referrer"><span th:unless="${book.imageUrl != null}" class="cover-fallback"><small th:text="${book.categoryName}"></small><strong th:text="${book.title}"></strong></span></a>
+            <a class="book-cover" th:href="@{/books/{slug}(slug=${book.slug})}"><img th:if="${book.imageUrl != null}" th:src="${book.imageUrl}" th:alt="${book.title}" loading="lazy" decoding="async" referrerpolicy="no-referrer"><span th:unless="${book.imageUrl != null}" class="cover-fallback"><small th:text="${book.categoryName}"></small><strong th:text="${book.title}"></strong></span></a>
             <div class="book-meta"><p th:text="${book.authorLine()}"></p><h3><a th:href="@{/books/{slug}(slug=${book.slug})}" th:text="${book.title}"></a></h3><strong class="price" th:text="${#numbers.formatDecimal(book.price, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong></div>
         </article>
     </div>

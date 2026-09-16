@@ -30,6 +30,7 @@ public class AdminReferenceController {
                        @RequestParam(defaultValue = "all") String visibility,
                        @RequestParam(defaultValue = "name") String sort,
                        @RequestParam(defaultValue = "0") int page, Model model) {
+                // Lọc dữ liệu tham chiếu từ thống kê đã được advice chuẩn bị.
         ReferenceType referenceType = ReferenceType.fromPath(type);
         addTypeModel(model, referenceType);
         var analytics = (com.yukihira.bookstore.admin.report.AnalyticsView) model.getAttribute("analytics");
@@ -65,6 +66,7 @@ public class AdminReferenceController {
     public String save(@PathVariable String type,
                        @Valid @ModelAttribute("form") ReferenceForm form,
                        BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+                // Lưu danh mục tham chiếu và hiển thị lỗi ngay trên form khi cần.
         ReferenceType referenceType = ReferenceType.fromPath(type);
         if (!bindingResult.hasErrors()) {
             try {

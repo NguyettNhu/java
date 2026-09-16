@@ -13,6 +13,10 @@ spring:
     url: ${spring.datasource.url}
     user: sa
     password:
+  # Test dựng dữ liệu thẳng qua repository nên không kích hoạt được việc xóa cache
+  # của ReferenceDataService; tắt cache để mỗi bài test luôn đọc đúng dữ liệu vừa tạo.
+  cache:
+    type: none
   thymeleaf:
     cache: false
 logging:

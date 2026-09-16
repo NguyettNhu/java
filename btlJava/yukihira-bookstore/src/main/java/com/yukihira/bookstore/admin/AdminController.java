@@ -34,7 +34,7 @@ public class AdminController {
 
     @GetMapping("/admin/reports")
     public String reports() {
-        // AdminAnalyticsAdvice supplies the same resolved period to all report charts.
+        // Hiển thị trang báo cáo dùng chung bộ lọc đã được advice chuẩn hóa.
         return "admin/reports";
     }
 }

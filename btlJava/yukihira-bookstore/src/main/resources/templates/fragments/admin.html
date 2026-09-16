@@ -61,7 +61,7 @@
 </div>
 
 <div th:fragment="cover(book)" class="book-thumbnail">
-    <img th:if="${book.imageUrl != null}" th:src="${book.imageUrl}" th:alt="${'Bìa ' + book.title}" loading="lazy" referrerpolicy="no-referrer">
+    <img th:if="${book.imageUrl != null}" th:src="${book.imageUrl}" th:alt="${'Bìa ' + book.title}" loading="lazy" decoding="async" referrerpolicy="no-referrer">
     <span th:if="${book.imageUrl == null}" aria-hidden="true">本</span>
 </div>
 </body>

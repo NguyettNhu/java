@@ -7,8 +7,13 @@ spring:
     password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 5
-      minimum-idle: 1
+      # Cơ sở dữ liệu đặt ở xa nên mỗi kết nối mới tốn thêm thời gian bắt tay TLS.
+      # Giữ sẵn vài kết nối ấm để request không phải chờ mở kết nối.
+      maximum-pool-size: 10
+      minimum-idle: 5
+      keepalive-time: 60000
+      max-lifetime: 900000
+      connection-timeout: 10000
   jpa:
     open-in-view: false
     hibernate:
@@ -23,9 +28,29 @@ spring:
     user: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
     locations: classpath:db/migration
+  cache:
+    # Dữ liệu tham chiếu nằm trong bộ nhớ tiến trình; hồ sơ test đặt lại thành none.
+    type: simple
+    cache-names: references
   thymeleaf:
-    cache: false
+    # Bật cache template cho chạy thường ngày; đặt THYMELEAF_CACHE=false khi đang sửa file HTML.
+    cache: ${THYMELEAF_CACHE:true}
+  web:
+    resources:
+      chain:
+        strategy:
+          content:
+            enabled: true
+            paths: /**
+      cache:
+        cachecontrol:
+          max-age: 30d
+          cache-public: true
 server:
+  compression:
+    enabled: true
+    mime-types: text/html,text/css,application/javascript,application/json,image/svg+xml
+    min-response-size: 1024
   error:
     whitelabel:
       enabled: false

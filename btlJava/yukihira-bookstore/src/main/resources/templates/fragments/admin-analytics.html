@@ -27,7 +27,17 @@
         </form>
     </div>
     <p th:if="${analyticsError != null}" class="form-alert error" role="alert" th:text="${analyticsError}"></p>
-    <th:block th:if="${analytics != null}" th:with="a=${analytics}">
+    <!-- Trang danh mục dựng bảng quản lý từ số liệu này nên phải dựng sẵn trong lượt tải trang.
+         Điều kiện phải nằm ở thẻ ngoài vì th:replace được xử lý trước th:if trên cùng một thẻ. -->
+    <th:block th:if="${analytics != null}"><th:block th:replace="~{:: panel}"></th:block></th:block>
+    <!-- Các trang còn lại tải khối số liệu riêng sau khi trang đã hiện, để chuyển trang không phải chờ tổng hợp. -->
+    <div th:if="${analyticsUrl != null}" data-analytics-panel th:attr="data-analytics-url=${analyticsUrl}" aria-live="polite" aria-busy="true">
+        <p class="analytics-loading">Đang tổng hợp số liệu…</p>
+        <noscript><a class="button ghost small" th:href="${analyticsUrl}">Mở số liệu phân tích</a></noscript>
+    </div>
+</section>
+
+<th:block th:fragment="panel" th:with="a=${analytics}">
         <p class="analytics-scope"><strong th:text="${#temporals.format(a.filter.range.from, 'dd/MM/yyyy') + ' – ' + #temporals.format(a.filter.range.to, 'dd/MM/yyyy')}"></strong>
             · Theo ngày đặt hàng, giờ Việt Nam. Chỉ đơn hoàn thành được cộng doanh thu.
             <span th:if="${analyticsDetail}">Số liệu bán hàng chỉ thuộc mục đang xem.</span>
@@ -64,8 +74,10 @@
                 </article>
             </div>
         </details>
-    </th:block>
-</section>
+</th:block>
+
+<p th:fragment="panelError" class="form-alert error" role="alert" th:text="${analyticsError}"></p>
+
 <th:block th:fragment="preserve">
     <input type="hidden" name="period" th:value="${aperiod}"><input type="hidden" name="date" th:value="${adate}">
     <input type="hidden" name="from" th:value="${afrom}"><input type="hidden" name="to" th:value="${ato}">

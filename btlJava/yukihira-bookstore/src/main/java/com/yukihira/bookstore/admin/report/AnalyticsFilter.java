@@ -26,7 +26,7 @@ public record AnalyticsFilter(String period, LocalDate date, ReportPeriod range,
             }
             default -> throw new IllegalArgumentException("Kỳ thống kê không hợp lệ.");
         }
-        // Keep calendar arithmetic safe and the daily result set bounded.
+        // Giới hạn khoảng ngày để phép tính lịch an toàn và kết quả không quá lớn.
         if (start.getYear() < 1900 || end.getYear() > 9998 || end.toEpochDay() - start.toEpochDay() > 3660)
             throw new IllegalArgumentException("Chọn khoảng thống kê từ năm 1900 và không quá 10 năm.");
         String grouping = groupBy == null || groupBy.isBlank() ? (Set.of("year", "quarter").contains(selected) ? "month" : "day") : groupBy;

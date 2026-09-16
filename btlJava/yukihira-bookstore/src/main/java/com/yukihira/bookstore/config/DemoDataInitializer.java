@@ -23,7 +23,8 @@ import java.util.Map;
 @Component
 public class DemoDataInitializer implements ApplicationRunner {
 
-    private static final String OPEN_LIBRARY_COVER = "https://covers.openlibrary.org/b/id/%s-L.jpg";
+    // Bản "M" tải nhanh hơn bản "L" khoảng 10 lần và vẫn đủ nét cho lưới sách.
+    private static final String OPEN_LIBRARY_COVER = "https://covers.openlibrary.org/b/id/%s-M.jpg";
     private static final Map<String, String> DEMO_COVER_IDS = Map.ofEntries(
             Map.entry("rung-na-uy", "2237620"),
             Map.entry("kafka-ben-bo-bien", "4982600"),
@@ -165,7 +166,8 @@ public class DemoDataInitializer implements ApplicationRunner {
     private void upgradeDemoCovers() {
         DEMO_COVER_IDS.forEach((slug, coverId) -> bookRepository.findBySlug(slug).ifPresent(book -> {
             String currentImage = book.getImageUrl();
-            if (currentImage == null || currentImage.startsWith("/images/demo-covers/")) {
+            if (currentImage == null || currentImage.startsWith("/images/demo-covers/")
+                    || currentImage.startsWith("https://covers.openlibrary.org/")) {
                 book.setImageUrl(OPEN_LIBRARY_COVER.formatted(coverId));
             }
         }));

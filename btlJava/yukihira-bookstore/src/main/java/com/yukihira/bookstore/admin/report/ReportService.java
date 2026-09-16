@@ -38,6 +38,7 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public ReportView report(ReportPeriod period) {
+        // Gom tổng đơn theo trạng thái và lấy top sách trong khoảng thời gian đã chọn.
         var totals = orderRepository.reportTotals(period.start(), period.endExclusive());
         var byStatus = totals.stream().collect(java.util.stream.Collectors.toMap(OrderStatusTotal::status, row -> row));
         var rows = java.util.Arrays.stream(OrderStatus.values()).map(status -> byStatus.getOrDefault(status,

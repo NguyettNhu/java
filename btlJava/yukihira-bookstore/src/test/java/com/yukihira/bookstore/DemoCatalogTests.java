@@ -30,7 +30,7 @@ class DemoCatalogTests {
         assertThat(categories.count()).isEqualTo(8);
         assertThat(publishers.count()).isEqualTo(6);
         var edited = books.findBySlug("mau-bat-dau-lap-trinh-java").orElseThrow();
-        assertThat(edited.getImageUrl()).isEqualTo("https://covers.openlibrary.org/b/id/1094406-L.jpg");
+        assertThat(edited.getImageUrl()).isEqualTo("https://covers.openlibrary.org/b/id/1094406-M.jpg");
         edited.setPrice(new BigDecimal("321000")); edited.setStock(8); books.saveAndFlush(edited);
         var authorCount = authors.count();
         seeder.run(null);

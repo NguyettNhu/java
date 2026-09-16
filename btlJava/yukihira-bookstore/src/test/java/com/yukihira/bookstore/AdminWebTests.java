@@ -168,12 +168,26 @@ class AdminWebTests {
     @Test
     void analyticsFiltersRenderResolvedPeriodsAndRecoverFromInvalidInput() throws Exception {
         for (String period : new String[]{"day", "week", "month", "quarter", "year"}) {
+            // Trang chỉ dựng bộ lọc và trỏ tới endpoint số liệu; việc tổng hợp diễn ra sau khi trang đã hiện.
             mvc.perform(get("/admin/reports").param("period", period).param("date", "2024-02-29")
+                            .with(user("admin").roles("ADMIN")))
+                    .andExpect(status().isOk()).andExpect(model().attributeDoesNotExist("analytics"))
+                    .andExpect(model().attributeExists("analyticsUrl"))
+                    .andExpect(content().string(org.hamcrest.Matchers.containsString("data-analytics-panel")));
+            mvc.perform(get("/admin/analytics").param("for", "/admin/reports")
+                            .param("period", period).param("date", "2024-02-29")
                             .with(user("admin").roles("ADMIN")))
                     .andExpect(status().isOk()).andExpect(model().attributeExists("analytics"))
                     .andExpect(content().string(org.hamcrest.Matchers.containsString("data-chart-type=\"pie\"")))
                     .andExpect(content().string(org.hamcrest.Matchers.containsString("Top 5 khách chi tiêu nhiều nhất")));
         }
+        // Trang thể loại vẫn dựng sẵn số liệu vì bảng quản lý của nó lấy dữ liệu từ đó.
+        mvc.perform(get("/admin/categories").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk()).andExpect(model().attributeExists("analytics"))
+                .andExpect(model().attributeDoesNotExist("analyticsUrl"));
+        // Đường dẫn không phải trang admin có báo cáo thì endpoint số liệu phải từ chối.
+        mvc.perform(get("/admin/analytics").param("for", "/admin/../etc").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isNotFound());
         for (String query : new String[]{"period=custom&from=2024-02-29&to=2024-02-01", "period=custom", "date=not-a-date", "period=bad", "groupBy=bad"}) {
             mvc.perform(get("/admin/reports?" + query).with(user("admin").roles("ADMIN")))
                     .andExpect(status().isOk()).andExpect(model().attributeExists("analyticsError"))

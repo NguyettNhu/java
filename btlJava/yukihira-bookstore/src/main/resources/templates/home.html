@@ -41,7 +41,7 @@
         <div class="book-grid" th:if="${!#lists.isEmpty(featuredBooks)}">
             <article class="book-card" th:each="book : ${featuredBooks}">
                 <a class="book-cover" th:href="@{/books/{slug}(slug=${book.slug})}">
-                    <img th:if="${book.imageUrl != null}" th:src="${book.imageUrl}" th:alt="${book.title}" loading="lazy" referrerpolicy="no-referrer">
+                    <img th:if="${book.imageUrl != null}" th:src="${book.imageUrl}" th:alt="${book.title}" loading="lazy" decoding="async" referrerpolicy="no-referrer">
                     <span th:unless="${book.imageUrl != null}" class="cover-fallback"><small th:text="${book.categoryName}">Văn học</small><strong th:text="${book.title}">Tên sách</strong></span>
                 </a>
                 <div class="book-meta"><p th:text="${book.authorLine()}">Tác giả</p><h3><a th:href="@{/books/{slug}(slug=${book.slug})}" th:text="${book.title}">Tên sách</a></h3><strong class="price" th:text="${#numbers.formatDecimal(book.price, 0, 'POINT', 0, 'COMMA') + ' ₫'}">120.000 ₫</strong></div>

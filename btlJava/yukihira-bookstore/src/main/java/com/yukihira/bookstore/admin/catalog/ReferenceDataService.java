@@ -15,6 +15,9 @@ import org.springframework.data.jpa.domain.Specification;
 import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 import java.util.Locale;
+import com.yukihira.bookstore.config.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +40,7 @@ public class ReferenceDataService {
         this.bookRepository = bookRepository;
     }
 
+    @Cacheable(cacheNames = CacheConfig.REFERENCES, key = "#type")
     @Transactional(readOnly = true)
     public List<ReferenceView> list(ReferenceType type) {
         return switch (type) {
@@ -52,6 +56,7 @@ public class ReferenceDataService {
 
     @Transactional(readOnly = true)
     public Page<ReferenceView> search(ReferenceType type, String keyword, int page) {
+        // Tìm kiếm dữ liệu tham chiếu theo tên với phân trang ổn định.
         var pageable = PageRequest.of(Math.max(0, page), 20, Sort.by("name").and(Sort.by("id")));
         return switch (type) {
             case CATEGORIES -> categoryRepository.findAll(named(keyword), pageable)
@@ -93,8 +98,10 @@ public class ReferenceDataService {
         return form;
     }
 
+    @CacheEvict(cacheNames = CacheConfig.REFERENCES, allEntries = true)
     @Transactional
     public void save(ReferenceType type, @Valid ReferenceForm form) {
+        // Kiểm tra giới hạn chung rồi chuyển việc lưu theo từng loại dữ liệu.
         String name = form.getName().trim();
         if (type == ReferenceType.CATEGORIES && name.length() > 100) {
             throw new CatalogValidationException("name", "Tên thể loại không quá 100 ký tự");
@@ -109,8 +116,10 @@ public class ReferenceDataService {
         }
     }
 
+    @CacheEvict(cacheNames = CacheConfig.REFERENCES, allEntries = true)
     @Transactional
     public String delete(ReferenceType type, Long id) {
+        // Chỉ xóa dữ liệu chưa liên kết và ẩn thể loại đang được sử dụng.
         return switch (type) {
             case CATEGORIES -> {
                 Category item = categoryRepository.findById(id).orElseThrow();

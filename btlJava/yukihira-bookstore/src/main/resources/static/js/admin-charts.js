@@ -23,7 +23,7 @@
         ranges.forEach(input => input.addEventListener('input', () => ranges.forEach(field => field.setCustomValidity(''))));
     });
 
-    document.querySelectorAll('[data-chart-type]').forEach(card => {
+    const drawCharts = root => root.querySelectorAll('[data-chart-type]').forEach(card => {
         const rows = [...card.querySelectorAll('[data-chart-value]')];
         const points = rows.map(row => ({ label: row.dataset.chartLabel, value: Number(row.dataset.chartValue) }));
         const host = card.querySelector('.chart-visual');
@@ -92,6 +92,42 @@
             host.after(hint);
         }
     });
+
+    // Trang danh mục dựng sẵn biểu đồ trong HTML; các trang còn lại tải khối số liệu sau khi
+    // trang đã hiện, nên việc chuyển trang không phải chờ máy chủ tổng hợp.
+    drawCharts(document);
+    const panel = document.querySelector('[data-analytics-panel]');
+    if (panel) {
+        // Khối số liệu về sau khi trang đã hiện nên nó đẩy bảng quản lý bên dưới xuống. Nhớ chiều
+        // cao đo được lần trước để đặt chỗ sẵn, nhờ vậy các lượt vào sau không còn nhảy bố cục.
+        // Chiều cao phụ thuộc bề ngang cửa sổ nên khóa lưu gồm cả đường dẫn lẫn bề ngang.
+        const heightKey = `analytics-height:${location.pathname}:${window.innerWidth}`;
+        let reserved = 0;
+        try { reserved = Number(sessionStorage.getItem(heightKey)) || 0; } catch (error) { reserved = 0; }
+        if (reserved) panel.style.minHeight = `${reserved}px`;
+        fetch(panel.dataset.analyticsUrl, { headers: { Accept: 'text/html' }, credentials: 'same-origin' })
+            .then(response => response.ok ? response.text() : Promise.reject(new Error(String(response.status))))
+            .then(html => {
+                panel.innerHTML = html;
+                drawCharts(panel);
+                // Đo chiều cao thật khi chưa đặt chỗ, rồi chỉ giữ lại chỗ trống nếu nội dung
+                // thấp hơn dự kiến; bỏ hẳn khi nội dung cao hơn để không thừa khoảng trắng.
+                panel.style.minHeight = '';
+                const actual = Math.round(panel.getBoundingClientRect().height);
+                if (reserved > actual) panel.style.minHeight = `${reserved}px`;
+                try { sessionStorage.setItem(heightKey, String(actual)); } catch (error) { /* trình duyệt chặn lưu trữ thì bỏ qua */ }
+            })
+            .catch(() => {
+                panel.style.minHeight = '';
+                const alert = document.createElement('p');
+                alert.className = 'form-alert error';
+                alert.setAttribute('role', 'alert');
+                alert.textContent = 'Không tải được số liệu phân tích. Hãy tải lại trang.';
+                panel.replaceChildren(alert);
+            })
+            .finally(() => panel.setAttribute('aria-busy', 'false'));
+    }
+
     // Keep report scope and list filters on pagination without copying a different page number.
     document.querySelectorAll('.pagination a').forEach(link => {
         const target = new URL(link.href, location.href);

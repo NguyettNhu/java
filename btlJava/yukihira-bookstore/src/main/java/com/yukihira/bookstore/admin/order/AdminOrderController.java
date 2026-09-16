@@ -30,6 +30,7 @@ public class AdminOrderController {
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
                        @RequestParam(defaultValue = "0") int page, Model model) {
+                // Tìm kiếm đơn hàng theo bộ lọc và trả về trang rỗng nếu ngày không hợp lệ.
         try {
             model.addAttribute("orders", orderService.search(new OrderSearchQuery(keyword, status, from, to), page, 20));
         } catch (IllegalArgumentException exception) {
@@ -57,6 +58,7 @@ public class AdminOrderController {
     @PostMapping("/admin/orders/{id}/status")
     public String updateStatus(@PathVariable Long id, @RequestParam OrderStatus status,
                                RedirectAttributes redirectAttributes) {
+        // Chuyển trạng thái đơn qua service để áp dụng policy nghiệp vụ.
         try {
             orderService.updateStatus(id, status);
             redirectAttributes.addFlashAttribute("success", "Trạng thái đơn hàng đã được cập nhật.");

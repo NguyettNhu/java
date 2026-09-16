@@ -16,6 +16,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import com.yukihira.bookstore.config.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -108,6 +111,8 @@ public class BookService {
         return form;
     }
 
+    // Lưu sách có thể tạo thêm thể loại, tác giả hoặc nhà xuất bản mới nên phải làm mới cache tham chiếu.
+    @CacheEvict(cacheNames = CacheConfig.REFERENCES, allEntries = true)
     @Transactional
     public Book save(@Valid BookForm form) {
         String isbn = blankToNull(form.getIsbn());
@@ -192,16 +197,21 @@ public class BookService {
         return status == BookStatus.INACTIVE ? status : (stock == 0 ? BookStatus.OUT_OF_STOCK : BookStatus.ACTIVE);
     }
 
+    // Ba danh sách này hiện trên mọi trang cửa hàng nhưng gần như không đổi; cache lại để
+    // trang chủ và trang danh sách sách không tốn thêm transaction cho mỗi lượt tải.
+    @Cacheable(cacheNames = CacheConfig.REFERENCES, key = "'catalog-categories'")
     @Transactional(readOnly = true)
     public List<Category> categories() {
         return categoryRepository.findAllByActiveTrueOrderByNameAsc();
     }
 
+    @Cacheable(cacheNames = CacheConfig.REFERENCES, key = "'catalog-authors'")
     @Transactional(readOnly = true)
     public List<Author> authors() {
         return authorRepository.findAllByOrderByNameAsc();
     }
 
+    @Cacheable(cacheNames = CacheConfig.REFERENCES, key = "'catalog-publishers'")
     @Transactional(readOnly = true)
     public List<com.yukihira.bookstore.publisher.Publisher> publishers() {
         return publisherRepository.findAllByOrderByNameAsc();

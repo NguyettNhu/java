@@ -192,6 +192,7 @@ input[type="checkbox"], input[type="radio"] { width: 17px; height: 17px; accent-
 .analytics-filter-actions { display: flex; align-self: end; align-items: center; justify-content: flex-end; gap: 10px; min-height: 44px; }
 .analytics-filter-actions .button { min-height: 44px; }
 .analytics-filter-help { grid-column: 1 / -1; margin: 0; }
+.analytics-loading { margin: 22px 0; color: var(--muted); font-size: 13px; }
 .analytics-scope { margin: 18px 0; font-size: 13px; color: var(--muted); max-width: 100ch; }
 .analytics-scope strong { color: var(--forest); }
 .analytics-details > summary { padding: 12px 0 18px; font-weight: 600; cursor: pointer; }

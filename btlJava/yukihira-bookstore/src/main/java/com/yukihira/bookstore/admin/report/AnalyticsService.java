@@ -27,19 +27,19 @@ public class AnalyticsService {
 
     @Transactional(readOnly = true)
     public AnalyticsView build(AnalyticsFilter filter, String section, Long detailId) {
-        // Fetch one catalog graph, not one query per book/author. No customer credentials are loaded.
+        // Tải một lần đồ thị catalog để lọc báo cáo mà không truy vấn lặp từng sách.
         List<Book> catalog = em.createQuery("select distinct b from Book b join fetch b.category left join fetch b.publisher left join fetch b.authors", Book.class)
                 .getResultList().stream().filter(b -> matches(b, filter))
                 .filter(b -> !section.equals("books") || detailId == null || b.getId().equals(detailId)).toList();
         Map<Long, Book> byBook = catalog.stream().collect(Collectors.toMap(Book::getId, Function.identity()));
         boolean scoped = filter.publisherId() != null || filter.categoryId() != null || filter.authorId() != null
                 || (section.equals("books") && detailId != null);
-        // Scalar rows keep historical item subtotals intact, including when the current price changes.
+        // Đọc dữ liệu dạng dòng để giữ nguyên giá trị lịch sử của từng sản phẩm.
         List<Object[]> orderRows = em.createQuery("select o.id, o.createdAt, o.status, o.totalAmount, o.user.id, o.user.fullName from CustomerOrder o "
                         + "where o.createdAt >= :start and o.createdAt < :end", Object[].class)
                 .setParameter("start", filter.range().start()).setParameter("end", filter.range().endExclusive())
                 .getResultList();
-        // Detail restrictions are applied below, avoiding dynamically unbound query parameters.
+        // Áp dụng bộ lọc chi tiết ở bước tổng hợp để tránh tham số truy vấn động.
         return summarize(filter, section, detailId, catalog, byBook, scoped, orderRows);
     }
 

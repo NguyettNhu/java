@@ -18,7 +18,7 @@ class FlywayMigrationTests {
 
     @Test
     void flywayCreatesAndHibernateValidatesCompleteSchema() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("1");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("2");
         Integer tableCount = jdbcTemplate.queryForObject("""
                 select count(*) from information_schema.tables
                 where table_schema = 'public'
