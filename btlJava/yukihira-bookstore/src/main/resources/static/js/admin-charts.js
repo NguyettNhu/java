@@ -62,6 +62,27 @@
                 li.append(swatch, label, value); legend.append(li);
             });
             host.append(legend);
+        } else if (card.dataset.chartType === 'line') {
+            // Biểu đồ đường gọn cho trang tổng quan: co giãn theo bề ngang, chỉ ghi nhãn đầu, giữa và cuối.
+            const width = 720, height = 180, left = 8, right = 8, top = 14, baseline = 150;
+            const svg = svgNode('svg', { viewBox: `0 0 ${width} ${height}`, class: 'line-chart', preserveAspectRatio: 'none' });
+            const max = Math.max(...points.map(p => p.value)) || 1;
+            const step = (width - left - right) / Math.max(points.length - 1, 1);
+            const coords = points.map((point, index) => [left + index * step, baseline - point.value / max * (baseline - top)]);
+            svg.append(svgNode('line', { x1: left, y1: baseline, x2: width - right, y2: baseline, stroke: '#d9e3dd' }));
+            svg.append(svgNode('polygon', { points: `${left},${baseline} ${coords.map(c => c.join(',')).join(' ')} ${coords[coords.length - 1][0]},${baseline}`, fill: '#28634e1f' }));
+            svg.append(svgNode('polyline', { points: coords.map(c => c.join(',')).join(' '), fill: 'none', stroke: colors[0], 'stroke-width': 2.5, 'vector-effect': 'non-scaling-stroke', 'stroke-linejoin': 'round' }));
+            coords.forEach(([x, y], index) => {
+                const dot = svgNode('circle', { cx: x, cy: y, r: 7, fill: 'transparent' });
+                dot.append(svgNode('title', {}, `${points[index].label}: ${number.format(points[index].value)} ${card.dataset.unit}`));
+                svg.append(dot);
+            });
+            host.append(svg);
+            const axis = document.createElement('div'); axis.className = 'line-axis';
+            [0, Math.floor((points.length - 1) / 2), points.length - 1].forEach(index => {
+                const label = document.createElement('span'); label.textContent = points[index].label; axis.append(label);
+            });
+            host.append(axis);
         } else {
             const width = Math.max(540, points.length * 66 + 80);
             const height = 300;
@@ -93,9 +114,30 @@
         }
     });
 
+    // Tab của trang báo cáo: khi không có JS mọi bảng đều hiện, có JS thì chỉ hiện tab đang chọn.
+    const initTabs = root => root.querySelectorAll('[data-tabs]').forEach(group => {
+        const tabs = [...group.querySelectorAll('[role="tab"]')];
+        const select = tab => tabs.forEach(item => {
+            const active = item === tab;
+            item.setAttribute('aria-selected', String(active));
+            item.tabIndex = active ? 0 : -1;
+            document.getElementById(item.getAttribute('aria-controls')).hidden = !active;
+        });
+        tabs.forEach((tab, index) => {
+            tab.addEventListener('click', () => select(tab));
+            tab.addEventListener('keydown', event => {
+                if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+                const next = tabs[(index + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+                select(next); next.focus();
+            });
+        });
+        select(tabs[0]);
+    });
+
     // Trang danh mục dựng sẵn biểu đồ trong HTML; các trang còn lại tải khối số liệu sau khi
     // trang đã hiện, nên việc chuyển trang không phải chờ máy chủ tổng hợp.
     drawCharts(document);
+    initTabs(document);
     const panel = document.querySelector('[data-analytics-panel]');
     if (panel) {
         // Khối số liệu về sau khi trang đã hiện nên nó đẩy bảng quản lý bên dưới xuống. Nhớ chiều
@@ -110,6 +152,9 @@
             .then(html => {
                 panel.innerHTML = html;
                 drawCharts(panel);
+                initTabs(panel);
+                // Liên kết dạng /admin/reports#bc-san-pham trỏ vào nội dung vừa tải nên phải tự cuộn tới.
+                if (location.hash) document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView();
                 // Đo chiều cao thật khi chưa đặt chỗ, rồi chỉ giữ lại chỗ trống nếu nội dung
                 // thấp hơn dự kiến; bỏ hẳn khi nội dung cao hơn để không thừa khoảng trắng.
                 panel.style.minHeight = '';

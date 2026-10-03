@@ -80,8 +80,6 @@ small { font-size: 12px; }
 .metric-card.revenue { border-top: 3px solid var(--gold); padding-top: 19px; }
 .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr); gap: 22px; align-items: start; }
 .dashboard-grid > .panel { margin-top: 0; }
-.attention-strip { display: flex; padding: 15px 20px; gap: 14px; align-items: center; justify-content: space-between; margin-bottom: 24px; background: #f5eddc; border: 1px solid #e7d8b8; border-radius: 7px; font-size: 13px; }
-.attention-strip p { margin: 0; }
 .filter-bar { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; padding: 20px 24px; border-bottom: 1px solid var(--line); }
 .filter-bar label { flex: 1 1 145px; }
 .filter-bar .filter-keyword { flex: 2 1 230px; }
@@ -215,6 +213,39 @@ input[type="checkbox"], input[type="radio"] { width: 17px; height: 17px; accent-
 .chart-data .data-table-wrap { max-height: 360px; }
 .chart-hint, .chart-empty { font-size: 12px; color: var(--muted); padding: 0 24px 18px; margin: 0; }
 .chart-empty { padding-top: 20px; min-height: 100px; }
+/* Tổng quan: việc cần xử lý và xu hướng doanh thu 30 ngày. */
+.todo-strip { display: flex; align-items: center; gap: 12px 24px; flex-wrap: wrap; margin-bottom: 24px; padding: 14px 20px; background: #f5eddc; border: 1px solid #e7d8b8; border-radius: 7px; font-size: 13px; }
+.todo-strip h2 { font-size: 14px; }
+.todo-strip ul { display: flex; flex-wrap: wrap; gap: 10px 26px; margin: 0; padding: 0; list-style: none; }
+.todo-strip li strong { font-size: 16px; font-variant-numeric: tabular-nums; }
+.todo-strip li a { margin-left: 6px; font-weight: 600; }
+.trend-total { display: grid; justify-items: end; text-align: right; }
+.trend-total span { font-size: 12px; color: var(--muted); }
+.trend-total strong { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.line-chart { display: block; width: 100%; height: 180px; }
+.line-axis { display: flex; justify-content: space-between; padding-top: 4px; font-size: 11px; color: #51675c; }
+/* Báo cáo: mục lục, các mục có tiêu đề, so sánh kỳ trước và tab danh mục. */
+.delta { margin: 0 0 4px; font-size: 12px; font-weight: 600; }
+.delta.up { color: #276044; }
+.delta.down { color: var(--danger); }
+.delta.flat { color: var(--muted); font-weight: 400; }
+.report-toc { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 24px; padding: 10px 0; background: var(--canvas); }
+.report-toc a { padding: 6px 12px; border: 1px solid #c7d6cc; border-radius: 999px; background: white; font-size: 12px; font-weight: 600; text-decoration: none; }
+.report-toc a:hover { background: #edf4ee; }
+.report-section { margin-bottom: 34px; scroll-margin-top: 64px; }
+.report-section-title { margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--line); font-size: 20px; }
+.report-section-note { margin: -6px 0 14px; }
+.report-section .analytics-chart-grid + .analytics-chart-grid, .report-section .metric-grid + .analytics-chart-grid { margin-top: 0; }
+.report-wide > .panel { margin: 0; }
+.report-tabs { display: flex; flex-direction: column; min-width: 0; }
+.report-tablist { display: flex; gap: 4px; margin-bottom: -1px; }
+.report-tablist button { padding: 8px 14px; border: 1px solid var(--line); border-radius: 7px 7px 0 0; background: #f6f9f7; color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; }
+.report-tablist button[aria-selected="true"] { background: white; color: var(--forest); border-bottom-color: white; }
+.report-tabs [role="tabpanel"] { flex: 1; display: flex; }
+.report-tabs [role="tabpanel"] > .panel { flex: 1; margin: 0; border-top-left-radius: 0; display: flex; flex-direction: column; }
+.report-tabs [role="tabpanel"] + [role="tabpanel"] { margin-top: 16px; }
+.js .report-tabs [role="tabpanel"] + [role="tabpanel"] { margin-top: 0; }
+.report-section .data-table tfoot th, .report-section .data-table tfoot td { padding: 12px 20px; border-top: 2px solid var(--line); font-weight: 600; }
 @media (max-width: 1100px) { .analytics-chart-grid { grid-template-columns: 1fr; } }
 @media (max-width: 700px) {
     .analytics-filters .filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
@@ -231,6 +262,12 @@ input[type="checkbox"], input[type="radio"] { width: 17px; height: 17px; accent-
     .chart-visual { overflow: visible; }
     .chart-legend { max-height: none; }
     .bar-chart { min-width: 0; }
+    .report-toc, .report-tablist { display: none; }
+    .report-tabs [role="tabpanel"][hidden] { display: flex !important; margin-top: 16px; }
+    .report-section { break-before: auto; margin-bottom: 20px; }
+    .report-section-title { break-after: avoid; }
+    .report-page .metric-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .report-page .chart-hint { display: none; }
 }
 @media (min-width: 1900px) { .admin-main { margin-right: auto; } }
 @media (max-width: 1200px) {
@@ -269,7 +306,7 @@ input[type="checkbox"], input[type="radio"] { width: 17px; height: 17px; accent-
     .cover-editor { grid-template-columns: 85px minmax(0, 1fr); gap: 16px; }
     .checkbox-grid { grid-template-columns: 1fr; }
     .form-footer { align-items: flex-start; flex-direction: column; }
-    .attention-strip { align-items: flex-start; flex-direction: column; }
+    .todo-strip { align-items: flex-start; flex-direction: column; }
     .book-detail-layout { grid-template-columns: 1fr; }
     .book-cover-large { max-width: 180px; }
     .detail-facts { grid-template-columns: 1fr; }

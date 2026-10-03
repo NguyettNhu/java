@@ -10,6 +10,10 @@ public record DashboardView(
         BigDecimal completedRevenue,
         long customerCount,
         long activeBookCount,
-        List<TopSellingBookView> topSellingBooks
+        List<TopSellingBookView> topSellingBooks,
+        AnalyticsView.Chart recentRevenue
 ) {
+    public BigDecimal recentRevenueTotal() {
+        return recentRevenue.points().stream().map(AnalyticsView.Point::value).reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 }

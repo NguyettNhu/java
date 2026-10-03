@@ -58,22 +58,126 @@
         <details class="analytics-details" open>
             <summary>Biểu đồ và bảng số liệu chi tiết <span class="help-text">Có thể thu gọn để xem bảng quản lý bên dưới.</span></summary>
             <div class="analytics-chart-grid">
-                <article class="panel analytics-chart" th:each="chart : ${a.charts}" th:attr="data-chart-type=${chart.type},data-unit=${chart.unit}">
-                    <header class="panel-heading"><div><h2 th:text="${chart.title}"></h2><p th:text="${chart.note}"></p></div></header>
-                    <div class="chart-visual" aria-hidden="true"></div>
-                    <p class="chart-empty" hidden>Chưa có dữ liệu trong phạm vi này. Hãy chọn kỳ hoặc danh mục khác.</p>
-                    <details class="chart-data" open><summary>Xem số liệu chính xác</summary>
-                        <div class="data-table-wrap" tabindex="0" role="region" th:attr="aria-label=${chart.title}"><table class="data-table">
-                            <thead><tr><th scope="col">Mục</th><th scope="col" class="numeric" th:text="${chart.unit}"></th></tr></thead>
-                            <tbody><tr th:each="point : ${chart.points}" th:attr="data-chart-label=${point.label},data-chart-value=${point.value}">
-                                <td><a th:if="${point.url != null}" th:href="@{${point.url}}" th:text="${point.label}"></a><span th:unless="${point.url != null}" th:text="${point.label}"></span></td>
-                                <td class="numeric" th:text="${#numbers.formatDecimal(point.value, 0, 'POINT', 0, 'COMMA') + ' ' + chart.unit}"></td>
-                            </tr><tr th:if="${#lists.isEmpty(chart.points)}"><td colspan="2">Chưa có dữ liệu phù hợp trong kỳ.</td></tr></tbody>
-                        </table></div>
-                    </details>
-                </article>
+                <th:block th:each="chart : ${a.charts}"><article th:replace="~{fragments/admin-analytics :: chartCard(${chart})}"></article></th:block>
             </div>
         </details>
+</th:block>
+
+<!-- Thẻ biểu đồ dùng chung: biểu đồ vẽ bằng admin-charts.js từ bảng số liệu bên trong. -->
+<article th:fragment="chartCard(chart)" th:if="${chart != null}" class="panel analytics-chart" th:attr="data-chart-type=${chart.type},data-unit=${chart.unit}">
+    <header class="panel-heading"><div><h2 th:text="${chart.title}"></h2><p th:text="${chart.note}"></p></div></header>
+    <div class="chart-visual" aria-hidden="true"></div>
+    <p class="chart-empty" hidden>Chưa có dữ liệu trong phạm vi này. Hãy chọn kỳ hoặc danh mục khác.</p>
+    <details class="chart-data" open><summary>Xem số liệu chính xác</summary>
+        <div class="data-table-wrap" tabindex="0" role="region" th:attr="aria-label=${chart.title}"><table class="data-table">
+            <thead><tr><th scope="col">Mục</th><th scope="col" class="numeric" th:text="${chart.unit}"></th></tr></thead>
+            <tbody><tr th:each="point : ${chart.points}" th:attr="data-chart-label=${point.label},data-chart-value=${point.value}">
+                <td><a th:if="${point.url != null}" th:href="@{${point.url}}" th:text="${point.label}"></a><span th:unless="${point.url != null}" th:text="${point.label}"></span></td>
+                <td class="numeric" th:text="${#numbers.formatDecimal(point.value, 0, 'POINT', 0, 'COMMA') + ' ' + chart.unit}"></td>
+            </tr><tr th:if="${#lists.isEmpty(chart.points)}"><td colspan="2">Chưa có dữ liệu phù hợp trong kỳ.</td></tr></tbody>
+        </table></div>
+    </details>
+</article>
+
+<!-- Mũi tên và phần trăm thay đổi so với kỳ trước; không hiện khi kỳ trước bằng 0. -->
+<span th:fragment="delta(change)" class="delta" th:classappend="${change == null ? 'flat' : (change.signum() > 0 ? 'up' : (change.signum() < 0 ? 'down' : 'flat'))}"
+      th:text="${change == null ? 'Kỳ trước chưa có số liệu' : (change.signum() > 0 ? '▲ +' : (change.signum() < 0 ? '▼ ' : '● ')) + #numbers.formatDecimal(change, 1, 'POINT', 1, 'COMMA') + '% so với kỳ trước'}"></span>
+
+<!-- Bố cục chi tiết riêng của trang Báo cáo: năm mục có mục lục, so sánh kỳ trước và bảng trạng thái đơn. -->
+<th:block th:fragment="report" th:with="a=${analytics}, p=${analytics.previous}">
+    <p class="analytics-scope"><strong th:text="${#temporals.format(a.filter.range.from, 'dd/MM/yyyy') + ' – ' + #temporals.format(a.filter.range.to, 'dd/MM/yyyy')}"></strong>
+        · So với kỳ trước <strong th:text="${#temporals.format(p.range.from, 'dd/MM/yyyy') + ' – ' + #temporals.format(p.range.to, 'dd/MM/yyyy')}"></strong>.
+        Theo ngày đặt hàng, giờ Việt Nam. Chỉ đơn hoàn thành được cộng doanh thu.
+        <span th:if="${areportPublisher != null or areportCategory != null or areportAuthor != null}">Khi lọc danh mục, doanh thu chỉ cộng tiền những sách khớp bộ lọc trong đơn.</span>
+    </p>
+    <nav class="report-toc" aria-label="Các mục của báo cáo">
+        <a href="#bc-tong-hop">Tổng hợp</a><a href="#bc-doanh-thu">Doanh thu</a><a href="#bc-don-hang">Đơn hàng</a>
+        <a href="#bc-san-pham">Sản phẩm</a><a href="#bc-khach-hang">Khách hàng</a><a href="#bc-ton-kho">Tồn kho</a>
+    </nav>
+
+    <section id="bc-tong-hop" class="report-section" aria-labelledby="bc-tong-hop-title">
+        <h2 id="bc-tong-hop-title" class="report-section-title">1. Tổng hợp kỳ</h2>
+        <div class="metric-grid">
+            <article class="metric-card revenue"><span>Doanh thu trong kỳ</span><strong th:text="${#numbers.formatDecimal(a.revenue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong>
+                <span th:replace="~{fragments/admin-analytics :: delta(${a.revenueChange()})}"></span>
+                <small th:text="${'Kỳ trước: ' + #numbers.formatDecimal(p.revenue, 0, 'POINT', 0, 'COMMA') + ' ₫ · ' + a.completedOrders + ' đơn hoàn thành'}"></small></article>
+            <article class="metric-card"><span>Tổng đơn trong kỳ</span><strong th:text="${a.totalOrders}"></strong>
+                <span th:replace="~{fragments/admin-analytics :: delta(${a.ordersChange()})}"></span>
+                <small th:text="${'Kỳ trước: ' + p.totalOrders + ' đơn · mọi trạng thái'}"></small></article>
+            <article class="metric-card"><span>Giá trị trung bình / đơn hoàn thành</span><strong th:text="${#numbers.formatDecimal(a.averageOrderValue(), 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong>
+                <span th:replace="~{fragments/admin-analytics :: delta(${a.averageOrderValueChange()})}"></span>
+                <small th:text="${'Kỳ trước: ' + #numbers.formatDecimal(p.averageOrderValue(), 0, 'POINT', 0, 'COMMA') + ' ₫'}"></small></article>
+            <article class="metric-card"><span>Khách đã mua</span><strong th:text="${a.buyers}"></strong>
+                <span th:replace="~{fragments/admin-analytics :: delta(${a.buyersChange()})}"></span>
+                <small th:text="${a.quantitySold + ' cuốn đã bán · kỳ trước ' + p.quantitySold + ' cuốn'}"></small></article>
+        </div>
+    </section>
+
+    <section id="bc-doanh-thu" class="report-section" aria-labelledby="bc-doanh-thu-title">
+        <h2 id="bc-doanh-thu-title" class="report-section-title">2. Doanh thu</h2>
+        <div class="report-wide"><article th:replace="~{fragments/admin-analytics :: chartCard(${a.chart('revenue-time')})}"></article></div>
+    </section>
+
+    <section id="bc-don-hang" class="report-section" aria-labelledby="bc-don-hang-title">
+        <h2 id="bc-don-hang-title" class="report-section-title">3. Đơn hàng</h2>
+        <div class="analytics-chart-grid">
+            <article th:replace="~{fragments/admin-analytics :: chartCard(${a.chart('order-status')})}"></article>
+            <article class="panel">
+                <header class="panel-heading"><div><h2>Đơn theo trạng thái</h2><p>Giá trị là tổng tiền đơn ở từng trạng thái; chỉ dòng “Hoàn thành” được tính vào doanh thu.</p></div></header>
+                <div class="data-table-wrap" tabindex="0" role="region" aria-label="Đơn theo trạng thái"><table class="data-table">
+                    <thead><tr><th scope="col">Trạng thái</th><th scope="col" class="numeric">Số đơn</th><th scope="col" class="numeric">Tỉ lệ</th><th scope="col" class="numeric">Giá trị</th></tr></thead>
+                    <tbody><tr th:each="row : ${a.statusTotals}">
+                        <td><span class="status-pill" th:classappend="${'order-status-' + #strings.toLowerCase(row.status.name())}" th:text="${row.status.label}"></span></td>
+                        <td class="numeric" th:text="${row.count}"></td>
+                        <td class="numeric" th:text="${#numbers.formatDecimal(a.statusShare(row), 1, 'POINT', 1, 'COMMA') + '%'}"></td>
+                        <td class="numeric" th:text="${#numbers.formatDecimal(row.amount, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></td>
+                    </tr></tbody>
+                    <tfoot><tr><th scope="row">Tổng</th><td class="numeric" th:text="${a.totalOrders}"></td><td class="numeric">100%</td><td></td></tr></tfoot>
+                </table></div>
+            </article>
+        </div>
+    </section>
+
+    <section id="bc-san-pham" class="report-section" aria-labelledby="bc-san-pham-title">
+        <h2 id="bc-san-pham-title" class="report-section-title">4. Sản phẩm</h2>
+        <div class="analytics-chart-grid">
+            <article th:replace="~{fragments/admin-analytics :: chartCard(${a.chart('top-books')})}"></article>
+            <div class="report-tabs" data-tabs>
+                <div class="report-tablist" role="tablist" aria-label="Doanh thu theo danh mục">
+                    <button type="button" role="tab" id="tab-rev-categories" aria-controls="panel-rev-categories" aria-selected="true">Thể loại</button>
+                    <button type="button" role="tab" id="tab-rev-authors" aria-controls="panel-rev-authors" aria-selected="false">Tác giả</button>
+                    <button type="button" role="tab" id="tab-rev-publishers" aria-controls="panel-rev-publishers" aria-selected="false">Nhà xuất bản</button>
+                </div>
+                <div role="tabpanel" id="panel-rev-categories" aria-labelledby="tab-rev-categories"><article th:replace="~{fragments/admin-analytics :: chartCard(${a.chart('revenue-by-categories')})}"></article></div>
+                <div role="tabpanel" id="panel-rev-authors" aria-labelledby="tab-rev-authors"><article th:replace="~{fragments/admin-analytics :: chartCard(${a.chart('revenue-by-authors')})}"></article></div>
+                <div role="tabpanel" id="panel-rev-publishers" aria-labelledby="tab-rev-publishers"><article th:replace="~{fragments/admin-analytics :: chartCard(${a.chart('revenue-by-publishers')})}"></article></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="bc-khach-hang" class="report-section" aria-labelledby="bc-khach-hang-title">
+        <h2 id="bc-khach-hang-title" class="report-section-title">5. Khách hàng</h2>
+        <div class="analytics-chart-grid">
+            <article th:replace="~{fragments/admin-analytics :: chartCard(${a.chart('top-customers-money')})}"></article>
+            <article th:replace="~{fragments/admin-analytics :: chartCard(${a.chart('top-customers-quantity')})}"></article>
+        </div>
+    </section>
+
+    <section id="bc-ton-kho" class="report-section" aria-labelledby="bc-ton-kho-title">
+        <h2 id="bc-ton-kho-title" class="report-section-title">6. Tồn kho hiện tại</h2>
+        <p class="help-text report-section-note">Số liệu tồn kho là hiện tại, không phụ thuộc kỳ thống kê; bộ lọc danh mục vẫn được áp dụng.</p>
+        <div class="metric-grid">
+            <article class="metric-card"><span>Tổng số sách</span><strong th:text="${a.totalBooks}"></strong><small th:text="${a.totalCategories + ' thể loại'}"></small></article>
+            <article class="metric-card"><span>Tổng tồn kho</span><strong th:text="${a.stock + ' cuốn'}"></strong><small>Trên toàn bộ đầu sách trong phạm vi</small></article>
+            <article class="metric-card"><span>Cần bổ sung</span><strong th:text="${a.lowStock + a.emptyStock}"></strong><small th:text="${a.lowStock + ' sắp hết · ' + a.emptyStock + ' hết hàng'}"></small></article>
+            <article class="metric-card"><span>Giá trị tồn theo giá bán</span><strong th:text="${#numbers.formatDecimal(a.stockValue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><small>Số lượng hiện tại × giá bán hiện tại</small></article>
+        </div>
+        <div class="analytics-chart-grid">
+            <article th:replace="~{fragments/admin-analytics :: chartCard(${a.chart('stock-status')})}"></article>
+            <article th:replace="~{fragments/admin-analytics :: chartCard(${a.chart('category-books')})}"></article>
+            <article th:replace="~{fragments/admin-analytics :: chartCard(${a.chart('top-stock')})}"></article>
+        </div>
+    </section>
 </th:block>
 
 <p th:fragment="panelError" class="form-alert error" role="alert" th:text="${analyticsError}"></p>

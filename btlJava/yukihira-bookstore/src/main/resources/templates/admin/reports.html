@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/admin :: head('Báo cáo')}"></head>
-<body class="admin-page">
+<body class="admin-page report-page">
 <th:block th:replace="~{fragments/admin :: header}"></th:block>
 <main id="main-content" tabindex="-1" class="admin-main">
     <div th:replace="~{fragments/admin :: flash}"></div>
 
-    <header class="admin-title"><div><h1>Báo cáo cửa hàng</h1><p>Thống kê theo ngày đặt hàng, múi giờ Việt Nam. Doanh thu chỉ tính các đơn đã hoàn thành.</p></div><button class="button ghost" type="button" data-print>In báo cáo</button></header>
+    <header class="admin-title"><div><h1>Báo cáo cửa hàng</h1><p>Phân tích chi tiết theo kỳ: doanh thu, đơn hàng, sản phẩm, khách hàng và tồn kho, có so sánh với kỳ liền trước. Thống kê theo ngày đặt hàng, múi giờ Việt Nam; doanh thu chỉ tính các đơn đã hoàn thành.</p></div>
+        <div class="heading-actions">
+            <a class="button ghost" th:if="${analyticsError == null}" th:href="@{/admin/reports/export(period=${aperiod},date=${adate},from=${afrom},to=${ato},groupBy=${agroupBy},reportPublisher=${areportPublisher},reportCategory=${areportCategory},reportAuthor=${areportAuthor})}">Xuất CSV</a>
+            <button class="button ghost" type="button" data-print>In báo cáo</button>
+        </div>
+    </header>
     <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
 </main>
 </body>

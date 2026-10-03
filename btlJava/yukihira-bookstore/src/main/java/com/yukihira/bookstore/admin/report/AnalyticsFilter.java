@@ -35,6 +35,21 @@ public record AnalyticsFilter(String period, LocalDate date, ReportPeriod range,
         return new AnalyticsFilter(selected, anchor, new ReportPeriod(start, end), grouping, publisher, category, author);
     }
 
+    /** Kỳ liền trước để so sánh: lùi theo lịch với tháng, quý, năm; còn lại lùi đúng số ngày của kỳ. */
+    public AnalyticsFilter previous() {
+        LocalDate from = range.from();
+        ReportPeriod previous = switch (period) {
+            case "month" -> { LocalDate start = from.minusMonths(1); yield new ReportPeriod(start, start.with(TemporalAdjusters.lastDayOfMonth())); }
+            case "quarter" -> { LocalDate start = from.minusMonths(3); yield new ReportPeriod(start, start.plusMonths(3).minusDays(1)); }
+            case "year" -> { LocalDate start = from.minusYears(1); yield new ReportPeriod(start, start.plusYears(1).minusDays(1)); }
+            default -> {
+                long days = range.to().toEpochDay() - from.toEpochDay() + 1;
+                yield new ReportPeriod(from.minusDays(days), from.minusDays(1));
+            }
+        };
+        return new AnalyticsFilter(period, date, previous, groupBy, publisherId, categoryId, authorId);
+    }
+
     public LocalDate bucket(LocalDate day) {
         return switch (groupBy) {
             case "week" -> day.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));

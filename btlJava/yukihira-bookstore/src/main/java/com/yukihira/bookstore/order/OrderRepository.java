@@ -15,11 +15,10 @@ public interface OrderRepository extends JpaRepository<CustomerOrder, Long>, Jpa
     @Query("select o from CustomerOrder o where o.id = :id")
     Optional<CustomerOrder> findForUpdate(@Param("id") Long id);
 
-        // Tổng hợp số đơn và giá trị đơn theo từng trạng thái trong khoảng thời gian.
-    @Query("select new com.yukihira.bookstore.admin.report.OrderStatusTotal(o.status, count(o), sum(o.totalAmount)) "
-            + "from CustomerOrder o where o.createdAt >= :from and o.createdAt < :to group by o.status")
-    List<com.yukihira.bookstore.admin.report.OrderStatusTotal> reportTotals(
-            @Param("from") java.time.Instant from, @Param("to") java.time.Instant to);
+        // Thời điểm đặt và giá trị của các đơn hoàn thành kể từ một mốc, dùng cho biểu đồ doanh thu gần đây.
+    @Query("select o.createdAt, o.totalAmount from CustomerOrder o "
+            + "where o.status = com.yukihira.bookstore.order.OrderStatus.COMPLETED and o.createdAt >= :from")
+    List<Object[]> completedSince(@Param("from") java.time.Instant from);
     @EntityGraph(attributePaths = {"items", "items.book"})
     @Query("select customerOrder from CustomerOrder customerOrder where customerOrder.id = :id")
     Optional<CustomerOrder> findDetailedById(@Param("id") Long id);

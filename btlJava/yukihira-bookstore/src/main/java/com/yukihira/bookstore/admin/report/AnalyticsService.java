@@ -34,13 +34,22 @@ public class AnalyticsService {
         Map<Long, Book> byBook = catalog.stream().collect(Collectors.toMap(Book::getId, Function.identity()));
         boolean scoped = filter.publisherId() != null || filter.categoryId() != null || filter.authorId() != null
                 || (section.equals("books") && detailId != null);
+        // Áp dụng bộ lọc chi tiết ở bước tổng hợp để tránh tham số truy vấn động.
+        AnalyticsView view = summarize(filter, section, detailId, catalog, byBook, scoped, orderRows(filter));
+        if (!section.equals("reports")) return view;
+        // Trang báo cáo so sánh với kỳ liền trước; dùng lại catalog đã nạp và cùng bộ lọc danh mục.
+        AnalyticsFilter before = filter.previous();
+        AnalyticsView previous = summarize(before, section, detailId, catalog, byBook, scoped, orderRows(before));
+        return view.withPrevious(new Comparison(before.range(), previous.revenue(), previous.totalOrders(),
+                previous.completedOrders(), previous.quantitySold(), previous.buyers()));
+    }
+
+    private List<Object[]> orderRows(AnalyticsFilter filter) {
         // Đọc dữ liệu dạng dòng để giữ nguyên giá trị lịch sử của từng sản phẩm.
-        List<Object[]> orderRows = em.createQuery("select o.id, o.createdAt, o.status, o.totalAmount, o.user.id, o.user.fullName from CustomerOrder o "
+        return em.createQuery("select o.id, o.createdAt, o.status, o.totalAmount, o.user.id, o.user.fullName from CustomerOrder o "
                         + "where o.createdAt >= :start and o.createdAt < :end", Object[].class)
                 .setParameter("start", filter.range().start()).setParameter("end", filter.range().endExclusive())
                 .getResultList();
-        // Áp dụng bộ lọc chi tiết ở bước tổng hợp để tránh tham số truy vấn động.
-        return summarize(filter, section, detailId, catalog, byBook, scoped, orderRows);
     }
 
     private AnalyticsView summarize(AnalyticsFilter filter, String section, Long detailId, List<Book> catalog,
@@ -51,6 +60,7 @@ public class AnalyticsService {
         Map<Long, List<Object[]>> itemsByOrder = itemRows.stream().filter(r -> byBook.containsKey((Long) r[1]))
                 .collect(Collectors.groupingBy(r -> (Long) r[0]));
         Map<OrderStatus, Long> statuses = new EnumMap<>(OrderStatus.class);
+        Map<OrderStatus, BigDecimal> statusMoney = new EnumMap<>(OrderStatus.class);
         Map<LocalDate, BigDecimal> timeline = new TreeMap<>();
         for (LocalDate d = filter.range().from(); !d.isAfter(filter.range().to()); d = d.plusDays(1)) timeline.putIfAbsent(filter.bucket(d), BigDecimal.ZERO);
         Map<Long, BigDecimal> customerMoney = new HashMap<>();
@@ -67,9 +77,10 @@ public class AnalyticsService {
             List<Object[]> items = itemsByOrder.getOrDefault(orderId, List.of());
             if (scoped && items.isEmpty()) continue;
             OrderStatus status = (OrderStatus) row[2];
-            statuses.merge(status, 1L, Long::sum);
-            if (status != OrderStatus.COMPLETED) continue;
             BigDecimal amount = scoped ? items.stream().map(i -> (BigDecimal) i[3]).reduce(BigDecimal.ZERO, BigDecimal::add) : (BigDecimal) row[3];
+            statuses.merge(status, 1L, Long::sum);
+            statusMoney.merge(status, amount, BigDecimal::add);
+            if (status != OrderStatus.COMPLETED) continue;
             revenue = revenue.add(amount); completed++;
             LocalDate day = ((Instant) row[1]).atZone(ReportPeriod.ZONE).toLocalDate();
             timeline.merge(filter.bucket(day), amount, BigDecimal::add);
@@ -84,52 +95,66 @@ public class AnalyticsService {
         }
         List<Chart> charts = new ArrayList<>();
         String salesNote = "Đơn hoàn thành, theo ngày đặt hàng (giờ Việt Nam).";
-        charts.add(new Chart("Doanh thu theo thời gian", "bar", "₫", salesNote + " Các kỳ ở biên chỉ cộng ngày nằm trong khoảng lọc.", timeline.entrySet().stream()
+        charts.add(new Chart("revenue-time", "Doanh thu theo thời gian", "bar", "₫", salesNote + " Các kỳ ở biên chỉ cộng ngày nằm trong khoảng lọc.", timeline.entrySet().stream()
                 .map(e -> new Point(bucketLabel(e.getKey(), filter.groupBy()), e.getValue(), null)).toList()));
         if (!section.equals("inventory")) {
-            charts.add(new Chart("Phân bố trạng thái đơn", "pie", "đơn", "Đếm mỗi đơn một lần, kể cả đơn có nhiều sách.", Arrays.stream(OrderStatus.values())
+            charts.add(new Chart("order-status", "Phân bố trạng thái đơn", "pie", "đơn", "Đếm mỗi đơn một lần, kể cả đơn có nhiều sách.", Arrays.stream(OrderStatus.values())
                     .map(s -> new Point(s.getLabel(), BigDecimal.valueOf(statuses.getOrDefault(s, 0L)), null)).toList()));
         }
-        if (Set.of("dashboard", "reports", "books", "categories", "inventory").contains(section)) {
+        if (Set.of("reports", "books", "categories", "inventory").contains(section)) {
             Map<Long, Long> categoryCounts = catalog.stream().collect(Collectors.groupingBy(b -> b.getCategory().getId(), Collectors.counting()));
             var categoryPoints = references.list(ReferenceType.CATEGORIES).stream().filter(c -> filter.categoryId() == null || c.id().equals(filter.categoryId()))
                     .map(c -> new Point(c.name(), BigDecimal.valueOf(categoryCounts.getOrDefault(c.id(), 0L)), "/admin/books?categoryId=" + c.id())).toList();
-            charts.add(new Chart("Phân loại sách", "pie", "đầu sách", "Số đầu sách hiện tại theo thể loại, gồm cả sách ngừng bán.", categoryPoints));
+            charts.add(new Chart("category-books", "Phân loại sách", "pie", "đầu sách", "Số đầu sách hiện tại theo thể loại, gồm cả sách ngừng bán.", categoryPoints));
         }
-        if (Set.of("dashboard", "reports", "books", "users", "publishers", "categories", "authors").contains(section)) {
-            charts.add(new Chart("Top 5 khách chi tiêu nhiều nhất", "bar", "₫", salesNote, ranked(customerMoney, id -> customerNames.get(id) + " (#" + id + ")", id -> "/admin/users/" + id, 5)));
-            charts.add(new Chart("Top 5 khách mua nhiều cuốn nhất", "bar", "cuốn", salesNote, ranked(toMoney(customerQuantity), id -> customerNames.get(id) + " (#" + id + ")", id -> "/admin/users/" + id, 5)));
-            charts.add(new Chart("Top 10 sách bán chạy", "bar", "cuốn", salesNote, ranked(toMoney(bookQuantity), id -> byBook.get(id).getTitle(), id -> "/admin/books/" + id, 10)));
+        if (Set.of("reports", "books", "users", "publishers", "categories", "authors").contains(section)) {
+            charts.add(new Chart("top-customers-money", "Top 5 khách chi tiêu nhiều nhất", "bar", "₫", salesNote, ranked(customerMoney, id -> customerNames.get(id) + " (#" + id + ")", id -> "/admin/users/" + id, 5)));
+            charts.add(new Chart("top-customers-quantity", "Top 5 khách mua nhiều cuốn nhất", "bar", "cuốn", salesNote, ranked(toMoney(customerQuantity), id -> customerNames.get(id) + " (#" + id + ")", id -> "/admin/users/" + id, 5)));
+            charts.add(new Chart("top-books", "Top 10 sách bán chạy", "bar", "cuốn", salesNote, ranked(toMoney(bookQuantity), id -> byBook.get(id).getTitle(), id -> "/admin/books/" + id, 10)));
         }
         long stock = catalog.stream().mapToLong(Book::getStock).sum();
         long low = catalog.stream().filter(b -> b.getStock() > 0 && b.getStock() <= 5).count();
         long empty = catalog.stream().filter(b -> b.getStock() == 0).count();
-        if (Set.of("dashboard", "reports", "inventory", "books", "publishers", "categories", "authors").contains(section)) {
-            charts.add(new Chart("Top 10 sách tồn kho nhiều nhất", "bar", "cuốn", "Tồn kho hiện tại, không phải tồn kho lịch sử trong kỳ.", catalog.stream()
+        if (Set.of("reports", "inventory", "books", "publishers", "categories", "authors").contains(section)) {
+            charts.add(new Chart("top-stock", "Top 10 sách tồn kho nhiều nhất", "bar", "cuốn", "Tồn kho hiện tại, không phải tồn kho lịch sử trong kỳ.", catalog.stream()
                     .sorted(Comparator.comparingInt(Book::getStock).reversed().thenComparing(Book::getId)).limit(10)
                     .map(b -> new Point(b.getTitle(), BigDecimal.valueOf(b.getStock()), "/admin/books/" + b.getId())).toList()));
-            charts.add(new Chart("Tình trạng tồn kho", "pie", "đầu sách", "Sắp hết: từ 1 đến 5 cuốn. Hết hàng: 0 cuốn.", List.of(
+            charts.add(new Chart("stock-status", "Tình trạng tồn kho", "pie", "đầu sách", "Sắp hết: từ 1 đến 5 cuốn. Hết hàng: 0 cuốn.", List.of(
                     new Point("Còn trên 5 cuốn", BigDecimal.valueOf(catalog.size() - low - empty), null),
                     new Point("Sắp hết", BigDecimal.valueOf(low), null), new Point("Hết hàng", BigDecimal.valueOf(empty), null))));
         }
         ReferenceType referenceType = switch (section) { case "categories" -> ReferenceType.CATEGORIES; case "authors" -> ReferenceType.AUTHORS; default -> ReferenceType.PUBLISHERS; };
         List<ReferenceStats> refStats = referenceStats(referenceType, filter, catalog, bookMoney, bookQuantity);
-        if (Set.of("reports", "publishers", "categories", "authors").contains(section)) {
-            String noun = referenceType.getLabel().toLowerCase(Locale.ROOT);
-            String attribution = referenceType == ReferenceType.AUTHORS ? " Sách nhiều tác giả được ghi nhận cho từng tác giả; không cộng các tác giả thành tổng doanh thu." : "";
-            charts.add(new Chart("Doanh thu theo " + noun, "bar", "₫", salesNote + attribution, refStats.stream()
-                    .sorted(Comparator.comparing(ReferenceStats::revenue).reversed().thenComparing(ReferenceStats::id)).limit(10)
-                    .map(r -> new Point(r.name(), r.revenue(), null)).toList()));
-            charts.add(new Chart("Số đầu sách theo " + noun, "bar", "đầu sách", "Danh mục hiện tại." + attribution, refStats.stream()
+        if (section.equals("reports")) {
+            // Báo cáo xem doanh thu theo cả ba chiều danh mục, mỗi chiều một biểu đồ.
+            for (ReferenceType type : List.of(ReferenceType.CATEGORIES, ReferenceType.AUTHORS, ReferenceType.PUBLISHERS))
+                charts.add(referenceRevenueChart(type, referenceStats(type, filter, catalog, bookMoney, bookQuantity), salesNote));
+        } else if (Set.of("publishers", "categories", "authors").contains(section)) {
+            charts.add(referenceRevenueChart(referenceType, refStats, salesNote));
+            charts.add(new Chart("books-by-reference", "Số đầu sách theo " + referenceType.getLabel().toLowerCase(Locale.ROOT), "bar", "đầu sách",
+                    "Danh mục hiện tại." + attribution(referenceType), refStats.stream()
                     .sorted(Comparator.comparingLong(ReferenceStats::bookCount).reversed().thenComparing(ReferenceStats::id)).limit(10)
                     .map(r -> new Point(r.name(), BigDecimal.valueOf(r.bookCount()), null)).toList()));
         }
+        List<OrderStatusTotal> statusTotals = Arrays.stream(OrderStatus.values())
+                .map(s -> new OrderStatusTotal(s, statuses.getOrDefault(s, 0L), statusMoney.getOrDefault(s, BigDecimal.ZERO))).toList();
         long categoryTotal = filter.categoryId() == null && filter.publisherId() == null && filter.authorId() == null && detailId == null
                 ? references.list(ReferenceType.CATEGORIES).size() : catalog.stream().map(b -> b.getCategory().getId()).distinct().count();
         return new AnalyticsView(filter, catalog.size(), categoryTotal, stock, low, empty,
                 catalog.stream().map(b -> b.getPrice().multiply(BigDecimal.valueOf(b.getStock()))).reduce(BigDecimal.ZERO, BigDecimal::add),
                 bookQuantity.values().stream().mapToLong(Long::longValue).sum(), statuses.values().stream().mapToLong(Long::longValue).sum(),
-                completed, revenue, customerMoney.size(), charts, refStats);
+                completed, revenue, customerMoney.size(), charts, refStats, statusTotals, null);
+    }
+
+    private Chart referenceRevenueChart(ReferenceType type, List<ReferenceStats> stats, String salesNote) {
+        return new Chart("revenue-by-" + type.name().toLowerCase(Locale.ROOT), "Doanh thu theo " + type.getLabel().toLowerCase(Locale.ROOT),
+                "bar", "₫", salesNote + attribution(type), stats.stream()
+                .sorted(Comparator.comparing(ReferenceStats::revenue).reversed().thenComparing(ReferenceStats::id)).limit(10)
+                .map(r -> new Point(r.name(), r.revenue(), null)).toList());
+    }
+
+    private String attribution(ReferenceType type) {
+        return type == ReferenceType.AUTHORS ? " Sách nhiều tác giả được ghi nhận cho từng tác giả; không cộng các tác giả thành tổng doanh thu." : "";
     }
 
     private boolean matches(Book b, AnalyticsFilter f) {

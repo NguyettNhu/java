@@ -6,8 +6,8 @@
 <main id="main-content" tabindex="-1" class="admin-main">
     <div th:replace="~{fragments/admin :: flash}"></div>
 
-    <header class="admin-title"><div><h1>Một ngày ở Yukihira</h1><p>Các đơn đang chờ và những cuốn sách cần bổ sung trên kệ.</p></div><a class="button primary" th:href="@{/admin/books/new}">+ Thêm sách</a></header>
-    <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
+    <header class="admin-title"><div><h1>Một ngày ở Yukihira</h1><p>Số liệu nhanh của cửa hàng và những việc cần xử lý. Phân tích chi tiết theo kỳ nằm ở trang Báo cáo.</p></div>
+        <div class="heading-actions"><a class="button ghost" th:href="@{/admin/reports}">Xem báo cáo chi tiết</a><a class="button primary" th:href="@{/admin/books/new}">+ Thêm sách</a></div></header>
 
     <section class="metric-grid" aria-label="Tổng quan cửa hàng">
         <article class="metric-card revenue"><span>Doanh thu hoàn thành</span><strong th:text="${#numbers.formatDecimal(dashboard.completedRevenue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><small>Tổng từ các đơn đã hoàn thành</small></article>
@@ -15,10 +15,34 @@
         <article class="metric-card"><span>Sách đang bán</span><strong th:text="${dashboard.activeBookCount}"></strong><small>Đầu sách trên cửa hàng</small></article>
         <article class="metric-card"><span>Khách hàng</span><strong th:text="${dashboard.customerCount}"></strong><small th:text="${dashboard.totalOrders + ' đơn hàng đã tiếp nhận'}"></small></article>
     </section>
-    <div class="attention-strip" th:if="${lowStock.totalElements > 0 or outOfStock > 0}"><p><strong>Cần bổ sung kệ sách:</strong> <span th:text="${lowStock.totalElements + ' đầu sách sắp hết và ' + outOfStock + ' đầu sách có tồn kho bằng 0.'}"></span></p><a th:href="@{/admin/inventory}">Kiểm tra tồn kho</a></div>
+
+    <section class="todo-strip" aria-label="Việc cần xử lý" th:if="${dashboard.pendingOrders > 0 or lowStock.totalElements > 0 or outOfStock > 0}">
+        <h2>Cần xử lý</h2>
+        <ul>
+            <li th:if="${dashboard.pendingOrders > 0}"><strong th:text="${dashboard.pendingOrders}"></strong> đơn chờ xác nhận <a th:href="@{/admin/orders(status='PENDING')}">Xử lý đơn</a></li>
+            <li th:if="${lowStock.totalElements > 0}"><strong th:text="${lowStock.totalElements}"></strong> đầu sách sắp hết <a th:href="@{/admin/inventory(stock='low')}">Bổ sung</a></li>
+            <li th:if="${outOfStock > 0}"><strong th:text="${outOfStock}"></strong> đầu sách hết hàng <a th:href="@{/admin/inventory(stock='empty')}">Kiểm tra</a></li>
+        </ul>
+    </section>
+
+    <section class="panel dashboard-trend" style="margin-bottom:24px" th:attr="data-chart-type=${dashboard.recentRevenue.type},data-unit=${dashboard.recentRevenue.unit}">
+        <header class="panel-heading"><div><h2 th:text="${dashboard.recentRevenue.title}"></h2><p th:text="${dashboard.recentRevenue.note}"></p></div>
+            <div class="trend-total"><span>Tổng 30 ngày</span><strong th:text="${#numbers.formatDecimal(dashboard.recentRevenueTotal(), 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong></div></header>
+        <div class="chart-visual" aria-hidden="true"></div>
+        <p class="chart-empty" hidden>Chưa có đơn hoàn thành trong 30 ngày gần nhất.</p>
+        <details class="chart-data" open><summary>Xem số liệu theo ngày</summary>
+            <div class="data-table-wrap" tabindex="0" role="region" aria-label="Doanh thu 30 ngày gần nhất"><table class="data-table">
+                <thead><tr><th scope="col">Ngày</th><th scope="col" class="numeric">₫</th></tr></thead>
+                <tbody><tr th:each="point : ${dashboard.recentRevenue.points}" th:attr="data-chart-label=${point.label},data-chart-value=${point.value}">
+                    <td th:text="${point.label}"></td><td class="numeric" th:text="${#numbers.formatDecimal(point.value, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></td>
+                </tr></tbody>
+            </table></div>
+        </details>
+    </section>
+
     <section class="panel" style="margin-bottom:24px"><header class="panel-heading"><div><h2>Đơn hàng mới nhất</h2><p>Cập nhật trực tiếp từ đơn đặt của khách.</p></div><a th:href="@{/admin/orders}">Tất cả đơn hàng</a></header><div th:replace="~{fragments/admin-tables :: orders(${recentOrders.content})}"></div></section>
     <div class="dashboard-grid">
-        <section class="panel"><header class="panel-heading"><div><h2>Sách được độc giả chọn nhiều</h2><p>Xếp theo số cuốn trong đơn hoàn thành.</p></div><a th:href="@{/admin/reports}">Xem báo cáo</a></header>
+        <section class="panel"><header class="panel-heading"><div><h2>Sách được độc giả chọn nhiều</h2><p>Xếp theo số cuốn trong đơn hoàn thành, toàn thời gian.</p></div><a th:href="@{/admin/reports(period='year')} + '#bc-san-pham'">Xem báo cáo</a></header>
             <ol class="item-list"><li th:each="book, iter : ${dashboard.topSellingBooks}"><div><a th:href="@{/admin/books/{id}(id=${book.bookId})}" th:text="${iter.count + '. ' + book.title}"></a><small th:text="${#numbers.formatDecimal(book.revenue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></small></div><strong th:text="${book.quantitySold + ' cuốn'}"></strong></li></ol>
             <p class="empty-cell" th:if="${#lists.isEmpty(dashboard.topSellingBooks)}">Bảng xếp hạng sẽ xuất hiện khi có đơn hoàn thành.</p>
         </section>

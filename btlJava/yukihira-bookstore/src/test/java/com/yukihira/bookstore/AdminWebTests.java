@@ -181,6 +181,29 @@ class AdminWebTests {
                     .andExpect(content().string(org.hamcrest.Matchers.containsString("data-chart-type=\"pie\"")))
                     .andExpect(content().string(org.hamcrest.Matchers.containsString("Top 5 khách chi tiêu nhiều nhất")));
         }
+        // Trang tổng quan chỉ hiện số liệu nhanh, không còn bộ lọc hay khối phân tích theo kỳ.
+        mvc.perform(get("/admin").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk()).andExpect(model().attributeDoesNotExist("analyticsPath", "analyticsUrl", "analytics"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Doanh thu 30 ngày gần nhất")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("href=\"/admin/reports\"")));
+        mvc.perform(get("/admin/analytics").param("for", "/admin").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isNotFound());
+        // Trang báo cáo nhận bố cục chi tiết riêng với các mục, so sánh kỳ trước và bảng trạng thái đơn.
+        mvc.perform(get("/admin/analytics").param("for", "/admin/reports").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("id=\"bc-don-hang\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("So với kỳ trước")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Đơn theo trạng thái")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Doanh thu theo tác giả")));
+        mvc.perform(get("/admin/reports/export").param("period", "month").param("date", "2024-02-10").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("bao-cao-2024-02-01_2024-02-29.csv")))
+                .andExpect(content().contentTypeCompatibleWith("text/csv"))
+                .andExpect(content().encoding("UTF-8"));
+        mvc.perform(get("/admin/reports/export").param("period", "bad").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isBadRequest());
+        mvc.perform(get("/admin/reports/export").with(user("customer").roles("CUSTOMER")))
+                .andExpect(status().isForbidden());
         // Trang thể loại vẫn dựng sẵn số liệu vì bảng quản lý của nó lấy dữ liệu từ đó.
         mvc.perform(get("/admin/categories").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk()).andExpect(model().attributeExists("analytics"))
