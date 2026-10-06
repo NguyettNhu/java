@@ -1,0 +1,556 @@
+[P] TRƯỜNG ĐẠI HỌC CÔNG NGHỆ ĐÔNG Á
+[P] KHOA CÔNG NGHỆ THÔNG TIN
+[P] BÀI TẬP LỚN
+[P] HỌC PHẦN: CÔNG NGHỆ JAVA
+[P] ĐỀ TÀI: XÂY DỰNG WEBSITE BÁN SÁCH TRỰC TUYẾN
+[P] YUKIHIRA BOOKSTORE
+[P] LỚP TÍN CHỈ: CÔNG NGHỆ JAVA-1-1-26(N08)
+[P] GIẢNG VIÊN HƯỚNG DẪN: ThS. Lê Mai Nam
+[P] NHÓM THỰC HIỆN: NHÓM 04
+=== TABLE 1 ===
+STT | Họ và tên | Mã sinh viên | Lớp
+1 | Chu Thị Thùy Linh | 20230711 | DCCNTT 14.C.1
+2 | Trần Thành Long | 20230457 | DCCNTT 14.C.1
+3 | Nguyễn Văn Thiệu | 20230274 | DCCNTT 14.C.1
+[P] Bắc Ninh – 2026
+[P] MỤC LỤC
+[P] MỤC LỤC2
+[P] DANH MỤC CÁC TỪ VIẾT TẮT4
+[P] DANH MỤC BẢNG BIỂU VÀ SƠ ĐỒ5
+[P] LỜI MỞ ĐẦU7
+[P] CHƯƠNG I. CƠ SỞ LÝ THUYẾT8
+[P] 1.1. Giới thiệu đề tài8
+[P] 1.2. Kế hoạch thực hiện đề tài8
+[P] 1.3. Thành viên nhóm và phân công nhiệm vụ9
+[P] 1.4. Giải thuật giải quyết vấn đề9
+[P] 1.5. Công cụ sử dụng14
+[P] 1.6. Các công nghệ sử dụng15
+[P] 1.7. Kết chương16
+[P] CHƯƠNG II. THIẾT KẾ VÀ XÂY DỰNG CHƯƠNG TRÌNH17
+[P] 2.1. Mô tả hệ thống17
+[P] 2.2. Kiến trúc hệ thống21
+[P] 2.3. Thiết kế cơ sở dữ liệu23
+[P] 2.4. Thiết kế giao diện29
+[P] 2.5. Tổ chức mã nguồn của dự án45
+[P] 2.6. Kết chương46
+[P] CHƯƠNG III. PHÁT TRIỂN HỆ THỐNG VÀ KIỂM THỬ47
+[P] 3.1. Xây dựng tầng thực thể47
+[P] 3.2. Xây dựng tầng truy cập dữ liệu47
+[P] 3.3. Xây dựng tầng nghiệp vụ48
+[P] 3.4. Xây dựng tầng điều khiển và giao diện49
+[P] 3.5. Kiểm thử hệ thống50
+[P] 3.6. Kết chương51
+[P] KẾT LUẬN52
+[P] DANH MỤC TÀI LIỆU THAM KHẢO54
+[P] DANH MỤC CÁC TỪ VIẾT TẮT
+=== TABLE 2 ===
+STT | Từ viết tắt | Diễn giải
+1 | API | Application Programming Interface – giao diện lập trình ứng dụng
+2 | BCrypt | Thuật toán băm mật khẩu một chiều có thêm muối ngẫu nhiên
+3 | CRUD | Create – Read – Update – Delete, bốn thao tác dữ liệu cơ bản
+4 | CSDL | Cơ sở dữ liệu
+5 | CSRF | Cross-Site Request Forgery – giả mạo yêu cầu liên trang
+6 | CSS | Cascading Style Sheets – ngôn ngữ định kiểu trang web
+7 | DTO | Data Transfer Object – đối tượng truyền dữ liệu giữa các tầng
+8 | ERD | Entity Relationship Diagram – sơ đồ thực thể liên kết
+9 | HTML | HyperText Markup Language – ngôn ngữ đánh dấu siêu văn bản
+10 | HTTP | HyperText Transfer Protocol – giao thức truyền siêu văn bản
+11 | IDE | Integrated Development Environment – môi trường phát triển tích hợp
+12 | JDBC | Java Database Connectivity – chuẩn kết nối CSDL của Java
+13 | JDK | Java Development Kit – bộ công cụ phát triển Java
+14 | JPA | Jakarta Persistence API – chuẩn ánh xạ đối tượng – quan hệ
+15 | JSON | JavaScript Object Notation – định dạng trao đổi dữ liệu
+16 | MVC | Model – View – Controller, mẫu kiến trúc ba thành phần
+17 | ORM | Object Relational Mapping – ánh xạ đối tượng – quan hệ
+18 | SQL | Structured Query Language – ngôn ngữ truy vấn có cấu trúc
+19 | UI | User Interface – giao diện người dùng
+20 | URL | Uniform Resource Locator – địa chỉ định vị tài nguyên
+[P] DANH MỤC BẢNG BIỂU VÀ SƠ ĐỒ
+[P] Danh mục bảng biểu
+=== TABLE 3 ===
+Số hiệu | Tên bảng
+Bảng 1.1 | Kế hoạch thực hiện đề tài
+Bảng 1.2 | Phân công nhiệm vụ các thành viên
+Bảng 1.3 | Công cụ sử dụng trong quá trình phát triển
+Bảng 1.4 | Các công nghệ sử dụng trong hệ thống
+Bảng 2.1 | Bảng mô tả tổng quan hệ thống
+Bảng 2.2 | Yêu cầu chức năng của hệ thống
+Bảng 2.3 | Yêu cầu phi chức năng của hệ thống
+Bảng 2.4 | Danh sách các bảng trong cơ sở dữ liệu
+Bảng 2.5 | Mô tả chi tiết bảng users
+Bảng 2.6 | Mô tả chi tiết bảng books
+Bảng 2.7 | Mô tả chi tiết các bảng danh mục tham chiếu
+Bảng 2.8 | Mô tả chi tiết bảng carts và cart_items
+Bảng 2.9 | Mô tả chi tiết bảng orders
+Bảng 2.10 | Mô tả chi tiết bảng order_items
+Bảng 2.11 | Mô tả các màn hình dành cho khách hàng
+Bảng 2.12 | Mô tả các màn hình dành cho quản trị viên
+Bảng 2.13 | Tổ chức thư mục mã nguồn của dự án
+Bảng 3.1 | Các lớp thực thể chính
+Bảng 3.2 | Các lớp repository truy cập dữ liệu
+Bảng 3.3 | Các lớp service nghiệp vụ
+Bảng 3.4 | Bản đồ đường dẫn của ứng dụng
+Bảng 3.5 | Danh sách endpoint JSON API
+Bảng 3.6 | Kết quả kiểm thử tự động
+[P] Danh mục sơ đồ và hình ảnh
+=== TABLE 4 ===
+Số hiệu | Tên hình
+Hình 1.1 | Lưu đồ giải thuật đăng nhập và kiểm soát truy cập
+Hình 1.2 | Lưu đồ giải thuật tìm kiếm và lọc sách
+Hình 1.3 | Lưu đồ giải thuật đặt hàng và khoá tồn kho
+Hình 2.1 | Quy trình hoạt động tổng quát của hệ thống
+Hình 2.2 | Sơ đồ trạng thái vòng đời đơn hàng
+Hình 2.3 | Kiến trúc phân tầng của hệ thống
+Hình 2.4 | Sơ đồ thực thể liên kết của cơ sở dữ liệu
+Hình 2.5 | Sơ đồ lớp thực thể kế thừa BaseEntity
+Hình 2.6 – Hình 2.16 | Các màn hình dành cho khách hàng
+Hình 2.17 – Hình 2.32 | Các màn hình dành cho quản trị viên
+[P] LỜI MỞ ĐẦU
+[P] Trong những năm gần đây, thương mại điện tử đã trở thành một phần quen thuộc của đời sống. Người đọc sách ngày nay không còn phải đến tận nhà sách để tìm một tựa sách mong muốn: chỉ với một trình duyệt, họ có thể tra cứu theo tên sách, theo thể loại, theo tác giả hoặc theo khoảng giá, so sánh và đặt mua ngay trên mạng. Với người bán, một website bán sách không chỉ là kênh bán hàng mà còn là công cụ quản lý danh mục, tồn kho và đơn hàng một cách chính xác.
+[P] Xuất phát từ nhu cầu thực tế đó, nhóm chúng em lựa chọn đề tài “Xây dựng website bán sách trực tuyến Yukihira Bookstore” làm bài tập lớn học phần Công nghệ Java. Đề tài vừa gần gũi, dễ hình dung, vừa đủ rộng để vận dụng gần như toàn bộ kiến thức đã học: lập trình hướng đối tượng với Java, kế thừa và đa hình, xây dựng ứng dụng web nhiều tầng bằng Spring Boot, ánh xạ đối tượng – quan hệ bằng Hibernate, làm việc với cơ sở dữ liệu PostgreSQL, bảo mật ứng dụng bằng Spring Security và kiểm thử tự động bằng JUnit.
+[P] Mục tiêu của đề tài là xây dựng một hệ thống hoàn chỉnh, chạy được thật, phục vụ ba nhóm người dùng: khách vãng lai xem và tìm sách, thành viên mua sách và theo dõi đơn hàng, quản trị viên quản lý danh mục, tồn kho, đơn hàng và xem báo cáo doanh thu. Điểm nhóm đặc biệt chú trọng là sự đúng đắn của dữ liệu khi nhiều người cùng mua một cuốn sách: toàn bộ quá trình đặt hàng được đặt trong một giao dịch có khoá bi quan, bảo đảm tồn kho không bao giờ bị âm và giá bán được lưu lại tại thời điểm mua.
+[P] Báo cáo được trình bày trong ba chương. Chương I trình bày cơ sở lý thuyết, kế hoạch thực hiện, các giải thuật chính và công nghệ sử dụng. Chương II trình bày quá trình phân tích, thiết kế kiến trúc, thiết kế cơ sở dữ liệu và thiết kế giao diện kèm hình ảnh thực tế của từng màn hình. Chương III trình bày quá trình cài đặt, kết quả đạt được và công tác kiểm thử.
+[P] Do thời gian và kinh nghiệm còn hạn chế, báo cáo chắc chắn không tránh khỏi thiếu sót. Nhóm chúng em rất mong nhận được sự góp ý của thầy để đề tài được hoàn thiện hơn. Chúng em xin chân thành cảm ơn ThS. Lê Mai Nam đã hướng dẫn nhóm trong suốt quá trình thực hiện.
+[P] CHƯƠNG I. CƠ SỞ LÝ THUYẾT
+[P] 1.1. Giới thiệu đề tài
+[P] Yukihira Bookstore là một website bán sách trực tuyến được xây dựng theo mô hình modular monolith: toàn bộ hệ thống là một ứng dụng Spring Boot duy nhất, nhưng mã nguồn bên trong được chia thành các gói theo tính năng nghiệp vụ như auth, user, book, cart, order và admin thay vì gom tất cả controller, service, repository vào những gói kỹ thuật khổng lồ. Cách tổ chức này giữ cho dự án dễ triển khai như một ứng dụng đơn khối, đồng thời vẫn dễ đọc và dễ mở rộng như một hệ thống nhiều mô-đun.
+[P] Hệ thống phục vụ ba nhóm người dùng với các quyền hạn khác nhau:
+[P] – Khách vãng lai: xem trang chủ, duyệt danh mục sách, tìm kiếm theo từ khoá, lọc theo thể loại – tác giả – nhà xuất bản – khoảng giá, sắp xếp và phân trang, xem chi tiết một cuốn sách.
+[P] – Thành viên: đăng ký tài khoản, đăng nhập, cập nhật hồ sơ cá nhân, quản lý giỏ hàng, đặt hàng, xem lịch sử đơn hàng và huỷ những đơn còn ở trạng thái chờ xác nhận.
+[P] – Quản trị viên: quản lý toàn bộ danh mục sách, thể loại, tác giả, nhà xuất bản; cập nhật tồn kho; xử lý vòng đời đơn hàng; khoá hoặc mở khoá tài khoản khách; xem báo cáo doanh thu và danh sách sách bán chạy.
+[P] Điểm nhấn kỹ thuật của đề tài nằm ở nghiệp vụ đặt hàng. Khi nhiều khách cùng mua một cuốn sách chỉ còn vài bản, hệ thống phải bảo đảm không bán vượt số lượng thực có. Nhóm giải quyết bằng cách đọc lại bản ghi sách bằng khoá ghi bi quan ngay trong giao dịch đặt hàng, kiểm tra lại tồn kho và giá, sau đó trừ kho, tạo bản sao chụp thông tin sách vào chi tiết đơn hàng và xoá giỏ hàng – tất cả trong cùng một giao dịch. Nếu bất kỳ bước nào thất bại, toàn bộ giao dịch được quay lui và dữ liệu trở về trạng thái ban đầu.
+[P] 1.2. Kế hoạch thực hiện đề tài
+[P] Nhóm chia thời gian thực hiện thành sáu giai đoạn, mỗi giai đoạn có sản phẩm bàn giao rõ ràng để thuận tiện cho việc theo dõi tiến độ.
+=== TABLE 5 ===
+Giai đoạn | Nội dung công việc | Thời gian | Sản phẩm bàn giao
+1 | Khảo sát bài toán, xác định phạm vi, thống nhất đề tài và phân công nhiệm vụ | Tuần 1 | Bản mô tả đề tài, danh sách yêu cầu
+2 | Phân tích yêu cầu chức năng và phi chức năng, vẽ quy trình nghiệp vụ | Tuần 2 | Đặc tả yêu cầu, sơ đồ quy trình
+3 | Thiết kế cơ sở dữ liệu, thiết kế kiến trúc phân tầng và sơ đồ lớp thực thể | Tuần 3 | Sơ đồ ERD, script migration Flyway
+4 | Cài đặt tầng thực thể, repository, service và bảo mật | Tuần 4 – 5 | Mã nguồn backend chạy được
+5 | Cài đặt giao diện Thymeleaf cho khách hàng và trang quản trị | Tuần 6 – 7 | Giao diện hoàn chỉnh
+6 | Kiểm thử tự động, sửa lỗi, viết báo cáo và chuẩn bị bảo vệ | Tuần 8 | Bộ 66 test, báo cáo bài tập lớn
+[P] Bảng 1.1. Kế hoạch thực hiện đề tài
+[P] 1.3. Thành viên nhóm và phân công nhiệm vụ
+=== TABLE 6 ===
+STT | Họ và tên | Mã sinh viên | Nhiệm vụ đảm nhiệm
+1 | Chu Thị Thùy Linh | 20230711 | Phân tích yêu cầu, thiết kế cơ sở dữ liệu, viết migration Flyway, cài đặt tầng thực thể và repository, tổng hợp báo cáo.
+2 | Trần Thành Long | 20230457 | Cài đặt tầng nghiệp vụ: giỏ hàng, đặt hàng có khoá tồn kho, chính sách chuyển trạng thái đơn, cấu hình Spring Security và viết kiểm thử tự động.
+3 | Nguyễn Văn Thiệu | 20230274 | Cài đặt tầng điều khiển và toàn bộ giao diện Thymeleaf cho khách hàng và trang quản trị, xây dựng biểu đồ báo cáo, chụp và biên tập hình ảnh minh hoạ.
+[P] Bảng 1.2. Phân công nhiệm vụ các thành viên
+[P] 1.4. Giải thuật giải quyết vấn đề
+[P] Phần này trình bày ba giải thuật cốt lõi quyết định tính đúng đắn của hệ thống: giải thuật đăng nhập và kiểm soát truy cập, giải thuật tìm kiếm – lọc sách, và giải thuật đặt hàng có khoá tồn kho.
+[P] 1.4.1. Giải thuật đăng nhập và kiểm soát truy cập
+[P] Mật khẩu người dùng không bao giờ được lưu ở dạng văn bản thuần. Khi đăng ký, hệ thống băm mật khẩu bằng BCrypt rồi mới ghi vào cột password_hash. Khi đăng nhập, Spring Security nạp người dùng theo email, so khớp mật khẩu nhập vào với chuỗi băm đã lưu, sau đó kiểm tra tiếp trạng thái tài khoản. Một bộ lọc riêng tên AccountStatusFilter bảo đảm rằng tài khoản bị quản trị viên khoá sẽ mất quyền truy cập ngay ở lần yêu cầu kế tiếp, kể cả khi phiên đăng nhập cũ vẫn còn hiệu lực.
+[P] Hình 1.1. Lưu đồ giải thuật đăng nhập và kiểm soát truy cập
+[P] 1.4.2. Giải thuật tìm kiếm và lọc sách
+[P] Trang danh sách sách cho phép kết hợp nhiều tiêu chí lọc cùng lúc, trong khi người dùng có thể bỏ trống bất kỳ tiêu chí nào. Nếu viết sẵn nhiều câu truy vấn cho từng tổ hợp thì số lượng truy vấn sẽ bùng nổ, vì vậy nhóm sử dụng cơ chế Specification của Spring Data JPA: mỗi tiêu chí được mô tả thành một vị từ nhỏ, chương trình duyệt qua các tham số và chỉ ghép thêm những vị từ có giá trị bằng toán tử AND. Kết quả cuối cùng được truyền cho repository cùng đối tượng phân trang để Hibernate sinh ra đúng một câu lệnh SELECT và một câu lệnh đếm.
+[P] Hình 1.2. Lưu đồ giải thuật tìm kiếm và lọc sách
+[P] 1.4.3. Giải thuật đặt hàng và khoá tồn kho
+[P] Đây là giải thuật quan trọng nhất của hệ thống. Toàn bộ quá trình đặt hàng nằm trong một phương thức có chú thích @Transactional. Với mỗi dòng trong giỏ hàng, hệ thống đọc lại bản ghi sách bằng khoá ghi bi quan PESSIMISTIC_WRITE, tương đương câu lệnh SELECT … FOR UPDATE của PostgreSQL. Nhờ vậy, hai người cùng mua cuốn sách cuối cùng sẽ bị tuần tự hoá: người thứ hai phải chờ người thứ nhất kết thúc giao dịch rồi mới đọc được tồn kho mới, và sẽ nhận được thông báo hết hàng thay vì mua thành công.
+[P] Giá bán và tên sách được sao chụp vào bản ghi chi tiết đơn hàng ngay tại thời điểm mua. Nhờ đó, khi quản trị viên đổi giá hoặc sửa tên sách sau này, các đơn hàng cũ vẫn giữ nguyên thông tin lịch sử, bảo đảm tính chính xác của báo cáo doanh thu.
+[P] Hình 1.3. Lưu đồ giải thuật đặt hàng và khoá tồn kho
+[P] 1.5. Công cụ sử dụng
+=== TABLE 7 ===
+STT | Công cụ | Phiên bản | Mục đích sử dụng
+1 | JDK | 21 trở lên | Biên dịch và chạy ứng dụng Java
+2 | Apache Maven | 3.9.16 | Quản lý thư viện phụ thuộc, biên dịch, đóng gói và chạy kiểm thử
+3 | IntelliJ IDEA / VS Code | Bản mới nhất | Môi trường soạn thảo và gỡ lỗi mã nguồn
+4 | Supabase PostgreSQL | 16 | Cơ sở dữ liệu quan hệ cho môi trường thật
+5 | H2 Database | 2.x | Cơ sở dữ liệu trong bộ nhớ dùng cho kiểm thử tự động
+6 | Git | 2.x | Quản lý phiên bản mã nguồn
+7 | Google Chrome | Bản mới nhất | Kiểm tra giao diện và công cụ phát triển web
+8 | Microsoft Word | 2019 trở lên | Soạn thảo báo cáo bài tập lớn
+[P] Bảng 1.3. Công cụ sử dụng trong quá trình phát triển
+[P] 1.6. Các công nghệ sử dụng
+=== TABLE 8 ===
+STT | Công nghệ | Vai trò trong hệ thống
+1 | Java 21 | Ngôn ngữ lập trình chính. Dự án sử dụng record cho các DTO chỉ đọc, enum cho vai trò và trạng thái, cùng các tính năng hiện đại của ngôn ngữ.
+2 | Spring Boot 4.1.1 | Nền tảng khởi tạo ứng dụng, tự động cấu hình, nhúng máy chủ Tomcat và quản lý vòng đời bean.
+3 | Spring MVC | Xử lý yêu cầu HTTP, ánh xạ đường dẫn tới phương thức điều khiển, ràng buộc và kiểm tra dữ liệu biểu mẫu.
+4 | Thymeleaf | Bộ sinh khung nhìn phía máy chủ, cho phép tái sử dụng fragment chung cho bố cục khách hàng và quản trị.
+5 | Spring Security | Xác thực bằng phiên, băm mật khẩu BCrypt, phân quyền theo URL, sinh và kiểm tra token CSRF.
+6 | Spring Data JPA | Sinh tự động các truy vấn dẫn xuất, hỗ trợ Specification cho bộ lọc động, phân trang và sắp xếp.
+7 | Hibernate 7.4.5 | Bộ hiện thực JPA, ánh xạ lớp thực thể sang bảng, quản lý ngữ cảnh bền vững, khoá lạc quan và khoá bi quan.
+8 | Flyway | Quản lý phiên bản lược đồ cơ sở dữ liệu bằng các script migration được đánh số tuần tự.
+9 | PostgreSQL (Supabase) | Hệ quản trị cơ sở dữ liệu quan hệ, hỗ trợ ràng buộc kiểm tra, khoá ngoại và khoá hàng.
+10 | Jakarta Bean Validation | Kiểm tra dữ liệu đầu vào bằng chú thích như @NotBlank, @Email, @Min, @DecimalMin.
+11 | JUnit 5 và Spring Boot Test | Bộ khung kiểm thử tự động cho tầng nghiệp vụ, tầng web và tầng truy cập dữ liệu.
+12 | Spring Cache | Lưu tạm danh sách thể loại, tác giả và nhà xuất bản trong bộ nhớ để các biểu mẫu và bộ lọc không phải truy vấn lại cơ sở dữ liệu ở mỗi lượt tải trang.
+13 | HTML5, CSS3 và JavaScript | Xây dựng giao diện đáp ứng, vẽ biểu đồ báo cáo bằng SVG thuần không cần thư viện ngoài.
+[P] Bảng 1.4. Các công nghệ sử dụng trong hệ thống
+[P] 1.7. Kết chương
+[P] Chương I đã trình bày bối cảnh và phạm vi của đề tài, kế hoạch thực hiện cùng phân công công việc cụ thể cho từng thành viên. Ba giải thuật cốt lõi – đăng nhập và kiểm soát truy cập, tìm kiếm và lọc sách, đặt hàng có khoá tồn kho – đã được mô tả bằng lưu đồ. Chương cũng liệt kê đầy đủ công cụ và công nghệ mà nhóm sử dụng. Đây là cơ sở để Chương II đi vào phân tích, thiết kế và xây dựng chương trình một cách chi tiết.
+[P] CHƯƠNG II. THIẾT KẾ VÀ XÂY DỰNG CHƯƠNG TRÌNH
+[P] 2.1. Mô tả hệ thống
+[P] Trước khi bắt tay vào thiết kế, nhóm trả lời một loạt câu hỏi để giới hạn phạm vi bài toán và thống nhất cách hiểu giữa các thành viên. Kết quả được tóm tắt trong bảng dưới đây.
+=== TABLE 9 ===
+Nội dung | Mô tả
+Tên hệ thống | Yukihira Bookstore – website bán sách trực tuyến
+Bài toán giải quyết | Số hoá hoạt động của một nhà sách: trưng bày sách, hỗ trợ khách tìm kiếm và đặt mua trực tuyến, đồng thời giúp chủ cửa hàng quản lý danh mục, tồn kho, đơn hàng và theo dõi doanh thu.
+Đối tượng sử dụng | Khách vãng lai, thành viên đã đăng ký và quản trị viên của cửa hàng.
+Phạm vi | Bán hàng trực tuyến với hình thức thanh toán khi nhận hàng. Hệ thống chưa tích hợp cổng thanh toán điện tử và dịch vụ vận chuyển của bên thứ ba.
+Dữ liệu quản lý | Người dùng, thể loại, tác giả, nhà xuất bản, sách, giỏ hàng, đơn hàng và chi tiết đơn hàng.
+Hình thức triển khai | Ứng dụng web chạy trên máy chủ Tomcat nhúng, kết nối cơ sở dữ liệu PostgreSQL đặt trên nền tảng Supabase.
+Kết quả mong đợi | Một hệ thống chạy được thật, dữ liệu nhất quán trong mọi tình huống tranh chấp tồn kho, có kiểm thử tự động bảo vệ các nghiệp vụ quan trọng.
+[P] Bảng 2.1. Bảng mô tả tổng quan hệ thống
+[P] 2.1.1. Yêu cầu chức năng
+=== TABLE 10 ===
+Mã | Nhóm chức năng | Mô tả chi tiết
+CN01 | Duyệt và tìm kiếm sách | Xem trang chủ với sách nổi bật; duyệt danh sách sách có phân trang; tìm theo từ khoá tên sách; lọc theo thể loại, tác giả, nhà xuất bản và khoảng giá; sắp xếp theo giá tăng, giá giảm hoặc mới nhất.
+CN02 | Xem chi tiết sách | Xem ảnh bìa, mô tả, giá bán, tình trạng còn hàng, thể loại, danh sách tác giả, nhà xuất bản và mã ISBN.
+CN03 | Đăng ký và đăng nhập | Đăng ký tài khoản bằng email; đăng nhập bằng phiên làm việc; đăng xuất; hệ thống từ chối email đã tồn tại và mật khẩu không đủ độ dài.
+CN04 | Quản lý hồ sơ cá nhân | Xem và cập nhật họ tên, số điện thoại, địa chỉ nhận hàng của thành viên.
+CN05 | Quản lý giỏ hàng | Thêm sách vào giỏ, sửa số lượng, xoá dòng khỏi giỏ, xem tổng tiền tạm tính. Mỗi thành viên có đúng một giỏ hàng gắn với tài khoản.
+CN06 | Đặt hàng | Nhập thông tin người nhận, chọn hình thức thanh toán khi nhận hàng hoặc chuyển khoản, đặt hàng trong một giao dịch có khoá tồn kho, sinh mã đơn hàng duy nhất, trừ kho, lưu bản sao chụp tên và giá sách, xoá giỏ hàng.
+CN07 | Theo dõi đơn hàng | Xem danh sách đơn đã đặt, xem chi tiết từng đơn, huỷ những đơn còn ở trạng thái chờ xác nhận. Thành viên chỉ xem được đơn của chính mình.
+CN08 | Quản trị danh mục sách | Thêm, xem, sửa, xoá sách với đầy đủ thông tin ISBN, slug, thể loại, nhiều tác giả, nhà xuất bản, ảnh bìa, giá và trạng thái bán.
+CN09 | Quản trị dữ liệu tham chiếu | Tạo, sửa, tìm kiếm, phân trang và xoá thể loại, tác giả, nhà xuất bản theo ràng buộc liên kết dữ liệu.
+CN10 | Quản lý tồn kho | Cập nhật số lượng thực tế, lọc nhóm sắp hết và hết hàng, tự chuyển trạng thái bán theo số lượng, kiểm tra phiên bản để chặn ghi đè từ tab cũ.
+CN11 | Xử lý đơn hàng | Tìm đơn theo mã hoặc theo khách, lọc theo trạng thái và khoảng ngày, xem chi tiết, chuyển trạng thái theo đúng chính sách, in phiếu giao hàng.
+CN12 | Quản lý khách hàng | Xem hồ sơ và lịch sử đơn của khách, khoá hoặc mở khoá tài khoản. Không cấp quyền quản trị và không xoá lịch sử từ màn hình này.
+CN13 | Báo cáo và thống kê | Bảng điều khiển hiển thị đơn chờ xử lý, doanh thu đơn hoàn thành, số sách đang bán, số khách hàng, cảnh báo tồn kho; báo cáo doanh thu theo kỳ và danh sách mười sách bán chạy nhất.
+[P] Bảng 2.2. Yêu cầu chức năng của hệ thống
+[P] 2.1.2. Yêu cầu phi chức năng
+=== TABLE 11 ===
+Tiêu chí | Yêu cầu cụ thể
+Tính đúng đắn của dữ liệu | Tồn kho không bao giờ âm; hoàn kho khi huỷ đơn diễn ra đúng một lần nhờ cờ stock_restored; giá và tên sách trong đơn cũ không thay đổi khi sửa sách.
+Bảo mật | Mật khẩu băm BCrypt; phân quyền theo URL kết hợp kiểm tra quyền sở hữu tại tầng nghiệp vụ; chống giả mạo yêu cầu liên trang bằng token CSRF; tài khoản bị khoá mất quyền truy cập ở lần yêu cầu kế tiếp.
+Hiệu năng | Danh sách sách luôn phân trang; bộ lọc động sinh đúng một câu truy vấn; các cột được tra cứu nhiều như tiêu đề sách, thể loại, trạng thái đơn và ngày đặt đều có chỉ mục.
+Tính dễ dùng | Giao diện tiếng Việt, đáp ứng trên màn hình máy tính và điện thoại; thông báo lỗi rõ ràng ngay tại trường nhập liệu; các thao tác xoá đều có hộp xác nhận.
+Tính bảo trì | Mã nguồn chia theo tính năng; lược đồ cơ sở dữ liệu quản lý bằng Flyway; bộ kiểm thử tự động chạy trên H2 độc lập với dữ liệu thật.
+Tính khả chuyển | Ứng dụng đóng gói thành một tệp JAR duy nhất, chỉ cần JDK 21 và một chuỗi kết nối cơ sở dữ liệu là chạy được trên Windows, Linux hoặc macOS.
+[P] Bảng 2.3. Yêu cầu phi chức năng của hệ thống
+[P] 2.1.3. Quy trình hoạt động tổng quát
+[P] Sơ đồ dưới đây mô tả dòng công việc của ba nhóm người dùng và điểm giao nhau giữa họ: khách vãng lai duyệt sách rồi đăng ký để trở thành thành viên; thành viên đặt hàng và sinh ra một đơn ở trạng thái chờ xác nhận; quản trị viên tiếp nhận đơn đó và đưa nó đi hết vòng đời.
+[P] Hình 2.1. Quy trình hoạt động tổng quát của hệ thống
+[P] Vòng đời của đơn hàng được kiểm soát bằng một lớp chính sách riêng. Chính sách này là nơi duy nhất quyết định một bước chuyển trạng thái có hợp lệ hay không, nhờ vậy cả giao diện quản trị lẫn thao tác huỷ đơn của khách đều tuân theo cùng một quy tắc.
+[P] Hình 2.2. Sơ đồ trạng thái vòng đời đơn hàng
+[P] Đơn mới tạo luôn ở trạng thái PENDING. Quản trị viên lần lượt chuyển sang CONFIRMED, SHIPPING rồi COMPLETED. Khách hàng chỉ được phép huỷ khi đơn còn ở PENDING, trong khi quản trị viên có thể huỷ cả đơn PENDING lẫn CONFIRMED. COMPLETED và CANCELLED là hai trạng thái kết thúc, không thể chuyển tiếp đi đâu nữa.
+[P] 2.2. Kiến trúc hệ thống
+[P] Hệ thống được tổ chức theo kiến trúc phân tầng. Mỗi tầng chỉ gọi xuống tầng ngay dưới nó và không bao giờ gọi ngược lên, nhờ vậy trách nhiệm của từng tầng rõ ràng và có thể kiểm thử độc lập.
+[P] Hình 2.3. Kiến trúc phân tầng của hệ thống
+[P] – Tầng bảo mật: Spring Security đứng trước mọi yêu cầu, xác thực phiên đăng nhập, kiểm tra token CSRF cho các yêu cầu thay đổi dữ liệu và chặn đường dẫn quản trị đối với người dùng không có vai trò ADMIN.
+[P] – Tầng điều khiển: các lớp controller của Spring MVC nhận yêu cầu, ràng buộc dữ liệu biểu mẫu vào các lớp Form, chạy kiểm tra Bean Validation rồi gọi xuống tầng nghiệp vụ. Controller không chứa logic nghiệp vụ.
+[P] – Tầng nghiệp vụ: các lớp service chứa toàn bộ quy tắc nghiệp vụ, mở và đóng giao dịch, kiểm tra quyền sở hữu dữ liệu và áp dụng chính sách chuyển trạng thái đơn hàng.
+[P] – Tầng truy cập dữ liệu: các interface repository của Spring Data JPA, kết hợp Specification để dựng bộ lọc động và Pageable để phân trang.
+[P] – Tầng ánh xạ và lược đồ: Hibernate ánh xạ lớp thực thể sang bảng, còn Flyway bảo đảm lược đồ cơ sở dữ liệu luôn khớp với phiên bản mã nguồn đang chạy.
+[P] – Tầng lưu trữ: PostgreSQL trên Supabase giữ dữ liệu thật, cung cấp ràng buộc kiểm tra, khoá ngoại và khả năng khoá hàng phục vụ nghiệp vụ đặt hàng.
+[P] Ngoài kiến trúc phân tầng, dự án còn áp dụng một số mẫu thiết kế quen thuộc: Repository cho truy cập dữ liệu, Dependency Injection để ghép nối các thành phần, DTO và Form để biểu mẫu không gắn trực tiếp vào thực thể quan trọng, Specification cho bộ lọc động, Facade tại lớp ReferenceDataService để gom dữ liệu tham chiếu cho trang quản trị, State-like Policy tại lớp OrderTransitionPolicy cho vòng đời đơn, và Snapshot Pattern tại lớp OrderItem để giữ nguyên tên và giá sách tại thời điểm mua.
+[P] 2.3. Thiết kế cơ sở dữ liệu
+[P] Cơ sở dữ liệu gồm mười bảng, được tạo bằng script migration của Flyway nên có thể tái lập chính xác trên bất kỳ môi trường nào. Sơ đồ thực thể liên kết dưới đây thể hiện các bảng và quan hệ giữa chúng.
+[P] Hình 2.4. Sơ đồ thực thể liên kết của cơ sở dữ liệu
+=== TABLE 12 ===
+STT | Tên bảng | Chức năng lưu trữ
+1 | users | Tài khoản người dùng gồm khách hàng và quản trị viên
+2 | categories | Thể loại sách
+3 | authors | Tác giả
+4 | publishers | Nhà xuất bản
+5 | books | Sách cùng giá bán, tồn kho và trạng thái bán
+6 | book_authors | Bảng nối nhiều – nhiều giữa sách và tác giả
+7 | carts | Giỏ hàng, mỗi thành viên có đúng một giỏ
+8 | cart_items | Dòng sách trong giỏ hàng
+9 | orders | Đơn hàng cùng thông tin người nhận và trạng thái
+10 | order_items | Dòng chi tiết đơn hàng lưu bản sao chụp tên và giá sách
+[P] Bảng 2.4. Danh sách các bảng trong cơ sở dữ liệu
+[P] 2.3.1. Bảng users
+=== TABLE 13 ===
+Tên cột | Kiểu dữ liệu | Ràng buộc | Ý nghĩa
+id | BIGINT | PRIMARY KEY, IDENTITY | Khoá chính tự sinh
+full_name | VARCHAR(100) | NOT NULL | Họ và tên người dùng
+email | VARCHAR(150) | NOT NULL, UNIQUE | Email đăng nhập, là định danh duy nhất
+password_hash | VARCHAR(255) | NOT NULL | Chuỗi băm BCrypt của mật khẩu
+phone | VARCHAR(20) |  | Số điện thoại liên hệ
+address | VARCHAR(255) |  | Địa chỉ nhận hàng mặc định
+role | VARCHAR(20) | NOT NULL, nhận CUSTOMER hoặc ADMIN | Vai trò người dùng
+status | VARCHAR(20) | NOT NULL, nhận ACTIVE hoặc LOCKED | Trạng thái tài khoản
+created_at | TIMESTAMPTZ | NOT NULL | Thời điểm tạo bản ghi
+updated_at | TIMESTAMPTZ | NOT NULL | Thời điểm cập nhật gần nhất
+[P] Bảng 2.5. Mô tả chi tiết bảng users
+[P] 2.3.2. Bảng books
+=== TABLE 14 ===
+Tên cột | Kiểu dữ liệu | Ràng buộc | Ý nghĩa
+id | BIGINT | PRIMARY KEY, IDENTITY | Khoá chính tự sinh
+title | VARCHAR(255) | NOT NULL | Tên sách
+slug | VARCHAR(280) | NOT NULL, UNIQUE | Chuỗi định danh thân thiện dùng trên đường dẫn
+isbn | VARCHAR(20) | UNIQUE | Mã số sách tiêu chuẩn quốc tế
+description | TEXT |  | Mô tả nội dung sách
+price | NUMERIC(15,2) | NOT NULL, CHECK >= 0 | Giá bán hiện tại
+stock | INTEGER | NOT NULL, CHECK >= 0 | Số lượng còn trong kho
+image_url | VARCHAR(500) |  | Đường dẫn ảnh bìa
+status | VARCHAR(20) | NOT NULL, nhận ACTIVE, INACTIVE hoặc OUT_OF_STOCK | Trạng thái bán
+category_id | BIGINT | NOT NULL, FOREIGN KEY → categories(id) | Thể loại của sách
+publisher_id | BIGINT | FOREIGN KEY → publishers(id) | Nhà xuất bản
+version | BIGINT | NOT NULL, mặc định 0 | Số phiên bản phục vụ khoá lạc quan
+created_at | TIMESTAMPTZ | NOT NULL | Thời điểm tạo bản ghi
+updated_at | TIMESTAMPTZ | NOT NULL | Thời điểm cập nhật gần nhất
+[P] Bảng 2.6. Mô tả chi tiết bảng books
+[P] Cột version là chìa khoá của cơ chế khoá lạc quan. Khi hai quản trị viên cùng mở một cuốn sách trên hai tab và người thứ nhất lưu trước, số phiên bản tăng lên; người thứ hai lưu sau sẽ bị từ chối kèm thông báo dữ liệu đã thay đổi, thay vì âm thầm ghi đè.
+[P] 2.3.3. Các bảng danh mục tham chiếu
+=== TABLE 15 ===
+Bảng | Cột chính | Mô tả
+categories | id, name, slug, description, active, created_at, updated_at | Thể loại sách. Cả name và slug đều là duy nhất. Thể loại đang có sách không bị xoá mà chỉ được ẩn bằng cách chuyển cột active sang false.
+authors | id, name, biography, created_at, updated_at | Tác giả. Hệ thống từ chối xoá tác giả đang liên kết với ít nhất một cuốn sách.
+publishers | id, name, address, created_at, updated_at | Nhà xuất bản. Tên nhà xuất bản là duy nhất và cũng bị từ chối xoá khi đang liên kết.
+book_authors | book_id, author_id | Bảng nối nhiều – nhiều, khoá chính tổ hợp hai cột, mỗi cột là một khoá ngoại trỏ tới books và authors.
+[P] Bảng 2.7. Mô tả chi tiết các bảng danh mục tham chiếu
+[P] 2.3.4. Bảng carts và cart_items
+=== TABLE 16 ===
+Bảng | Tên cột | Ràng buộc và ý nghĩa
+carts | id | Khoá chính tự tăng
+carts | user_id | NOT NULL, UNIQUE, khoá ngoại tới users. Mỗi thành viên đúng một giỏ
+carts | created_at, updated_at | Mốc thời gian tạo và cập nhật
+cart_items | id | Khoá chính tự tăng
+cart_items | cart_id | Khoá ngoại tới carts, xoá theo dây chuyền
+cart_items | book_id | Khoá ngoại tới books
+cart_items | quantity | NOT NULL, CHECK > 0, số lượng đặt mua
+cart_items | (cart_id, book_id) | Ràng buộc duy nhất, một cuốn sách chỉ xuất hiện một dòng trong giỏ
+cart_items | created_at, updated_at | Mốc thời gian tạo và cập nhật dòng giỏ hàng
+[P] Bảng 2.8. Mô tả chi tiết bảng carts và cart_items
+[P] 2.3.5. Bảng orders
+=== TABLE 17 ===
+Tên cột | Kiểu dữ liệu | Ràng buộc | Ý nghĩa
+id | BIGINT | PRIMARY KEY, IDENTITY | Khoá chính tự sinh
+order_code | VARCHAR(30) | NOT NULL, UNIQUE | Mã đơn hàng hiển thị cho khách
+user_id | BIGINT | NOT NULL, FOREIGN KEY → users(id) | Khách hàng đặt đơn
+receiver_name | VARCHAR(100) | NOT NULL | Tên người nhận hàng
+receiver_phone | VARCHAR(20) | NOT NULL | Số điện thoại người nhận
+shipping_address | VARCHAR(255) | NOT NULL | Địa chỉ giao hàng
+note | VARCHAR(500) |  | Ghi chú của khách
+total_amount | NUMERIC(15,2) | NOT NULL, CHECK >= 0 | Tổng tiền của đơn
+payment_method | VARCHAR(30) | NOT NULL, nhận COD hoặc BANK_TRANSFER | Hình thức thanh toán khách chọn
+payment_status | VARCHAR(20) | NOT NULL, nhận UNPAID, PAID hoặc REFUNDED | Tình trạng thanh toán của đơn
+status | VARCHAR(20) | NOT NULL, nhận PENDING, CONFIRMED, SHIPPING, COMPLETED hoặc CANCELLED | Trạng thái hiện tại của đơn
+stock_restored | BOOLEAN | NOT NULL, mặc định false | Đánh dấu đã hoàn kho hay chưa
+created_at | TIMESTAMPTZ | NOT NULL | Thời điểm đặt hàng
+updated_at | TIMESTAMPTZ | NOT NULL | Thời điểm cập nhật gần nhất
+[P] Bảng 2.9. Mô tả chi tiết bảng orders
+[P] Cờ stock_restored giải quyết một tình huống rất dễ sai: nếu khách bấm huỷ hai lần liên tiếp hoặc khách và quản trị viên cùng huỷ một đơn, tồn kho có thể bị cộng thêm hai lần. Hệ thống chỉ hoàn kho khi cờ này còn là false và đặt nó thành true ngay trong cùng giao dịch, bảo đảm thao tác hoàn kho diễn ra đúng một lần.
+[P] 2.3.6. Bảng order_items
+=== TABLE 18 ===
+Tên cột | Kiểu dữ liệu | Ràng buộc | Ý nghĩa
+id | BIGINT | PRIMARY KEY, IDENTITY | Khoá chính tự sinh
+order_id | BIGINT | NOT NULL, FOREIGN KEY → orders(id) | Đơn hàng chứa dòng này
+book_id | BIGINT | NOT NULL, FOREIGN KEY → books(id) | Sách được mua
+book_title | VARCHAR(255) | NOT NULL | Bản sao chụp tên sách tại thời điểm mua
+unit_price | NUMERIC(15,2) | NOT NULL, CHECK >= 0 | Bản sao chụp đơn giá tại thời điểm mua
+quantity | INTEGER | NOT NULL, CHECK > 0 | Số lượng mua
+subtotal | NUMERIC(15,2) | NOT NULL, CHECK >= 0 | Thành tiền của dòng
+created_at | TIMESTAMPTZ | NOT NULL | Thời điểm tạo bản ghi
+updated_at | TIMESTAMPTZ | NOT NULL | Thời điểm cập nhật gần nhất
+[P] Bảng 2.10. Mô tả chi tiết bảng order_items
+[P] Ngoài các khoá chính và khoá ngoại, lược đồ còn khai báo bảy chỉ mục phụ trên những cột được tra cứu thường xuyên: vai trò người dùng, tiêu đề sách, thể loại sách, trạng thái sách, người đặt đơn, trạng thái đơn và thời điểm đặt đơn. Các chỉ mục này phục vụ trực tiếp cho bộ lọc ở trang danh sách sách và cho báo cáo doanh thu theo khoảng ngày.
+[P] 2.3.7. Sơ đồ lớp thực thể
+[P] Ở tầng mã nguồn, mọi lớp thực thể đều kế thừa lớp trừu tượng BaseEntity. Lớp này được đánh dấu @MappedSuperclass và mang sẵn khoá chính cùng hai mốc thời gian được Hibernate tự động điền, nhờ vậy các lớp con không phải lặp lại những thuộc tính chung.
+[P] Hình 2.5. Sơ đồ lớp thực thể kế thừa BaseEntity
+[P] 2.4. Thiết kế giao diện
+[P] Giao diện được dựng bằng Thymeleaf với hai bố cục tách biệt: bố cục dành cho khách hàng có thanh điều hướng, ô tìm kiếm và biểu tượng giỏ hàng; bố cục dành cho quản trị viên có thanh bên chứa các nhóm chức năng và menu thu gọn khi xem trên điện thoại. Toàn bộ kiểu dáng được viết bằng CSS thuần, không phụ thuộc thư viện giao diện bên ngoài.
+[P] 2.4.1. Giao diện dành cho khách hàng
+[P] Hình 2.6. Trang chủ với sách nổi bật và thanh tìm kiếm
+[P] Hình 2.7. Trang danh sách sách kèm bộ lọc và phân trang
+[P] Hình 2.8. Trang chi tiết sách
+[P] Hình 2.9. Màn hình đăng ký tài khoản
+[P] Hình 2.10. Màn hình đăng nhập
+[P] Hình 2.11. Màn hình giỏ hàng
+[P] Hình 2.12. Màn hình đặt hàng
+[P] Hình 2.13. Danh sách đơn hàng của thành viên
+[P] Hình 2.14. Chi tiết một đơn hàng
+[P] Hình 2.15. Màn hình hồ sơ cá nhân
+[P] Hình 2.16. Trang thông báo lỗi không tìm thấy nội dung
+=== TABLE 19 ===
+Màn hình | Đường dẫn | Chức năng chính
+Trang chủ | / | Giới thiệu cửa hàng, hiển thị sách nổi bật và ô tìm kiếm nhanh
+Danh sách sách | /books | Tìm theo từ khoá, lọc theo thể loại – tác giả – nhà xuất bản – khoảng giá, sắp xếp và phân trang
+Chi tiết sách | /books/{slug} | Xem đầy đủ thông tin sách và thêm vào giỏ hàng
+Đăng ký | /register | Tạo tài khoản mới, kiểm tra trùng email và độ mạnh mật khẩu
+Đăng nhập | /login | Xác thực phiên, điều hướng quản trị viên về trang quản trị
+Giỏ hàng | /cart | Sửa số lượng, xoá dòng, xem tổng tiền tạm tính
+Đặt hàng | /checkout | Nhập thông tin người nhận, chọn hình thức thanh toán và xác nhận đặt hàng
+Đơn hàng của tôi | /orders | Xem danh sách đơn đã đặt kèm trạng thái
+Chi tiết đơn | /orders/{id} | Xem từng dòng sách, tổng tiền và huỷ đơn chờ xác nhận
+Hồ sơ cá nhân | /profile | Cập nhật họ tên, số điện thoại và địa chỉ nhận hàng
+[P] Bảng 2.11. Mô tả các màn hình dành cho khách hàng
+[P] 2.4.2. Giao diện dành cho quản trị viên
+[P] Hình 2.17. Bảng điều khiển quản trị – các chỉ số tổng quan
+[P] Hình 2.18. Biểu đồ doanh thu và cơ cấu trạng thái đơn hàng
+[P] Hình 2.19. Danh sách sách trong trang quản trị
+[P] Hình 2.20. Chi tiết một cuốn sách trong trang quản trị
+[P] Hình 2.21. Biểu mẫu thêm và sửa sách
+[P] Hình 2.22. Màn hình quản lý tồn kho
+[P] Hình 2.23. Quản lý thể loại sách
+[P] Hình 2.24. Biểu mẫu thêm và sửa dữ liệu tham chiếu
+[P] Hình 2.25. Quản lý tác giả
+[P] Hình 2.26. Quản lý nhà xuất bản
+[P] Hình 2.27. Danh sách đơn hàng kèm bộ lọc trạng thái và khoảng ngày
+[P] Hình 2.28. Chi tiết đơn hàng và các bước chuyển trạng thái hợp lệ
+[P] Hình 2.29. Danh sách tài khoản khách hàng
+[P] Hình 2.30. Hồ sơ khách hàng và thao tác khoá tài khoản
+[P] Hình 2.31. Báo cáo doanh thu theo khoảng ngày
+[P] Hình 2.32. Danh sách mười sách bán chạy nhất theo kỳ
+=== TABLE 20 ===
+Màn hình | Đường dẫn | Chức năng chính
+Bảng điều khiển | /admin | Tổng hợp đơn chờ xử lý, doanh thu đơn hoàn thành, số sách đang bán, số khách hàng, cảnh báo tồn kho và các biểu đồ thống kê
+Quản lý sách | /admin/books | Danh sách, tìm kiếm, thêm, xem, sửa và ngừng bán sách
+Chi tiết sách | /admin/books/{id} | Xem đầy đủ thuộc tính của một cuốn sách
+Biểu mẫu sách | /admin/books/{id}/edit | Nhập và sửa thông tin sách kèm kiểm tra dữ liệu
+Quản lý tồn kho | /admin/inventory | Cập nhật số lượng thực tế, lọc nhóm sắp hết và hết hàng
+Quản lý thể loại | /admin/categories | Tạo, sửa, tìm kiếm và ẩn thể loại
+Quản lý tác giả | /admin/authors | Tạo, sửa, tìm kiếm và xoá tác giả chưa liên kết
+Quản lý nhà xuất bản | /admin/publishers | Tạo, sửa, tìm kiếm và xoá nhà xuất bản chưa liên kết
+Quản lý đơn hàng | /admin/orders | Tìm theo mã hoặc khách, lọc trạng thái và khoảng ngày
+Chi tiết đơn hàng | /admin/orders/{id} | Xem chi tiết, chuyển trạng thái hợp lệ và in phiếu
+Quản lý khách hàng | /admin/users | Danh sách tài khoản, tìm kiếm và lọc theo trạng thái
+Chi tiết khách hàng | /admin/users/{id} | Xem hồ sơ, lịch sử đơn, khoá và mở khoá tài khoản
+Báo cáo | /admin/reports | Doanh thu theo kỳ và mười sách bán chạy nhất
+[P] Bảng 2.12. Mô tả các màn hình dành cho quản trị viên
+[P] 2.5. Tổ chức mã nguồn của dự án
+[P] Mã nguồn được chia theo tính năng nghiệp vụ. Mỗi gói tính năng chứa đầy đủ controller, service, repository, thực thể và các lớp DTO của riêng nó, giúp việc tìm kiếm và sửa đổi một chức năng chỉ gói gọn trong một thư mục.
+[P] src/main/java/com/yukihira/bookstore
+[P] ├── auth, security, user
+[P] ├── category, author, publisher, book
+[P] ├── cart, order
+[P] ├── admin/catalog, admin/order, admin/report, admin/user
+[P] ├── api
+[P] ├── common, config, home
+[P] src/main/resources
+[P] ├── db/migration
+[P] ├── templates
+[P] └── static/css, static/js, static/images
+=== TABLE 21 ===
+Gói hoặc thư mục | Nội dung
+auth | Đăng ký, đăng nhập, đăng xuất và các biểu mẫu xác thực
+security | Cấu hình Spring Security, mã hoá mật khẩu, bộ lọc kiểm tra trạng thái tài khoản
+user | Thực thể người dùng, hồ sơ cá nhân và repository tương ứng
+category, author, publisher | Dữ liệu tham chiếu của danh mục sách
+book | Thực thể sách, bộ lọc Specification, dịch vụ tra cứu và trang chi tiết sách
+cart | Giỏ hàng và các thao tác thêm, sửa, xoá dòng giỏ
+order | Đặt hàng, chính sách chuyển trạng thái, lịch sử đơn của thành viên
+admin/catalog | Quản trị sách, thể loại, tác giả, nhà xuất bản và tồn kho
+admin/order | Xử lý đơn hàng phía quản trị
+admin/report | Bảng điều khiển, báo cáo doanh thu và sách bán chạy
+admin/user | Quản lý tài khoản khách hàng
+api | Nhóm endpoint JSON dùng chung cho tra cứu sách và đăng nhập bằng JSON
+common | Lớp BaseEntity, các ngoại lệ dùng chung và bộ xử lý lỗi toàn cục
+config | Cấu hình ứng dụng và khởi tạo dữ liệu ban đầu
+home | Trang chủ
+db/migration | Các script migration của Flyway
+templates | Khung nhìn Thymeleaf cho cả hai bố cục
+static/css, static/js, static/images | Tệp kiểu dáng, mã JavaScript phía trình duyệt và hình ảnh tĩnh
+[P] Bảng 2.13. Tổ chức thư mục mã nguồn của dự án
+[P] 2.6. Kết chương
+[P] Chương II đã trình bày trọn vẹn quá trình thiết kế hệ thống: từ đặc tả yêu cầu chức năng và phi chức năng, quy trình nghiệp vụ và vòng đời đơn hàng, đến kiến trúc phân tầng, thiết kế chi tiết mười bảng dữ liệu, sơ đồ lớp thực thể và toàn bộ hai mươi bảy màn hình giao diện thực tế của chương trình. Các thiết kế này là bản vẽ trực tiếp cho phần cài đặt và kiểm thử được trình bày ở Chương III.
+[P] CHƯƠNG III. PHÁT TRIỂN HỆ THỐNG VÀ KIỂM THỬ
+[P] 3.1. Xây dựng tầng thực thể
+[P] Tầng thực thể ánh xạ các lớp Java sang bảng cơ sở dữ liệu bằng chú thích JPA. Mọi lớp đều kế thừa BaseEntity để dùng chung khoá chính và hai mốc thời gian. Quan hệ giữa các thực thể được khai báo bằng @ManyToOne, @OneToMany, @OneToOne và @ManyToMany đúng theo sơ đồ đã thiết kế ở Chương II.
+=== TABLE 22 ===
+Lớp thực thể | Bảng | Đặc điểm cài đặt nổi bật
+BaseEntity | — | Lớp trừu tượng @MappedSuperclass chứa id, createdAt, updatedAt. Hai mốc thời gian được điền tự động bằng @PrePersist và @PreUpdate.
+User | users | Chứa hai enum Role và UserStatus. Trường passwordHash chỉ nhận chuỗi đã băm, không bao giờ nhận mật khẩu thuần.
+Book | books | Quan hệ nhiều – một tới Category và Publisher, nhiều – nhiều tới Author qua bảng nối. Trường version được đánh dấu @Version phục vụ khoá lạc quan.
+Category, Author, Publisher | categories, authors, publishers | Các thực thể tham chiếu đơn giản, có ràng buộc duy nhất trên slug hoặc tên.
+Cart, CartItem | carts, cart_items | Cart giữ quan hệ một – một với User và một – nhiều tới CartItem với cascade và orphanRemoval để dòng giỏ bị xoá theo giỏ.
+CustomerOrder | orders | Chứa ba enum OrderStatus, PaymentMethod, PaymentStatus cùng cờ stockRestored, thông tin người nhận và tổng tiền.
+OrderItem | order_items | Lưu bookTitle và unitPrice dưới dạng bản sao chụp nên đơn cũ không đổi theo giá mới; tham chiếu tới Book là bắt buộc và sách đã phát sinh đơn thì không được phép xoá.
+[P] Bảng 3.1. Các lớp thực thể chính
+[P] 3.2. Xây dựng tầng truy cập dữ liệu
+[P] Tầng truy cập dữ liệu chỉ gồm các interface kế thừa JpaRepository. Spring Data JPA tự sinh phần cài đặt tại thời điểm chạy, nhóm chỉ cần khai báo tên phương thức theo quy ước hoặc viết truy vấn JPQL cho những trường hợp phức tạp.
+=== TABLE 23 ===
+Repository | Phương thức tiêu biểu | Mục đích
+UserRepository | findByEmailIgnoreCase, existsByEmailIgnoreCase, countByRole | Nạp người dùng khi đăng nhập, kiểm tra trùng email khi đăng ký và đếm tài khoản theo vai trò
+BookRepository | findAll(Specification, Pageable), findBySlug, findForUpdate, existsBySlug, existsByIsbn | Lọc động và phân trang danh sách sách; đọc sách kèm khoá ghi bi quan khi đặt hàng; kiểm tra trùng slug và trùng ISBN
+CategoryRepository, AuthorRepository, PublisherRepository | findAllByActiveTrueOrderByNameAsc, findAllByOrderByNameAsc, findByNameIgnoreCase, existsByNameIgnoreCase | Nạp dữ liệu tham chiếu cho bộ lọc và biểu mẫu, kiểm tra trùng tên trước khi lưu
+CartRepository, CartItemRepository | findByUserEmailIgnoreCase, findByCartIdAndBookId, findByIdAndCartUserEmailIgnoreCase | Nạp giỏ hàng của thành viên, gộp dòng khi thêm trùng sách và chặn sửa dòng giỏ của người khác
+OrderRepository | findByUserEmailIgnoreCaseOrderByCreatedAtDesc, findAll(Specification, Pageable), findOwnedDetailedById, findForUpdate, completedRevenue, reportTotals | Lịch sử đơn của khách, bộ lọc đơn hàng phía quản trị, kiểm tra quyền sở hữu và tổng hợp báo cáo
+OrderItemRepository | topSellingBooks, topSellingBooksInPeriod, existsByBookId | Thống kê sách bán chạy theo khoảng ngày và chặn xoá sách đã phát sinh đơn
+[P] Bảng 3.2. Các lớp repository truy cập dữ liệu
+[P] 3.3. Xây dựng tầng nghiệp vụ
+[P] Tầng nghiệp vụ là nơi đặt toàn bộ quy tắc của hệ thống. Các phương thức thay đổi dữ liệu đều được đánh dấu @Transactional để bảo đảm hoặc thành công trọn vẹn, hoặc quay lui hoàn toàn.
+=== TABLE 24 ===
+Service | Trách nhiệm chính
+AuthService | Đăng ký tài khoản, băm mật khẩu bằng BCrypt, kiểm tra trùng email và tạo sẵn giỏ hàng cho thành viên mới.
+YukihiraUserDetailsService | Nạp thông tin đăng nhập cho Spring Security từ bảng users và gắn vai trò tương ứng.
+UserService | Đọc và cập nhật hồ sơ cá nhân của thành viên đang đăng nhập; phía quản trị thì tìm kiếm khách hàng, xem hồ sơ và khoá hoặc mở khoá tài khoản.
+BookService | Dựng Specification từ tham số lọc để tìm kiếm, phân trang và sắp xếp sách cho cả trang khách và trang quản trị; thêm, sửa, ngừng bán, xoá sách; cập nhật tồn kho và tự chuyển trạng thái bán theo số lượng; kiểm tra số phiên bản để chặn ghi đè từ tab cũ.
+CartService | Thêm sách vào giỏ có kiểm tra tồn kho và trạng thái bán, gộp dòng trùng, sửa số lượng và xoá dòng.
+OrderService | Đặt hàng trong một giao dịch có khoá bi quan từng cuốn sách, sinh mã đơn, trừ kho, tạo bản sao chụp chi tiết đơn, xoá giỏ; xem lịch sử đơn của khách; huỷ đơn và hoàn kho đúng một lần; lọc đơn và chuyển trạng thái phía quản trị.
+OrderTransitionPolicy | Nơi duy nhất định nghĩa các bước chuyển trạng thái hợp lệ, được cả trang quản trị và thao tác huỷ của khách sử dụng.
+ReferenceDataService | Đóng vai trò Facade, gom thao tác tra cứu, thêm, sửa, xoá của thể loại – tác giả – nhà xuất bản vào một điểm vào duy nhất cho các biểu mẫu quản trị.
+ReportService | Tính số liệu bảng điều khiển và báo cáo doanh thu, số đơn, số khách cùng danh sách sách bán chạy theo khoảng ngày đặt hàng.
+AnalyticsService | Dựng khối số liệu phân tích riêng cho từng trang quản trị theo bộ lọc đang chọn, được trình duyệt nạp sau khi trang đã hiển thị nên không làm chậm thao tác chuyển trang.
+[P] Bảng 3.3. Các lớp service nghiệp vụ
+[P] 3.4. Xây dựng tầng điều khiển và giao diện
+[P] Các controller ánh xạ đường dẫn tới phương thức xử lý, nhận dữ liệu biểu mẫu qua các lớp Form có chú thích kiểm tra, rồi trả về tên khung nhìn Thymeleaf. Bảng dưới đây tổng hợp bản đồ đường dẫn của toàn bộ ứng dụng.
+=== TABLE 25 ===
+Khu vực | Đường dẫn
+Công khai | /, /books, /books/{slug}, /register, /login
+Thành viên | /profile, /cart, /checkout, /orders, /orders/{id}
+Thao tác giỏ hàng | POST /cart/items, POST /cart/items/{id}/update, POST /cart/items/{id}/delete
+Thao tác đơn hàng | POST /orders, POST /orders/{id}/cancel
+Quản trị | /admin, /admin/books, /admin/categories, /admin/authors, /admin/publishers
+Quản trị | /admin/inventory, /admin/orders, /admin/users, /admin/reports
+Chi tiết quản trị | /admin/books/{id}, /admin/books/{id}/edit, /admin/orders/{id}, /admin/users/{id}
+Mảnh số liệu | /admin/analytics?for={đường dẫn trang quản trị}
+[P] Bảng 3.4. Bản đồ đường dẫn của ứng dụng
+[P] Bên cạnh các đường dẫn trả về HTML, hệ thống còn cung cấp một nhóm endpoint JSON tách biệt để phục vụ việc tích hợp về sau. Lỗi của nhóm endpoint này được trả về theo định dạng application/problem+json thay vì trang HTML.
+=== TABLE 26 ===
+Dữ liệu trả về | Endpoint
+Danh sách và tìm kiếm sách | GET /api/v1/books
+Chi tiết một cuốn sách | GET /api/v1/books/{slug}
+Danh sách thể loại | GET /api/v1/categories
+Danh sách tác giả | GET /api/v1/authors
+Danh sách nhà xuất bản | GET /api/v1/publishers
+Lấy token CSRF | GET /api/v1/auth/csrf
+Đăng nhập bằng JSON | POST /api/v1/auth/login
+[P] Bảng 3.5. Danh sách endpoint JSON API
+[P] Ví dụ một lời gọi tìm kiếm sách có phân trang và sắp xếp:
+[P] GET /api/v1/books?keyword=java&page=0&size=12&sort=price-asc
+[P] 3.5. Kiểm thử hệ thống
+[P] Nhóm xây dựng bộ kiểm thử tự động gồm 67 trường hợp, chạy bằng lệnh mvn test. Toàn bộ kiểm thử dùng cơ sở dữ liệu H2 trong bộ nhớ, hoàn toàn độc lập với tệp cấu hình môi trường và cơ sở dữ liệu thật, nhờ vậy có thể chạy lại bao nhiêu lần tuỳ ý mà không ảnh hưởng dữ liệu người dùng.
+=== TABLE 27 ===
+Nhóm kiểm thử | Nội dung kiểm tra | Kết quả
+Khởi tạo ứng dụng | Nạp được ngữ cảnh Spring và toàn bộ bean cấu hình | Đạt
+Lược đồ dữ liệu | Flyway chạy thành công trên schema trống, Hibernate xác thực ánh xạ | Đạt
+Bảo mật | Băm và so khớp BCrypt, phân quyền theo URL, bắt buộc token CSRF | Đạt
+Xác thực | Đăng nhập bằng biểu mẫu và bằng JSON API, khoá phiên khi tài khoản bị khoá | Đạt
+Quản trị danh mục | Thêm, sửa, xoá sách; kiểm tra trùng ISBN, trùng slug, giá hợp lệ và ràng buộc liên kết | Đạt
+Chống ghi đè | Tab cũ lưu sau bị từ chối nhờ kiểm tra số phiên bản | Đạt
+Giỏ hàng | Thêm, gộp dòng trùng, sửa số lượng, xoá dòng, chặn số lượng vượt tồn kho | Đạt
+Đặt hàng | Trừ kho chính xác, tạo bản sao chụp giá, xoá giỏ, quay lui khi phát sinh lỗi | Đạt
+Quyền sở hữu | Thành viên không xem và không huỷ được đơn của người khác | Đạt
+Vòng đời đơn | Chỉ chấp nhận bước chuyển trạng thái hợp lệ theo chính sách | Đạt
+Huỷ đồng thời | Hai yêu cầu huỷ cùng lúc chỉ hoàn kho đúng một lần | Đạt
+Báo cáo | Doanh thu và sách bán chạy tính đúng theo ngày đặt hàng, múi giờ Việt Nam | Đạt
+[P] Bảng 3.6. Kết quả kiểm thử tự động
+[P] Ngoài kiểm thử tự động, nhóm còn chạy thử luồng tích hợp đầy đủ trên cơ sở dữ liệu thật theo thứ tự: trang chủ, đăng ký, đăng nhập, xem chi tiết sách, thêm vào giỏ, đặt hàng và xem chi tiết đơn. Kết quả cho thấy dữ liệu tồn kho, tổng tiền và trạng thái đơn đều chính xác.
+[P] 3.6. Kết chương
+[P] Chương III đã trình bày quá trình hiện thực hoá bản thiết kế thành mã nguồn chạy được, đi từ tầng thực thể, tầng truy cập dữ liệu, tầng nghiệp vụ đến tầng điều khiển và giao diện, đồng thời tổng hợp kết quả của 67 trường hợp kiểm thử tự động. Tất cả nhóm kiểm thử đều đạt, cho thấy các nghiệp vụ trọng yếu của hệ thống hoạt động đúng như đặc tả.
+[P] KẾT LUẬN
+[P] Kết quả đạt được
+[P] Sau tám tuần thực hiện, nhóm đã hoàn thành một website bán sách trực tuyến chạy được thật, đáp ứng đầy đủ mười ba nhóm chức năng đã đặt ra ban đầu. Hệ thống phục vụ trọn vẹn ba nhóm người dùng, có cơ sở dữ liệu mười bảng được quản lý phiên bản bằng Flyway, hai mươi bảy màn hình giao diện tiếng Việt và bộ kiểm thử tự động gồm 67 trường hợp đều đạt.
+[P] Về mặt học thuật, đề tài giúp nhóm vận dụng được gần như toàn bộ nội dung của học phần Công nghệ Java: lập trình hướng đối tượng với kế thừa và trừu tượng qua lớp BaseEntity, xây dựng ứng dụng web nhiều tầng với Spring Boot, ánh xạ đối tượng – quan hệ với Hibernate, quản lý giao dịch và khoá dữ liệu, bảo mật ứng dụng với Spring Security và kiểm thử tự động với JUnit. Đặc biệt, việc xử lý tranh chấp tồn kho bằng khoá bi quan và giữ lịch sử giá bằng mẫu Snapshot là những bài học thực tế mà lý thuyết trên lớp khó truyền tải hết.
+[P] Hạn chế còn tồn tại
+[P] – Hệ thống mới hỗ trợ hình thức thanh toán khi nhận hàng, chưa tích hợp cổng thanh toán trực tuyến.
+[P] – Chưa có chức năng đánh giá và bình luận sách, chưa có gợi ý sách theo lịch sử mua hàng.
+[P] – Chưa gửi email xác nhận đơn hàng và chưa có chức năng khôi phục mật khẩu qua email.
+[P] – Ảnh bìa sách hiện được lưu dưới dạng đường dẫn ngoài, chưa có chức năng tải ảnh lên máy chủ.
+[P] – Báo cáo mới dừng ở doanh thu và sách bán chạy, chưa có phân tích theo thể loại hay theo khách hàng.
+[P] Hướng phát triển
+[P] – Tích hợp cổng thanh toán trực tuyến và dịch vụ vận chuyển để hoàn thiện quy trình mua hàng.
+[P] – Bổ sung chức năng đánh giá, bình luận và gợi ý sách nhằm tăng trải nghiệm người đọc.
+[P] – Gửi thông báo qua email cho các mốc quan trọng của đơn hàng và hỗ trợ khôi phục mật khẩu.
+[P] – Xây dựng chức năng tải ảnh bìa lên dịch vụ lưu trữ thay vì dùng đường dẫn ngoài.
+[P] – Mở rộng hệ thống báo cáo với biểu đồ theo thể loại, theo khách hàng và dự báo nhu cầu tồn kho.
+[P] – Đóng gói ứng dụng bằng Docker và triển khai tự động để rút ngắn thời gian đưa sản phẩm lên môi trường thật.
+[P] Một lần nữa, nhóm chúng em xin chân thành cảm ơn ThS. Lê Mai Nam đã tận tình hướng dẫn trong suốt quá trình thực hiện bài tập lớn này.
+[P] DANH MỤC TÀI LIỆU THAM KHẢO
+[P] [1] Nhóm tác giả Spring, Spring Boot Reference Documentation, Broadcom, 2026. Địa chỉ: https://docs.spring.io/spring-boot/index.html
+[P] [2] Nhóm tác giả Spring, Spring Framework Reference – Web MVC, Broadcom, 2026. Địa chỉ: https://docs.spring.io/spring-framework/reference/web/webmvc.html
+[P] [3] Nhóm tác giả Spring, Spring Security Reference, Broadcom, 2026. Địa chỉ: https://docs.spring.io/spring-security/reference/index.html
+[P] [4] Nhóm tác giả Spring, Spring Data JPA Reference Documentation, Broadcom, 2026. Địa chỉ: https://docs.spring.io/spring-data/jpa/reference/index.html
+[P] [5] Red Hat, Hibernate ORM User Guide, 2026. Địa chỉ: https://hibernate.org/orm/documentation/
+[P] [6] Thymeleaf Team, Tutorial: Using Thymeleaf, 2026. Địa chỉ: https://www.thymeleaf.org/documentation.html
+[P] [7] Redgate, Flyway Documentation, 2026. Địa chỉ: https://documentation.red-gate.com/flyway
+[P] [8] The PostgreSQL Global Development Group, PostgreSQL 16 Documentation, 2026. Địa chỉ: https://www.postgresql.org/docs/16/index.html
+[P] [9] Supabase, Supabase Database Documentation, 2026. Địa chỉ: https://supabase.com/docs/guides/database/overview
+[P] [10] Oracle, Java SE 21 Documentation, 2026. Địa chỉ: https://docs.oracle.com/en/java/javase/21/
+[P] [11] Joshua Bloch, Effective Java, ấn bản lần thứ ba, Addison-Wesley, 2018.
+[P] [12] Craig Walls, Spring in Action, ấn bản lần thứ sáu, Manning Publications, 2022.

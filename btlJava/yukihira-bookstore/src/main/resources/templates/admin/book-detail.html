@@ -10,7 +10,15 @@
     <header class="admin-title"><div><h1 th:text="${book.title}"></h1><p th:text="${book.authorLine()}"></p></div>
         <div class="heading-actions"><a class="button ghost" th:if="${book.available()}" th:href="@{/books/{slug}(slug=${book.slug})}">Xem trên cửa hàng</a><a class="button primary" th:href="@{/admin/books/{id}/edit(id=${book.id})}">Chỉnh sửa sách</a></div>
     </header>
-    <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
+    <section class="page-summary" aria-label="Doanh số của sách">
+        <p class="analytics-scope">Từ trước đến nay, theo các đơn có cuốn sách này.</p>
+        <div class="metric-grid">
+            <article class="metric-card"><span>Đã bán</span><strong th:text="${sales.soldCopies + ' cuốn'}"></strong><small th:text="${sales.completedOrders + ' đơn hoàn thành'}"></small></article>
+            <article class="metric-card revenue"><span>Doanh thu</span><strong th:text="${#numbers.formatDecimal(sales.revenue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><small>Tiền sách này trong đơn hoàn thành</small></article>
+            <article class="metric-card"><span>Đang chờ giao</span><strong th:text="${sales.waitingCopies + ' cuốn'}"></strong><small th:text="${sales.waitingOrders + ' đơn đang xử lý · ' + sales.cancelledOrders + ' đơn đã hủy'}"></small></article>
+            <article class="metric-card"><span>Khách đã mua</span><strong th:text="${sales.buyers}"></strong><small th:text="${sales.lastOrderAt == null ? 'Chưa có đơn nào' : 'Đơn gần nhất ' + sales.lastOrderLabel()}"></small></article>
+        </div>
+    </section>
 
     <section class="panel"><div class="panel-body book-detail-layout">
         <div class="book-cover-large"><img th:if="${book.imageUrl != null}" th:src="${book.imageUrl}" th:alt="${'Bìa ' + book.title}" referrerpolicy="no-referrer"><span th:unless="${book.imageUrl != null}" aria-hidden="true">本</span></div>

@@ -8,7 +8,14 @@
 
     <a class="back-link" th:href="@{/admin/users}">Quay lại danh sách khách hàng</a>
     <header class="admin-title"><div><h1 th:text="${customer.fullName}"></h1><p th:text="${customer.email}"></p></div><span class="status-pill" th:classappend="${customer.status.name() == 'ACTIVE' ? 'active' : 'inactive'}" th:text="${customer.status.label}"></span></header>
-    <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
+    <section class="page-summary" aria-label="Tóm tắt mua hàng của khách">
+        <div class="metric-grid">
+            <article class="metric-card revenue"><span>Tổng chi tiêu</span><strong th:text="${#numbers.formatDecimal(summary.spent, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><small th:text="${summary.completedOrders + ' đơn hoàn thành'}"></small></article>
+            <article class="metric-card"><span>Số đơn</span><strong th:text="${summary.totalOrders}"></strong><small th:text="${summary.openOrders + ' đang xử lý · ' + summary.cancelledOrders + ' đã hủy'}"></small></article>
+            <article class="metric-card"><span>Trung bình / đơn hoàn thành</span><strong th:text="${#numbers.formatDecimal(summary.averageCompleted(), 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><small>Chỉ tính đơn hoàn thành</small></article>
+            <article class="metric-card"><span>Sách đã mua</span><strong th:text="${summary.books + ' cuốn'}"></strong><small th:text="${summary.lastOrderAt == null ? 'Chưa có đơn nào' : 'Đơn gần nhất ' + summary.lastOrderLabel()}"></small></article>
+        </div>
+    </section>
 
     <section class="panel"><div class="panel-body"><dl class="facts detail-facts"><div><dt>Điện thoại</dt><dd th:text="${customer.phone ?: 'Chưa cập nhật'}"></dd></div><div><dt>Ngày tham gia</dt><dd th:text="${customer.createdAtLabel}"></dd></div><div><dt>Địa chỉ</dt><dd th:text="${customer.address ?: 'Chưa cập nhật'}"></dd></div><div><dt>Tài khoản</dt><dd>Khách hàng</dd></div></dl></div></section>
     <section class="panel"><header class="panel-heading"><h2>Lịch sử mua sách</h2><span class="muted" th:text="${#lists.size(orders) + ' đơn hàng'}"></span></header><div th:replace="~{fragments/admin-tables :: orders(${orders})}"></div></section>

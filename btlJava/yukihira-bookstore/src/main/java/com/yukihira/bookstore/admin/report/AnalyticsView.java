@@ -7,7 +7,7 @@ import java.util.List;
 public record AnalyticsView(AnalyticsFilter filter, long totalBooks, long totalCategories, long stock,
                             long lowStock, long emptyStock, BigDecimal stockValue, long quantitySold,
                             long totalOrders, long completedOrders, BigDecimal revenue, long buyers,
-                            List<Chart> charts, List<ReferenceStats> references,
+                            List<Chart> charts,
                             List<OrderStatusTotal> statusTotals, Comparison previous) {
     public BigDecimal averageOrderValue() {
         return average(revenue, completedOrders);
@@ -20,7 +20,7 @@ public record AnalyticsView(AnalyticsFilter filter, long totalBooks, long totalC
 
     public AnalyticsView withPrevious(Comparison comparison) {
         return new AnalyticsView(filter, totalBooks, totalCategories, stock, lowStock, emptyStock, stockValue, quantitySold,
-                totalOrders, completedOrders, revenue, buyers, charts, references, statusTotals, comparison);
+                totalOrders, completedOrders, revenue, buyers, charts, statusTotals, comparison);
     }
 
     /** Tỉ lệ phần trăm số đơn của một trạng thái trên tổng số đơn trong kỳ. */

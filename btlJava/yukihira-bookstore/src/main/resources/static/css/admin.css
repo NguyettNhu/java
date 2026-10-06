@@ -213,6 +213,18 @@ input[type="checkbox"], input[type="radio"] { width: 17px; height: 17px; accent-
 .chart-data .data-table-wrap { max-height: 360px; }
 .chart-hint, .chart-empty { font-size: 12px; color: var(--muted); padding: 0 24px 18px; margin: 0; }
 .chart-empty { padding-top: 20px; min-height: 100px; }
+/* Trang quản lý: tóm tắt riêng của bảng đang lọc và lối tắt lọc kèm số lượng. */
+.page-summary { margin: 0 0 24px; }
+.page-summary .analytics-scope { margin-top: 0; }
+.page-summary .metric-grid { margin-bottom: 14px; }
+.page-charts > summary { padding: 4px 0 14px; }
+.facet-group { display: flex; flex-wrap: wrap; gap: 0 28px; }
+.facet-bar { display: flex; flex-wrap: wrap; gap: 8px; padding: 18px 24px 0; }
+.facet { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid #c7d6cc; border-radius: 999px; background: white; color: var(--forest); font-size: 13px; font-weight: 600; text-decoration: none; }
+.facet strong { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: #edf4ee; font-size: 12px; text-align: center; font-variant-numeric: tabular-nums; }
+.facet:hover { background: #edf4ee; }
+.facet.active { background: var(--forest); border-color: var(--forest); color: white; }
+.facet.active strong { background: rgba(255, 255, 255, .2); }
 /* Tổng quan: việc cần xử lý và xu hướng doanh thu 30 ngày. */
 .todo-strip { display: flex; align-items: center; gap: 12px 24px; flex-wrap: wrap; margin-bottom: 24px; padding: 14px 20px; background: #f5eddc; border: 1px solid #e7d8b8; border-radius: 7px; font-size: 13px; }
 .todo-strip h2 { font-size: 14px; }
@@ -302,6 +314,7 @@ input[type="checkbox"], input[type="radio"] { width: 17px; height: 17px; accent-
     .metric-card.revenue { padding-top: 14px; }
     .metric-card > span, .metric-card small { font-size: 11px; }
     .panel-heading, .panel-body, .filter-bar, .form-section { padding: 18px; }
+    .facet-bar { padding: 14px 18px 0; }
     .editor-grid.two, .editor-grid.three { grid-template-columns: 1fr; }
     .cover-editor { grid-template-columns: 85px minmax(0, 1fr); gap: 16px; }
     .checkbox-grid { grid-template-columns: 1fr; }

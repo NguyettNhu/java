@@ -174,7 +174,7 @@ class AdminWebTests {
                     .andExpect(status().isOk()).andExpect(model().attributeDoesNotExist("analytics"))
                     .andExpect(model().attributeExists("analyticsUrl"))
                     .andExpect(content().string(org.hamcrest.Matchers.containsString("data-analytics-panel")));
-            mvc.perform(get("/admin/analytics").param("for", "/admin/reports")
+            mvc.perform(get("/admin/reports/panel")
                             .param("period", period).param("date", "2024-02-29")
                             .with(user("admin").roles("ADMIN")))
                     .andExpect(status().isOk()).andExpect(model().attributeExists("analytics"))
@@ -183,13 +183,11 @@ class AdminWebTests {
         }
         // Trang tổng quan chỉ hiện số liệu nhanh, không còn bộ lọc hay khối phân tích theo kỳ.
         mvc.perform(get("/admin").with(user("admin").roles("ADMIN")))
-                .andExpect(status().isOk()).andExpect(model().attributeDoesNotExist("analyticsPath", "analyticsUrl", "analytics"))
+                .andExpect(status().isOk()).andExpect(model().attributeDoesNotExist("analyticsUrl", "analytics"))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Doanh thu 30 ngày gần nhất")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("href=\"/admin/reports\"")));
-        mvc.perform(get("/admin/analytics").param("for", "/admin").with(user("admin").roles("ADMIN")))
-                .andExpect(status().isNotFound());
         // Trang báo cáo nhận bố cục chi tiết riêng với các mục, so sánh kỳ trước và bảng trạng thái đơn.
-        mvc.perform(get("/admin/analytics").param("for", "/admin/reports").with(user("admin").roles("ADMIN")))
+        mvc.perform(get("/admin/reports/panel").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("id=\"bc-don-hang\"")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("So với kỳ trước")))
@@ -204,13 +202,19 @@ class AdminWebTests {
                 .andExpect(status().isBadRequest());
         mvc.perform(get("/admin/reports/export").with(user("customer").roles("CUSTOMER")))
                 .andExpect(status().isForbidden());
-        // Trang thể loại vẫn dựng sẵn số liệu vì bảng quản lý của nó lấy dữ liệu từ đó.
+        mvc.perform(get("/admin/reports/panel").param("period", "bad").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk()).andExpect(model().attributeExists("analyticsError"))
+                .andExpect(model().attributeDoesNotExist("analytics"));
+        // Các trang quản lý chỉ có tóm tắt riêng của bảng, không mang khối phân tích đầy đủ của trang báo cáo.
+        for (String path : new String[]{"/admin/categories", "/admin/books", "/admin/inventory", "/admin/orders", "/admin/users"}) {
+            mvc.perform(get(path).with(user("admin").roles("ADMIN")))
+                    .andExpect(status().isOk()).andExpect(model().attributeExists("summary"))
+                    .andExpect(model().attributeDoesNotExist("analytics", "analyticsUrl"))
+                    .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("data-analytics-panel"))))
+                    .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"facet-bar\"")));
+        }
         mvc.perform(get("/admin/categories").with(user("admin").roles("ADMIN")))
-                .andExpect(status().isOk()).andExpect(model().attributeExists("analytics"))
-                .andExpect(model().attributeDoesNotExist("analyticsUrl"));
-        // Đường dẫn không phải trang admin có báo cáo thì endpoint số liệu phải từ chối.
-        mvc.perform(get("/admin/analytics").param("for", "/admin/../etc").with(user("admin").roles("ADMIN")))
-                .andExpect(status().isNotFound());
+                .andExpect(model().attributeExists("items", "charts", "activityFacets"));
         for (String query : new String[]{"period=custom&from=2024-02-29&to=2024-02-01", "period=custom", "date=not-a-date", "period=bad", "groupBy=bad"}) {
             mvc.perform(get("/admin/reports?" + query).with(user("admin").roles("ADMIN")))
                     .andExpect(status().isOk()).andExpect(model().attributeExists("analyticsError"))
@@ -231,8 +235,10 @@ class AdminWebTests {
     void invalidDateRangeShowsActionableError() throws Exception {
         mvc.perform(get("/admin/orders?from=2026-09-10&to=2026-09-01").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk()).andExpect(model().attributeExists("error"));
-        mvc.perform(get("/admin/reports?from=2026-09-10&to=2026-09-01").with(user("admin").roles("ADMIN")))
-                .andExpect(status().isOk()).andExpect(model().attributeExists("error"));
+        mvc.perform(get("/admin/reports?period=custom&from=2026-09-10&to=2026-09-01").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk()).andExpect(model().attributeExists("analyticsError"));
+        mvc.perform(get("/admin/categories?period=custom&from=2026-09-10&to=2026-09-01").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk()).andExpect(model().attributeExists("analyticsError"));
     }
 
     @Test

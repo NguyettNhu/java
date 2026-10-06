@@ -7,9 +7,18 @@
     <div th:replace="~{fragments/admin :: flash}"></div>
 
     <header class="admin-title"><div><h1>Tồn kho</h1><p>Đối chiếu và cập nhật số cuốn thực tế. Sách sắp hết có từ 1 đến 5 cuốn.</p></div><a class="button ghost" th:href="@{/admin/books/new}">Thêm đầu sách</a></header>
-    <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
+    <section class="page-summary" aria-label="Tóm tắt tồn kho đang lọc">
+        <div class="metric-grid">
+            <article class="metric-card"><span>Tổng tồn kho</span><strong th:text="${summary.stock + ' cuốn'}"></strong><small th:text="${summary.total + ' đầu sách trong bảng'}"></small></article>
+            <article class="metric-card"><span>Giá trị tồn theo giá bán</span><strong th:text="${#numbers.formatDecimal(summary.stockValue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><small>Số lượng hiện tại × giá bán hiện tại</small></article>
+            <article class="metric-card"><span>Cần bổ sung</span><strong th:text="${summary.lowStock + summary.emptyStock}"></strong><small th:text="${summary.lowStock + ' sắp hết · ' + summary.emptyStock + ' còn 0 cuốn'}"></small></article>
+            <article class="metric-card"><span>Trung bình mỗi đầu sách</span><strong th:text="${(summary.total == 0 ? 0 : summary.stock / summary.total) + ' cuốn'}"></strong><small>Làm tròn xuống</small></article>
+        </div>
+        <details th:replace="~{fragments/admin-analytics :: summaryCharts(${summary.charts}, 'Tồn kho theo thể loại và theo mức tồn')}"></details>
+    </section>
 
-    <section class="panel"><form class="filter-bar" th:action="@{/admin/inventory}" method="get">
+    <section class="panel"><nav th:replace="~{fragments/admin-analytics :: facets(${stockFacets}, 'Lọc nhanh theo mức tồn kho')}"></nav>
+    <form class="filter-bar" th:action="@{/admin/inventory}" method="get">
         <label class="filter-keyword">Tìm sách<input type="search" name="keyword" th:value="${keyword}" placeholder="Tên sách, ISBN hoặc tác giả"></label>
         <label>Mức tồn kho<select name="stock"><option value="">Tất cả</option><option value="low" th:selected="${stockFilter == 'low'}">Sắp hết (1–5 cuốn)</option><option value="empty" th:selected="${stockFilter == 'empty'}">Hết hàng</option></select></label>
         <button class="button primary" type="submit">Lọc tồn kho</button><a class="button ghost" th:href="@{/admin/inventory}">Xóa lọc</a>

@@ -10,6 +10,16 @@ public final class BookSpecifications {
     private BookSpecifications() {
     }
 
+    /** Bộ lọc của trang quản lý sách: thêm trạng thái và mức tồn kho ("low" hoặc "empty"). */
+    public static Specification<Book> admin(BookSearchQuery filter, BookStatus status, String stock) {
+        var spec = from(filter, false);
+        if (status != null) spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
+        if ("low".equals(stock)) spec = spec.and((root, query, cb) -> cb.and(
+                cb.between(root.get("stock"), 1, 5), cb.notEqual(root.get("status"), BookStatus.INACTIVE)));
+        if ("empty".equals(stock)) spec = spec.and((root, query, cb) -> cb.equal(root.get("stock"), 0));
+        return spec;
+    }
+
     public static Specification<Book> from(BookSearchQuery filter, boolean activeOnly) {
         Specification<Book> spec = (root, query, cb) -> cb.conjunction();
         if (activeOnly) {

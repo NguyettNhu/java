@@ -2,6 +2,7 @@ package com.yukihira.bookstore;
 
 import com.yukihira.bookstore.admin.report.*;
 import com.yukihira.bookstore.admin.catalog.ReferenceAnalyticsSearch;
+import com.yukihira.bookstore.admin.catalog.ReferenceType;
 import com.yukihira.bookstore.author.*;
 import com.yukihira.bookstore.book.*;
 import com.yukihira.bookstore.category.*;
@@ -27,6 +28,10 @@ import static org.assertj.core.api.Assertions.*;
 @Transactional
 class AdminAnalyticsTests {
     @Autowired AnalyticsService analytics;
+    @Autowired AdminSummaryService summaries;
+    @Autowired OrderService orderService;
+    @Autowired BookService bookService;
+    @Autowired UserService userService;
     @Autowired OrderRepository orders;
     @Autowired UserRepository users;
     @Autowired CategoryRepository categories;
@@ -49,7 +54,7 @@ class AdminAnalyticsTests {
         create(user, OrderStatus.COMPLETED, filter.range().endExclusive(), b, 1);
         create(user, OrderStatus.PENDING, filter.range().start(), b, 4);
         create(user, OrderStatus.CANCELLED, filter.range().start(), b, 5);
-        var result = analytics.build(filter, "reports", null);
+        var result = analytics.build(filter);
         assertThat(result.revenue()).isEqualByComparingTo("501.25");
         assertThat(result.totalOrders()).isEqualTo(4);
         assertThat(result.completedOrders()).isEqualTo(2);
@@ -67,11 +72,11 @@ class AdminAnalyticsTests {
         create(user, OrderStatus.COMPLETED, new ReportPeriod(from, to).start(), b, 1);
         create(user, OrderStatus.COMPLETED, new ReportPeriod(from, to).endExclusive().minusSeconds(1), b, 2);
         for (String grouping : List.of("day", "week", "month", "quarter", "year")) {
-            var result = analytics.build(AnalyticsFilter.resolve("custom", null, from, to, grouping, null, null, null), "reports", null);
+            var result = analytics.build(AnalyticsFilter.resolve("custom", null, from, to, grouping, null, null, null));
             assertThat(result.revenue()).isEqualByComparingTo("75000");
             assertThat(sum(result.charts().getFirst())).isEqualByComparingTo("75000");
         }
-        var empty = analytics.build(AnalyticsFilter.resolve("day", LocalDate.of(2000, 1, 1), null, null, null, null, null, null), "reports", null);
+        var empty = analytics.build(AnalyticsFilter.resolve("day", LocalDate.of(2000, 1, 1), null, null, null, null, null, null));
         assertThat(empty.revenue()).isZero(); assertThat(empty.averageOrderValue()).isZero();
         assertThat(empty.charts().getFirst().points()).singleElement().satisfies(p -> assertThat(p.value()).isZero());
     }
@@ -89,25 +94,32 @@ class AdminAnalyticsTests {
         var order = create(user, OrderStatus.COMPLETED, range.start(), first, 2);
         order.addItem(new OrderItem(order, second, 3)); orders.saveAndFlush(order);
         first.setPrice(new BigDecimal("999")); books.saveAndFlush(first);
-        var all = analytics.build(AnalyticsFilter.resolve("day", day, null, null, "day", null, null, null), "reports", null);
+        var all = analytics.build(AnalyticsFilter.resolve("day", day, null, null, "day", null, null, null));
         assertThat(all.revenue()).isEqualByComparingTo("950"); assertThat(all.completedOrders()).isOne();
-        var filtered = analytics.build(AnalyticsFilter.resolve("day", day, null, null, "day", p1.getId(), null, null), "publishers", null);
+        var publisherFilter = AnalyticsFilter.resolve("day", day, null, null, "day", p1.getId(), null, null);
+        var filtered = analytics.build(publisherFilter);
         assertThat(filtered.revenue()).isEqualByComparingTo("200"); assertThat(filtered.totalOrders()).isOne();
         assertThat(filtered.stock()).isEqualTo(7); assertThat(filtered.quantitySold()).isEqualTo(2);
-        assertThat(filtered.references()).singleElement().satisfies(r -> {
+        assertThat(analytics.references(publisherFilter, ReferenceType.PUBLISHERS)).singleElement().satisfies(r -> {
             assertThat(r.revenue()).isEqualByComparingTo("200"); assertThat(r.bookCount()).isOne();
         });
-        var bookDetails = analytics.build(AnalyticsFilter.resolve("day", day, null, null, "day", null, null, null), "books", first.getId());
-        assertThat(bookDetails.revenue()).isEqualByComparingTo("200");
-        assertThat(bookDetails.totalBooks()).isOne();
-        var author = analytics.build(AnalyticsFilter.resolve("day", day, null, null, "day", null, null, first.getAuthors().iterator().next().getId()), "authors", null);
+        // Trang danh mục chỉ lọc theo kỳ: mỗi nhà xuất bản nhận đúng phần doanh thu của sách mình.
+        var period = AnalyticsFilter.resolve("day", day, null, null, "day", null, null, null);
+        var byPublisher = analytics.references(period, ReferenceType.PUBLISHERS).stream()
+                .collect(java.util.stream.Collectors.toMap(AnalyticsView.ReferenceStats::id, AnalyticsView.ReferenceStats::revenue));
+        assertThat(byPublisher.get(p1.getId())).isEqualByComparingTo("200");
+        assertThat(byPublisher.get(p2.getId())).isEqualByComparingTo("750");
+        var sales = summaries.bookSales(first.getId());
+        assertThat(sales.revenue()).isEqualByComparingTo("200");
+        assertThat(sales.soldCopies()).isEqualTo(2); assertThat(sales.completedOrders()).isOne(); assertThat(sales.buyers()).isOne();
+        var author = analytics.build(AnalyticsFilter.resolve("day", day, null, null, "day", null, null, first.getAuthors().iterator().next().getId()));
         assertThat(author.revenue()).isEqualByComparingTo("200"); assertThat(author.totalOrders()).isOne();
-        var noMatch = analytics.build(AnalyticsFilter.resolve("day", day, null, null, "day", p2.getId(), first.getCategory().getId(), null), "reports", null);
+        var noMatch = analytics.build(AnalyticsFilter.resolve("day", day, null, null, "day", p2.getId(), first.getCategory().getId(), null));
         assertThat(noMatch.revenue()).isZero(); assertThat(noMatch.totalBooks()).isZero();
     }
 
     @Test
-    void topFiveRankBySpendingAndQuantitySeparatelyAndDetailOnlyIncludesSelectedCustomer() {
+    void topFiveRankBySpendingAndQuantitySeparatelyAndCustomerSummaryOnlyIncludesThatCustomer() {
         var day = LocalDate.of(2024, 8, 20); var time = new ReportPeriod(day, day).start();
         var inexpensive = book("10", 100, null); var expensive = book("1000", 1, null);
         List<User> buyers = new ArrayList<>();
@@ -119,7 +131,7 @@ class AdminAnalyticsTests {
         create(bigSpender, OrderStatus.COMPLETED, time, expensive, 1);
         create(bigSpender, OrderStatus.CANCELLED, time, expensive, 100);
         var filter = AnalyticsFilter.resolve("day", day, null, null, "day", null, null, null);
-        var view = analytics.build(filter, "users", null);
+        var view = analytics.build(filter);
         var moneyChart = view.charts().stream().filter(c -> c.title().contains("chi tiêu")).findFirst().orElseThrow();
         assertThat(moneyChart.points()).hasSize(5);
         assertThat(moneyChart.points().getFirst().url()).endsWith("/" + bigSpender.getId());
@@ -127,8 +139,9 @@ class AdminAnalyticsTests {
         var quantityChart = view.charts().stream().filter(c -> c.title().contains("mua nhiều cuốn")).findFirst().orElseThrow();
         assertThat(quantityChart.points()).hasSize(5);
         assertThat(quantityChart.points().getFirst().url()).endsWith("/" + buyers.getLast().getId());
-        var detail = analytics.build(filter, "users", bigSpender.getId());
-        assertThat(detail.revenue()).isEqualByComparingTo("1000"); assertThat(detail.totalOrders()).isEqualTo(2);
+        var detail = AdminSummaryService.CustomerSummary.of(orderService.customerOrders(bigSpender.getEmail()));
+        assertThat(detail.spent()).isEqualByComparingTo("1000"); assertThat(detail.totalOrders()).isEqualTo(2);
+        assertThat(detail.cancelledOrders()).isOne(); assertThat(detail.books()).isOne();
     }
 
     @Test
@@ -142,6 +155,64 @@ class AdminAnalyticsTests {
         assertThat(filtered.getTotalElements()).isEqualTo(24); assertThat(filtered.getContent()).hasSize(20);
         assertThat(filtered.getContent().getFirst().id()).isEqualTo(25);
         assertThat(ReferenceAnalyticsSearch.search(refs, null, null, 0, "unsold", "all", "all", "name", 0)).isEmpty();
+    }
+
+    @Test
+    void managementSummariesMatchTheirTablesAndEveryShortcutCountMatchesTheRowsItOpens() {
+        // Thẻ tóm tắt phải tính đúng các dòng bảng đang hiện; số trên lối tắt phải bằng số dòng khi bấm vào nó.
+        var token = "Tóm tắt " + UUID.randomUUID();
+        var category = categories.save(new Category("Thể loại " + token, UUID.randomUUID().toString()));
+        record Seed(String price, int stock, BookStatus status) {}
+        for (var seed : List.of(new Seed("100", 10, BookStatus.ACTIVE), new Seed("200", 3, BookStatus.ACTIVE),
+                new Seed("50", 0, BookStatus.OUT_OF_STOCK), new Seed("300", 2, BookStatus.INACTIVE), new Seed("80", 0, BookStatus.INACTIVE))) {
+            var b = new Book(token + " " + seed.price(), UUID.randomUUID().toString(), new BigDecimal(seed.price()), seed.stock(), category);
+            b.setStatus(seed.status());
+            books.saveAndFlush(b);
+        }
+        var query = new BookSearchQuery(token, null, null, null, null, "title");
+        var all = summaries.books(query, null, "", false);
+        assertThat(all.total()).isEqualTo(5); assertThat(all.stock()).isEqualTo(15);
+        assertThat(all.stockValue()).isEqualByComparingTo("2200");
+        assertThat(all.minPrice()).isEqualByComparingTo("50"); assertThat(all.maxPrice()).isEqualByComparingTo("300");
+        assertThat(all.lowStock()).isOne(); assertThat(all.emptyStock()).isEqualTo(2);
+        List<BookStatus> statuses = new ArrayList<>(); statuses.add(null); statuses.addAll(List.of(BookStatus.values()));
+        for (BookStatus status : statuses) {
+            for (String level : List.of("", "low", "empty")) {
+                var summary = summaries.books(query, status, level, false);
+                var rows = bookService.searchAdmin(query, status, level, 0, 48).getContent();
+                assertThat(summary.total()).as("%s/%s", status, level).isEqualTo(rows.size());
+                assertThat(summary.stock()).isEqualTo(rows.stream().mapToLong(BookView::stock).sum());
+                assertThat(summary.statusTotal()).isEqualTo(bookService.searchAdmin(query, null, level, 0, 48).getTotalElements());
+                for (BookStatus s : BookStatus.values())
+                    assertThat(summary.count(s)).isEqualTo(bookService.searchAdmin(query, s, level, 0, 48).getTotalElements());
+                assertThat(summary.levelTotal()).isEqualTo(bookService.searchAdmin(query, status, "", 0, 48).getTotalElements());
+                assertThat(summary.lowStock()).isEqualTo(bookService.searchAdmin(query, status, "low", 0, 48).getTotalElements());
+                assertThat(summary.emptyStock()).isEqualTo(bookService.searchAdmin(query, status, "empty", 0, 48).getTotalElements());
+            }
+        }
+
+        var buyer = customer("Khách " + token);
+        var sold = book("100", 50, null);
+        create(buyer, OrderStatus.COMPLETED, Instant.now(), sold, 2);
+        create(buyer, OrderStatus.PENDING, Instant.now(), sold, 1);
+        create(buyer, OrderStatus.CANCELLED, Instant.now(), sold, 1);
+        var orderQuery = new OrderSearchQuery(buyer.getEmail(), null);
+        var orderSummary = summaries.orders(orderQuery);
+        assertThat(orderSummary.total()).isEqualTo(3).isEqualTo(orderService.search(orderQuery, 0, 20).getTotalElements());
+        for (var row : orderSummary.statuses())
+            assertThat(row.count()).isEqualTo(orderService.search(new OrderSearchQuery(buyer.getEmail(), row.status()), 0, 20).getTotalElements());
+        assertThat(orderSummary.revenue()).isEqualByComparingTo("200"); assertThat(orderSummary.open()).isOne();
+        assertThat(orderSummary.cancelledShare()).isEqualByComparingTo("33.3");
+
+        var locked = customer("Khách " + token);
+        locked.setStatus(UserStatus.LOCKED); users.saveAndFlush(locked);
+        var people = summaries.customers(token, null);
+        assertThat(people.total()).isEqualTo(2).isEqualTo(userService.searchCustomers(new UserSearchQuery(token, null), 0, 20).getTotalElements());
+        assertThat(people.count(UserStatus.LOCKED)).isOne();
+        assertThat(people.buyers()).isOne(); assertThat(people.spent()).isEqualByComparingTo("200");
+        var lockedOnly = summaries.customers(token, UserStatus.LOCKED);
+        assertThat(lockedOnly.total()).isOne(); assertThat(lockedOnly.statusTotal()).isEqualTo(2);
+        assertThat(lockedOnly.buyers()).isZero(); assertThat(lockedOnly.spent()).isZero();
     }
 
     private BigDecimal sum(AnalyticsView.Chart chart) { return chart.points().stream().map(AnalyticsView.Point::value).reduce(BigDecimal.ZERO, BigDecimal::add); }

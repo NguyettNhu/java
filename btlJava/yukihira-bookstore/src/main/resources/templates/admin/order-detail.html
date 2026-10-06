@@ -8,8 +8,6 @@
 
     <a class="back-link" th:href="@{/admin/orders}">Quay lại danh sách đơn hàng</a>
     <header class="admin-title"><div><h1 th:text="${order.orderCode}"></h1><p th:text="${'Đặt lúc ' + order.createdAtLabel}"></p></div><div class="heading-actions"><span class="status-pill" th:classappend="${'order-status-' + #strings.toLowerCase(order.status.name())}" th:text="${order.statusLabel}"></span><button class="button ghost" type="button" data-print>In phiếu đơn</button></div></header>
-    <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
-
     <ol class="order-progress" aria-label="Tiến trình đơn hàng" th:if="${order.status.name() != 'CANCELLED'}">
         <li th:each="step : ${T(com.yukihira.bookstore.order.OrderStatus).values()}" th:if="${step.name() != 'CANCELLED'}" th:classappend="${step == order.status ? 'current' : (step.ordinal() &lt; order.status.ordinal() ? 'completed' : '')}" th:attr="aria-current=${step == order.status ? 'step' : null}" th:text="${step.label}"></li>
     </ol>

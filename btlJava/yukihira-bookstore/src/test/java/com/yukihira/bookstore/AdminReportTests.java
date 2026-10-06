@@ -42,7 +42,7 @@ class AdminReportTests {
         create(user, book, OrderStatus.PENDING, period.start().plusSeconds(60));
         create(user, book, OrderStatus.CANCELLED, period.start().plusSeconds(120));
         create(user, book, OrderStatus.COMPLETED, period.endExclusive());
-        var report = analytics.build(AnalyticsFilter.resolve("day", day, null, null, null, null, category.getId(), null), "reports", null);
+        var report = analytics.build(AnalyticsFilter.resolve("day", day, null, null, null, null, category.getId(), null));
         assertThat(report.totalOrders()).isEqualTo(4);
         assertThat(report.completedOrders()).isEqualTo(2);
         assertThat(report.revenue()).isEqualByComparingTo("100000");
@@ -68,22 +68,20 @@ class AdminReportTests {
         create(user, book, OrderStatus.COMPLETED, new ReportPeriod(LocalDate.of(2024, 2, 1), LocalDate.of(2024, 2, 1)).start());
         create(user, book, OrderStatus.COMPLETED, new ReportPeriod(LocalDate.of(2024, 3, 10), LocalDate.of(2024, 3, 10)).start());
         create(user, book, OrderStatus.COMPLETED, new ReportPeriod(LocalDate.of(2024, 3, 11), LocalDate.of(2024, 3, 11)).start());
-        var march = analytics.build(AnalyticsFilter.resolve("month", LocalDate.of(2024, 3, 15), null, null, null, null, category.getId(), null), "reports", null);
+        var march = analytics.build(AnalyticsFilter.resolve("month", LocalDate.of(2024, 3, 15), null, null, null, null, category.getId(), null));
         assertThat(march.previous().range()).isEqualTo(new ReportPeriod(LocalDate.of(2024, 2, 1), LocalDate.of(2024, 2, 29)));
         assertThat(march.previous().revenue()).isEqualByComparingTo("10000");
         assertThat(march.revenueChange()).isEqualByComparingTo("100.0");
         assertThat(march.ordersChange()).isEqualByComparingTo("100.0");
         var custom = AnalyticsFilter.resolve("custom", null, LocalDate.of(2024, 3, 10), LocalDate.of(2024, 3, 16), null, null, null, null);
         assertThat(custom.previous().range()).isEqualTo(new ReportPeriod(LocalDate.of(2024, 3, 3), LocalDate.of(2024, 3, 9)));
-        var january = analytics.build(AnalyticsFilter.resolve("month", LocalDate.of(2024, 1, 15), null, null, null, null, category.getId(), null), "reports", null);
+        var january = analytics.build(AnalyticsFilter.resolve("month", LocalDate.of(2024, 1, 15), null, null, null, null, category.getId(), null));
         assertThat(january.revenueChange()).isNull();
-        // Chỉ trang báo cáo mới tính kỳ trước để các trang quản lý không phải tổng hợp thêm.
-        assertThat(analytics.build(AnalyticsFilter.resolve("month", LocalDate.of(2024, 3, 15), null, null, null, null, null, null), "books", null).previous()).isNull();
     }
 
     @Test
     void reportShowsRevenueByAllThreeCatalogDimensions() {
-        var view = analytics.build(AnalyticsFilter.resolve("month", LocalDate.of(2024, 3, 15), null, null, null, null, null, null), "reports", null);
+        var view = analytics.build(AnalyticsFilter.resolve("month", LocalDate.of(2024, 3, 15), null, null, null, null, null, null));
         assertThat(view.chart("revenue-by-categories")).isNotNull();
         assertThat(view.chart("revenue-by-authors")).isNotNull();
         assertThat(view.chart("revenue-by-publishers")).isNotNull();

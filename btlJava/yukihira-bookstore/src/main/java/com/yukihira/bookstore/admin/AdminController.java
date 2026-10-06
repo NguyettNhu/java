@@ -31,10 +31,4 @@ public class AdminController {
         model.addAttribute("recentOrders", orderService.search(new OrderSearchQuery(null, null), 0, 5));
         return "admin/dashboard";
     }
-
-    @GetMapping("/admin/reports")
-    public String reports() {
-        // Hiển thị trang báo cáo dùng chung bộ lọc đã được advice chuẩn hóa.
-        return "admin/reports";
-    }
 }

@@ -143,7 +143,8 @@
         // Khối số liệu về sau khi trang đã hiện nên nó đẩy bảng quản lý bên dưới xuống. Nhớ chiều
         // cao đo được lần trước để đặt chỗ sẵn, nhờ vậy các lượt vào sau không còn nhảy bố cục.
         // Chiều cao phụ thuộc bề ngang cửa sổ nên khóa lưu gồm cả đường dẫn lẫn bề ngang.
-        const heightKey = `analytics-height:${location.pathname}:${window.innerWidth}`;
+        // Tiền tố v2: khối biểu đồ nay thu gọn sẵn nên bỏ các chiều cao đã đo khi nó còn mở.
+        const heightKey = `analytics-height-v2:${location.pathname}:${window.innerWidth}`;
         let reserved = 0;
         try { reserved = Number(sessionStorage.getItem(heightKey)) || 0; } catch (error) { reserved = 0; }
         if (reserved) panel.style.minHeight = `${reserved}px`;
@@ -184,7 +185,7 @@
     });
     let printState = [];
     window.addEventListener('beforeprint', () => {
-        printState = [...document.querySelectorAll('.admin-analytics details')].map(node => [node, node.open]);
+        printState = [...document.querySelectorAll('.admin-analytics details, .page-charts')].map(node => [node, node.open]);
         printState.forEach(([node]) => { node.open = true; });
     });
     window.addEventListener('afterprint', () => printState.forEach(([node, open]) => { node.open = open; }));

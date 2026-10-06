@@ -64,11 +64,7 @@ public class BookService {
     @Transactional(readOnly = true)
     public Page<BookView> searchAdmin(BookSearchQuery filter, BookStatus status, String stock, int page, int size) {
         // Lọc sách admin theo trạng thái và mức tồn kho để tạo cảnh báo dashboard.
-        var spec = BookSpecifications.from(filter, false);
-        if (status != null) spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
-        if ("low".equals(stock)) spec = spec.and((root, query, cb) -> cb.and(
-                cb.between(root.get("stock"), 1, 5), cb.notEqual(root.get("status"), BookStatus.INACTIVE)));
-        if ("empty".equals(stock)) spec = spec.and((root, query, cb) -> cb.equal(root.get("stock"), 0));
+        var spec = BookSpecifications.admin(filter, status, stock);
         return bookRepository.findAll(spec, PageRequest.of(Math.max(0, page), Math.clamp(size, 1, 48),
                 sort(filter.sort()).and(Sort.by("id")))).map(this::toView);
     }

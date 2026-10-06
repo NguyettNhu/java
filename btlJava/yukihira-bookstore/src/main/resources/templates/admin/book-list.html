@@ -7,11 +7,22 @@
     <div th:replace="~{fragments/admin :: flash}"></div>
 
     <header class="admin-title"><div><h1>Sách</h1><p>Biên tập từng cuốn sách, giá bán và trạng thái trên cửa hàng.</p></div><a class="button primary" th:href="@{/admin/books/new}">+ Thêm sách</a></header>
-    <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
+    <section th:if="${summary != null}" class="page-summary" aria-label="Tóm tắt sách đang lọc">
+        <div class="metric-grid">
+            <article class="metric-card"><span>Đầu sách khớp bộ lọc</span><strong th:text="${summary.total}"></strong><small>Tính trên mọi trang của bảng</small></article>
+            <article class="metric-card"><span>Tồn kho</span><strong th:text="${summary.stock + ' cuốn'}"></strong><small th:text="${summary.lowStock + ' sắp hết · ' + summary.emptyStock + ' còn 0 cuốn'}"></small></article>
+            <article class="metric-card"><span>Giá trị tồn theo giá bán</span><strong th:text="${#numbers.formatDecimal(summary.stockValue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><small>Số lượng hiện tại × giá bán hiện tại</small></article>
+            <article class="metric-card"><span>Giá bán trung bình</span><strong th:text="${#numbers.formatDecimal(summary.averagePrice(), 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong>
+                <small th:text="${summary.total == 0 ? 'Chưa có sách phù hợp' : 'Từ ' + #numbers.formatDecimal(summary.minPrice, 0, 'POINT', 0, 'COMMA') + ' ₫' + ' đến ' + #numbers.formatDecimal(summary.maxPrice, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></small></article>
+        </div>
+    </section>
 
     <section class="panel">
+        <div th:if="${summary != null}" class="facet-group">
+            <nav th:replace="~{fragments/admin-analytics :: facets(${statusFacets}, 'Lọc nhanh theo trạng thái')}"></nav>
+            <nav th:replace="~{fragments/admin-analytics :: facets(${stockFacets}, 'Lọc nhanh theo mức tồn kho')}"></nav>
+        </div>
         <form class="filter-bar" th:action="@{/admin/books}" method="get">
-            <th:block th:replace="~{fragments/admin-analytics :: preserve}"></th:block>
             <label>Nhà xuất bản<select name="publisherId"><option value="">Tất cả</option><option th:each="r : ${publishers}" th:value="${r.id}" th:text="${r.name}" th:selected="${r.id == publisherId}"></option></select></label>
             <label>Tác giả<select name="authorId"><option value="">Tất cả</option><option th:each="r : ${authors}" th:value="${r.id}" th:text="${r.name}" th:selected="${r.id == authorId}"></option></select></label>
             <label>Giá từ (₫)<input type="number" name="minPrice" min="0" step="0.01" th:value="${minPrice}"></label>

@@ -7,9 +7,18 @@
     <div th:replace="~{fragments/admin :: flash}"></div>
 
     <header class="admin-title"><div><h1>Khách hàng</h1><p>Tra cứu hồ sơ, lịch sử mua sách và kiểm soát quyền đăng nhập.</p></div></header>
-    <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
+    <section class="page-summary" aria-label="Tóm tắt khách hàng đang lọc">
+        <div class="metric-grid">
+            <article class="metric-card"><span>Khách hàng khớp bộ lọc</span><strong th:text="${summary.total}"></strong><small>Tính trên mọi trang của bảng</small></article>
+            <article class="metric-card"><span>Khách mới 30 ngày</span><strong th:text="${summary.newCustomers}"></strong><small th:text="${'Tham gia từ ' + summary.newSinceLabel()}"></small></article>
+            <article class="metric-card"><span>Đã từng mua</span><strong th:text="${summary.buyers}"></strong><small th:text="${summary.completedOrders + ' đơn hoàn thành'}"></small></article>
+            <article class="metric-card revenue"><span>Tổng chi tiêu</span><strong th:text="${#numbers.formatDecimal(summary.spent, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><small th:text="${'Trung bình ' + #numbers.formatDecimal(summary.averageSpent(), 0, 'POINT', 0, 'COMMA') + ' ₫' + ' / khách đã mua'}"></small></article>
+        </div>
+        <details th:replace="~{fragments/admin-analytics :: summaryCharts(${summary.charts()}, 'Khách chi tiêu nhiều nhất trong danh sách đang lọc')}"></details>
+    </section>
 
-    <section class="panel"><form class="filter-bar" th:action="@{/admin/users}" method="get">
+    <section class="panel"><nav th:replace="~{fragments/admin-analytics :: facets(${statusFacets}, 'Lọc nhanh theo trạng thái tài khoản')}"></nav>
+    <form class="filter-bar" th:action="@{/admin/users}" method="get">
         <label class="filter-keyword">Tìm khách hàng<input type="search" name="keyword" th:value="${keyword}" placeholder="Họ tên, email, số điện thoại"></label><label>Trạng thái<select name="status"><option value="">Tất cả trạng thái</option><option th:each="status : ${statuses}" th:value="${status}" th:text="${status.label}" th:selected="${status == selectedStatus}"></option></select></label>
         <button class="button primary" type="submit">Lọc khách hàng</button><a class="button ghost" th:href="@{/admin/users}">Xóa lọc</a>
     </form><div class="data-table-wrap" tabindex="0" role="region" aria-label="Danh sách khách hàng"><table class="data-table"><thead><tr><th scope="col">Khách hàng</th><th scope="col">Điện thoại</th><th scope="col">Ngày tham gia</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead><tbody>

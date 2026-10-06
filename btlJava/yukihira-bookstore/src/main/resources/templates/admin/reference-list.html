@@ -7,11 +7,31 @@
     <div th:replace="~{fragments/admin :: flash}"></div>
 
     <header class="admin-title"><div><h1 th:text="${type.label}"></h1><p>Quản lý thông tin dùng chung cho các cuốn sách trong cửa hàng.</p></div><a class="button primary" th:href="@{/admin/{type}/new(type=${type.path})}" th:text="${'+ Thêm ' + #strings.toLowerCase(type.label)}"></a></header>
-    <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
+    <p th:if="${analyticsError != null}" class="form-alert error" role="alert" th:text="${analyticsError}"></p>
+    <!-- Tóm tắt đúng các dòng đang khớp bộ lọc bên dưới; doanh số tính trong kỳ thống kê đang chọn. -->
+    <section class="page-summary" aria-label="Tóm tắt danh sách đang lọc">
+        <p class="analytics-scope" th:if="${analyticsError == null}">Số liệu bán hàng trong kỳ <strong th:text="${#temporals.format(afrom, 'dd/MM/yyyy') + ' – ' + #temporals.format(ato, 'dd/MM/yyyy')}"></strong>
+            · chỉ đơn hoàn thành. Đầu sách và tồn kho là số hiện tại.
+            <th:block th:if="${type.path == 'authors'}">Sách nhiều tác giả được tính cho từng tác giả.</th:block></p>
+        <div class="metric-grid">
+            <article class="metric-card"><span th:text="${type.label + ' đang lọc'}"></span><strong th:text="${summary.total}"></strong>
+                <small th:text="${type.path == 'categories' ? summary.hidden + ' đang ẩn · ' + summary.withoutBooks + ' chưa có sách' : summary.withoutBooks + ' chưa có sách'}"></small></article>
+            <article class="metric-card"><span>Có sách bán được trong kỳ</span><strong th:text="${summary.selling}"></strong>
+                <small th:text="${summary.unsold + ' mục chưa bán được cuốn nào'}"></small></article>
+            <article class="metric-card revenue"><span>Doanh thu cao nhất</span>
+                <strong th:text="${summary.topRevenue == null ? '0 ₫' : #numbers.formatDecimal(summary.topRevenue.revenue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong>
+                <small th:text="${summary.topRevenue == null ? 'Chưa có doanh thu trong kỳ' : summary.topRevenue.name + ' · ' + summary.topRevenue.sold + ' cuốn'}"></small></article>
+            <article class="metric-card"><span>Nhiều đầu sách nhất</span>
+                <strong th:text="${summary.mostBooks == null ? 0 : summary.mostBooks.bookCount}"></strong>
+                <small th:text="${summary.mostBooks == null ? 'Chưa có sách' : summary.mostBooks.name + ' · tồn ' + summary.mostBooks.stock + ' cuốn'}"></small></article>
+        </div>
+        <details th:replace="~{fragments/admin-analytics :: summaryCharts(${charts}, 'Doanh thu và số đầu sách của 10 mục dẫn đầu trong danh sách đang lọc')}"></details>
+    </section>
 
     <section class="panel">
-        <form class="filter-bar" th:action="@{/admin/{type}(type=${type.path})}" method="get">
-            <th:block th:replace="~{fragments/admin-analytics :: preserve}"></th:block>
+        <nav th:replace="~{fragments/admin-analytics :: facets(${activityFacets}, 'Lọc theo bán hàng trong kỳ')}"></nav>
+        <form class="filter-bar" th:action="@{/admin/{type}(type=${type.path})}" method="get" data-analytics-filter>
+            <th:block th:replace="~{fragments/admin-analytics :: periodFields}"></th:block>
             <label><span th:text="${type.detailsLabel}"></span><input type="search" name="details" th:value="${details}" placeholder="Nhập nội dung cần tìm"></label>
             <label>Số đầu sách tối thiểu<input type="number" name="minBooks" min="0" th:value="${minBooks}"></label>
             <label>Bán hàng trong kỳ<select name="activity"><option value="all">Tất cả</option><option value="selling" th:selected="${activity == 'selling'}">Có sách đã bán</option><option value="unsold" th:selected="${activity == 'unsold'}">Chưa bán trong kỳ</option></select></label>
@@ -27,7 +47,7 @@
                     <td th:if="${type.path == 'categories'}"><span class="status-pill" th:classappend="${item.active ? 'active' : 'inactive'}" th:text="${item.active ? 'Hiển thị' : 'Đang ẩn'}"></span></td>
                     <td class="numeric" th:text="${item.bookCount}"></td><td class="numeric" th:text="${item.stock}"></td><td class="numeric" th:text="${item.sold}"></td><td class="numeric" th:text="${#numbers.formatDecimal(item.revenue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></td>
                     <td><div class="table-actions"><a th:href="@{/admin/{type}/{id}/edit(type=${type.path},id=${item.id})}">Xem / chỉnh sửa</a>
-                        <a th:href="@{/admin/{type}(type=${type.path},period=${aperiod},date=${adate},from=${afrom},to=${ato},groupBy=${agroupBy},reportPublisher=${type.path == 'publishers' ? item.id : areportPublisher},reportCategory=${type.path == 'categories' ? item.id : areportCategory},reportAuthor=${type.path == 'authors' ? item.id : areportAuthor})}">Phân tích riêng</a>
+                        <a th:href="@{/admin/reports(period=${aperiod},date=${adate},from=${afrom},to=${ato},reportPublisher=${type.path == 'publishers' ? item.id : null},reportCategory=${type.path == 'categories' ? item.id : null},reportAuthor=${type.path == 'authors' ? item.id : null})}">Xem báo cáo</a>
                         <form th:action="@{/admin/{type}/{id}/delete(type=${type.path},id=${item.id})}" method="post" th:attr="data-confirm=${'Xóa “' + item.name + '”? Thể loại đang có sách sẽ được ẩn; tác giả và nhà xuất bản đang có sách sẽ không bị xóa.'}"><button class="danger-link" type="submit">Xóa</button></form>
                     </div></td>
                 </tr><tr th:if="${!items.hasContent()}"><td th:colspan="${type.path == 'categories' ? 8 : 7}" class="empty-cell"><strong>Chưa có dữ liệu phù hợp</strong>Thử tên khác hoặc thêm mục đầu tiên.<br><a th:href="@{/admin/{type}/new(type=${type.path})}">Thêm mới</a></td></tr></tbody>

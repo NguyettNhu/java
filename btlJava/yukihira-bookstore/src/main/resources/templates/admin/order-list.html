@@ -7,9 +7,18 @@
     <div th:replace="~{fragments/admin :: flash}"></div>
 
     <header class="admin-title"><div><h1>Đơn hàng</h1><p>Theo dõi từ lúc tiếp nhận đến khi giao sách thành công.</p></div></header>
-    <th:block th:replace="~{fragments/admin-analytics :: analytics}"></th:block>
+    <section th:if="${summary != null}" class="page-summary" aria-label="Tóm tắt đơn hàng đang lọc">
+        <p class="analytics-scope">Theo từ khóa và khoảng ngày đặt hàng đang lọc, gồm mọi trạng thái. Doanh thu chỉ cộng đơn hoàn thành.</p>
+        <div class="metric-grid">
+            <article class="metric-card"><span>Tổng đơn</span><strong th:text="${summary.total()}"></strong><small th:text="${summary.count(T(com.yukihira.bookstore.order.OrderStatus).COMPLETED) + ' đơn hoàn thành'}"></small></article>
+            <article class="metric-card revenue"><span>Doanh thu hoàn thành</span><strong th:text="${#numbers.formatDecimal(summary.revenue(), 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><small th:text="${'Trung bình ' + #numbers.formatDecimal(summary.averageCompleted(), 0, 'POINT', 0, 'COMMA') + ' ₫' + ' / đơn'}"></small></article>
+            <article class="metric-card"><span>Đang chờ xử lý</span><strong th:text="${summary.open()}"></strong><small th:text="${#numbers.formatDecimal(summary.openAmount(), 0, 'POINT', 0, 'COMMA') + ' ₫' + ' chưa thu · chờ xác nhận, đã xác nhận, đang giao'}"></small></article>
+            <article class="metric-card"><span>Tỉ lệ hủy</span><strong th:text="${#numbers.formatDecimal(summary.cancelledShare(), 1, 'POINT', 1, 'COMMA') + '%'}"></strong><small th:text="${summary.count(T(com.yukihira.bookstore.order.OrderStatus).CANCELLED) + ' đơn đã hủy'}"></small></article>
+        </div>
+    </section>
 
     <section class="panel">
+        <th:block th:if="${statusFacets != null}"><nav th:replace="~{fragments/admin-analytics :: facets(${statusFacets}, 'Lọc nhanh theo trạng thái đơn')}"></nav></th:block>
         <form class="filter-bar" th:action="@{/admin/orders}" method="get">
             <label class="filter-keyword">Tìm đơn hàng<input type="search" name="keyword" th:value="${keyword}" placeholder="Mã đơn, người nhận, email"></label>
             <label>Trạng thái<select name="status"><option value="">Tất cả trạng thái</option><option th:each="status : ${statuses}" th:value="${status}" th:text="${status.label}" th:selected="${status == selectedStatus}"></option></select></label>

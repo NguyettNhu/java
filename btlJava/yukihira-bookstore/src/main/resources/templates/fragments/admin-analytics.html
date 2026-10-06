@@ -1,20 +1,11 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"><body>
-<section th:fragment="analytics" th:if="${analyticsPath != null}" class="admin-analytics" aria-label="Phân tích dữ liệu">
+<!-- Bộ lọc đầy đủ của trang Báo cáo; khối số liệu được tải riêng sau khi trang đã hiện. -->
+<section th:fragment="analytics" class="admin-analytics" aria-label="Phân tích dữ liệu">
     <div class="panel analytics-filters">
-        <header class="panel-heading"><div><h2>Phân tích dữ liệu</h2><p>Bộ lọc này áp dụng cho các chỉ số và biểu đồ bên dưới. Tồn kho và danh mục là số liệu hiện tại.</p></div></header>
-        <form method="get" th:action="@{${analyticsPath}}" class="filter-bar" data-analytics-filter>
-            <label>Kỳ thống kê<select name="period" data-period>
-                <option value="day" th:selected="${aperiod == 'day'}">Ngày</option>
-                <option value="week" th:selected="${aperiod == 'week'}">Tuần (thứ Hai – Chủ nhật)</option>
-                <option value="month" th:selected="${aperiod == 'month'}">Tháng</option>
-                <option value="quarter" th:selected="${aperiod == 'quarter'}">Quý</option>
-                <option value="year" th:selected="${aperiod == 'year'}">Năm</option>
-                <option value="custom" th:selected="${aperiod == 'custom'}">Khoảng ngày tùy chọn</option>
-            </select></label>
-            <label>Ngày thuộc kỳ<input type="date" name="date" th:value="${adate}" min="1900-01-01" max="9998-12-31" data-anchor aria-describedby="analytics-date-help"></label>
-            <label>Ngày bắt đầu<input type="date" name="from" th:value="${afrom}" min="1900-01-01" max="9998-12-31" data-range></label>
-            <label>Ngày kết thúc<input type="date" name="to" th:value="${ato}" min="1900-01-01" max="9998-12-31" data-range></label>
+        <header class="panel-heading"><div><h2>Bộ lọc báo cáo</h2><p>Áp dụng cho mọi chỉ số và biểu đồ bên dưới. Tồn kho và danh mục là số liệu hiện tại.</p></div></header>
+        <form method="get" th:action="@{/admin/reports}" class="filter-bar" data-analytics-filter>
+            <th:block th:replace="~{:: periodFields}"></th:block>
             <label>Nhóm biểu đồ theo<select name="groupBy">
                 <option value="day" th:selected="${agroupBy == 'day'}">Ngày</option><option value="week" th:selected="${agroupBy == 'week'}">Tuần</option>
                 <option value="month" th:selected="${agroupBy == 'month'}">Tháng</option><option value="quarter" th:selected="${agroupBy == 'quarter'}">Quý</option><option value="year" th:selected="${agroupBy == 'year'}">Năm</option>
@@ -22,46 +13,45 @@
             <label>Nhà xuất bản<select name="reportPublisher"><option value="">Tất cả nhà xuất bản</option><option th:each="r : ${reportPublishers}" th:value="${r.id}" th:text="${r.name}" th:selected="${areportPublisher == #strings.toString(r.id)}"></option></select></label>
             <label>Thể loại<select name="reportCategory"><option value="">Tất cả thể loại</option><option th:each="r : ${reportCategories}" th:value="${r.id}" th:text="${r.name}" th:selected="${areportCategory == #strings.toString(r.id)}"></option></select></label>
             <label>Tác giả<select name="reportAuthor"><option value="">Tất cả tác giả</option><option th:each="r : ${reportAuthors}" th:value="${r.id}" th:text="${r.name}" th:selected="${areportAuthor == #strings.toString(r.id)}"></option></select></label>
-            <div class="analytics-filter-actions"><button class="button primary" type="submit">Áp dụng thống kê</button><a class="button ghost" th:href="@{${analyticsPath}}">Đặt lại</a></div>
+            <div class="analytics-filter-actions"><button class="button primary" type="submit">Áp dụng thống kê</button><a class="button ghost" th:href="@{/admin/reports}">Đặt lại</a></div>
             <p id="analytics-date-help" class="help-text analytics-filter-help">Ngày thuộc kỳ: chọn một ngày trong tuần, tháng, quý hoặc năm cần xem. Để lọc ngày bắt đầu và kết thúc riêng, chọn “Khoảng ngày tùy chọn”.</p>
         </form>
     </div>
     <p th:if="${analyticsError != null}" class="form-alert error" role="alert" th:text="${analyticsError}"></p>
-    <!-- Trang danh mục dựng bảng quản lý từ số liệu này nên phải dựng sẵn trong lượt tải trang.
-         Điều kiện phải nằm ở thẻ ngoài vì th:replace được xử lý trước th:if trên cùng một thẻ. -->
-    <th:block th:if="${analytics != null}"><th:block th:replace="~{:: panel}"></th:block></th:block>
-    <!-- Các trang còn lại tải khối số liệu riêng sau khi trang đã hiện, để chuyển trang không phải chờ tổng hợp. -->
     <div th:if="${analyticsUrl != null}" data-analytics-panel th:attr="data-analytics-url=${analyticsUrl}" aria-live="polite" aria-busy="true">
         <p class="analytics-loading">Đang tổng hợp số liệu…</p>
         <noscript><a class="button ghost small" th:href="${analyticsUrl}">Mở số liệu phân tích</a></noscript>
     </div>
 </section>
 
-<th:block th:fragment="panel" th:with="a=${analytics}">
-        <p class="analytics-scope"><strong th:text="${#temporals.format(a.filter.range.from, 'dd/MM/yyyy') + ' – ' + #temporals.format(a.filter.range.to, 'dd/MM/yyyy')}"></strong>
-            · Theo ngày đặt hàng, giờ Việt Nam. Chỉ đơn hoàn thành được cộng doanh thu.
-            <span th:if="${analyticsDetail}">Số liệu bán hàng chỉ thuộc mục đang xem.</span>
-            <span th:if="${areportPublisher != null or areportCategory != null or areportAuthor != null}">Khi lọc danh mục, doanh thu chỉ cộng tiền những sách khớp bộ lọc trong đơn.</span>
-        </p>
-        <section class="metric-grid" aria-label="Số liệu trong kỳ">
-            <article class="metric-card revenue"><span>Doanh thu trong kỳ</span><strong th:text="${#numbers.formatDecimal(a.revenue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><small th:text="${a.completedOrders + ' đơn hoàn thành'}"></small></article>
-            <article class="metric-card"><span>Số cuốn đã bán</span><strong th:text="${a.quantitySold}"></strong><small>Trong đơn hoàn thành</small></article>
-            <article class="metric-card"><span>Khách đã mua</span><strong th:text="${a.buyers}"></strong><small>Mỗi khách chỉ tính một lần</small></article>
-            <article class="metric-card"><span>Giá trị trung bình / đơn hoàn thành</span><strong th:text="${#numbers.formatDecimal(a.averageOrderValue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><small th:text="${a.totalOrders + ' tổng đơn trong kỳ (mọi trạng thái)'}"></small></article>
-        </section>
-        <section th:if="${analyticsCatalog}" class="metric-grid" aria-label="Danh mục và tồn kho hiện tại">
-            <article class="metric-card"><span>Tổng số sách</span><strong th:text="${a.totalBooks}"></strong><small>Đầu sách hiện tại trong phạm vi lọc</small></article>
-            <article class="metric-card"><span>Tổng số loại sách</span><strong th:text="${a.totalCategories}"></strong><small>Thể loại, gồm cả loại đang ẩn</small></article>
-            <article class="metric-card"><span>Tổng tồn kho</span><strong th:text="${a.stock + ' cuốn'}"></strong><small th:text="${a.lowStock + ' đầu sách sắp hết · ' + a.emptyStock + ' hết hàng'}"></small></article>
-            <article class="metric-card"><span>Giá trị tồn theo giá bán</span><strong th:text="${#numbers.formatDecimal(a.stockValue, 0, 'POINT', 0, 'COMMA') + ' ₫'}"></strong><small>Số lượng hiện tại × giá bán hiện tại</small></article>
-        </section>
-        <details class="analytics-details" open>
-            <summary>Biểu đồ và bảng số liệu chi tiết <span class="help-text">Có thể thu gọn để xem bảng quản lý bên dưới.</span></summary>
-            <div class="analytics-chart-grid">
-                <th:block th:each="chart : ${a.charts}"><article th:replace="~{fragments/admin-analytics :: chartCard(${chart})}"></article></th:block>
-            </div>
-        </details>
+<!-- Chọn kỳ thống kê; form chứa nó cần data-analytics-filter để tự chuyển sang khoảng ngày tùy chọn. -->
+<th:block th:fragment="periodFields">
+    <label>Kỳ thống kê<select name="period" data-period>
+        <option value="day" th:selected="${aperiod == 'day'}">Ngày</option>
+        <option value="week" th:selected="${aperiod == 'week'}">Tuần (thứ Hai – Chủ nhật)</option>
+        <option value="month" th:selected="${aperiod == 'month'}">Tháng</option>
+        <option value="quarter" th:selected="${aperiod == 'quarter'}">Quý</option>
+        <option value="year" th:selected="${aperiod == 'year'}">Năm</option>
+        <option value="custom" th:selected="${aperiod == 'custom'}">Khoảng ngày tùy chọn</option>
+    </select></label>
+    <label>Ngày thuộc kỳ<input type="date" name="date" th:value="${adate}" min="1900-01-01" max="9998-12-31" data-anchor></label>
+    <label>Ngày bắt đầu<input type="date" name="from" th:value="${afrom}" min="1900-01-01" max="9998-12-31" data-range></label>
+    <label>Ngày kết thúc<input type="date" name="to" th:value="${ato}" min="1900-01-01" max="9998-12-31" data-range></label>
 </th:block>
+
+<!-- Lối tắt lọc kèm số lượng, đặt ngay trên bảng của từng trang quản lý. -->
+<nav th:fragment="facets(facets, label)" class="facet-bar" th:attr="aria-label=${label}">
+    <a th:each="f : ${facets}" class="facet" th:classappend="${f.active ? 'active' : ''}" th:href="${f.url}"
+       th:attr="aria-current=${f.active ? 'true' : null}"><span th:text="${f.label}"></span><strong th:text="${f.count}"></strong></a>
+</nav>
+
+<!-- Biểu đồ của trang quản lý, thu gọn sẵn để bảng dữ liệu vẫn nằm ngay dưới phần tóm tắt. -->
+<details th:fragment="summaryCharts(charts, hint)" class="analytics-details page-charts">
+    <summary>Biểu đồ <span class="help-text" th:text="${hint}"></span></summary>
+    <div class="analytics-chart-grid">
+        <th:block th:each="chart : ${charts}"><article th:replace="~{fragments/admin-analytics :: chartCard(${chart})}"></article></th:block>
+    </div>
+</details>
 
 <!-- Thẻ biểu đồ dùng chung: biểu đồ vẽ bằng admin-charts.js từ bảng số liệu bên trong. -->
 <article th:fragment="chartCard(chart)" th:if="${chart != null}" class="panel analytics-chart" th:attr="data-chart-type=${chart.type},data-unit=${chart.unit}">
@@ -88,7 +78,7 @@
     <p class="analytics-scope"><strong th:text="${#temporals.format(a.filter.range.from, 'dd/MM/yyyy') + ' – ' + #temporals.format(a.filter.range.to, 'dd/MM/yyyy')}"></strong>
         · So với kỳ trước <strong th:text="${#temporals.format(p.range.from, 'dd/MM/yyyy') + ' – ' + #temporals.format(p.range.to, 'dd/MM/yyyy')}"></strong>.
         Theo ngày đặt hàng, giờ Việt Nam. Chỉ đơn hoàn thành được cộng doanh thu.
-        <span th:if="${areportPublisher != null or areportCategory != null or areportAuthor != null}">Khi lọc danh mục, doanh thu chỉ cộng tiền những sách khớp bộ lọc trong đơn.</span>
+        <span th:if="${a.filter.publisherId != null or a.filter.categoryId != null or a.filter.authorId != null}">Khi lọc danh mục, doanh thu chỉ cộng tiền những sách khớp bộ lọc trong đơn.</span>
     </p>
     <nav class="report-toc" aria-label="Các mục của báo cáo">
         <a href="#bc-tong-hop">Tổng hợp</a><a href="#bc-doanh-thu">Doanh thu</a><a href="#bc-don-hang">Đơn hàng</a>
@@ -182,10 +172,4 @@
 
 <p th:fragment="panelError" class="form-alert error" role="alert" th:text="${analyticsError}"></p>
 
-<th:block th:fragment="preserve">
-    <input type="hidden" name="period" th:value="${aperiod}"><input type="hidden" name="date" th:value="${adate}">
-    <input type="hidden" name="from" th:value="${afrom}"><input type="hidden" name="to" th:value="${ato}">
-    <input type="hidden" name="groupBy" th:value="${agroupBy}"><input type="hidden" name="reportPublisher" th:value="${areportPublisher}">
-    <input type="hidden" name="reportCategory" th:value="${areportCategory}"><input type="hidden" name="reportAuthor" th:value="${areportAuthor}">
-</th:block>
 </body></html>

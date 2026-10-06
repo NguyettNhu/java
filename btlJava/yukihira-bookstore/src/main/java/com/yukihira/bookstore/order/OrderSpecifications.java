@@ -4,12 +4,12 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Locale;
 
-final class OrderSpecifications {
+public final class OrderSpecifications {
 
     private OrderSpecifications() {
     }
 
-    static Specification<CustomerOrder> from(OrderSearchQuery query) {
+    public static Specification<CustomerOrder> from(OrderSearchQuery query) {
         Specification<CustomerOrder> spec = Specification.allOf(keywordContains(query.keyword()), hasStatus(query.status()));
         var zone = com.yukihira.bookstore.admin.report.ReportPeriod.ZONE;
         if (query.from() != null) spec = spec.and((root, criteria, cb) ->

@@ -1,9 +1,12 @@
 package com.yukihira.bookstore.admin.order;
 
+import com.yukihira.bookstore.admin.Facet;
+import com.yukihira.bookstore.admin.report.AdminSummaryService;
 import com.yukihira.bookstore.order.OrderException;
 import com.yukihira.bookstore.order.OrderSearchQuery;
 import com.yukihira.bookstore.order.OrderService;
 import com.yukihira.bookstore.order.OrderStatus;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,13 +18,18 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
 import org.springframework.data.domain.Page;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Controller
 public class AdminOrderController {
 
     private final OrderService orderService;
+    private final AdminSummaryService summaries;
 
-    public AdminOrderController(OrderService orderService) {
+    public AdminOrderController(OrderService orderService, AdminSummaryService summaries) {
         this.orderService = orderService;
+        this.summaries = summaries;
     }
 
     @GetMapping("/admin/orders")
@@ -29,10 +37,17 @@ public class AdminOrderController {
                        @RequestParam(required = false) OrderStatus status,
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-                       @RequestParam(defaultValue = "0") int page, Model model) {
+                       @RequestParam(defaultValue = "0") int page, HttpServletRequest request, Model model) {
                 // Tìm kiếm đơn hàng theo bộ lọc và trả về trang rỗng nếu ngày không hợp lệ.
         try {
-            model.addAttribute("orders", orderService.search(new OrderSearchQuery(keyword, status, from, to), page, 20));
+            var query = new OrderSearchQuery(keyword, status, from, to);
+            model.addAttribute("orders", orderService.search(query, page, 20));
+            // Tóm tắt theo từ khóa và khoảng ngày; lối tắt trạng thái cho biết mỗi trạng thái còn bao nhiêu đơn.
+            var summary = summaries.orders(query);
+            model.addAttribute("summary", summary);
+            List<Facet> facets = new ArrayList<>(List.of(Facet.of(request, "status", null, "Mọi trạng thái", summary.total())));
+            summary.statuses().forEach(row -> facets.add(Facet.of(request, "status", row.status().name(), row.status().getLabel(), row.count())));
+            model.addAttribute("statusFacets", facets);
         } catch (IllegalArgumentException exception) {
             model.addAttribute("orders", Page.empty());
             model.addAttribute("error", exception.getMessage());

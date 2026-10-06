@@ -1,5 +1,8 @@
 package com.yukihira.bookstore.admin.report;
 
+import com.yukihira.bookstore.admin.catalog.ReferenceDataService;
+import com.yukihira.bookstore.admin.catalog.ReferenceType;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -7,59 +10,48 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.NoSuchElementException;
 
 /**
- * Trả về riêng khối số liệu phân tích dưới dạng mảnh HTML. Trước đây phần này được tính
- * đồng bộ cho mọi trang admin nên mỗi lần chuyển trang đều phải chờ quét toàn bộ catalog
- * và đơn hàng; giờ trình duyệt tải nó sau khi trang đã hiển thị.
+ * Trang Báo cáo là nơi duy nhất có phân tích đầy đủ theo kỳ. Khối số liệu được trả về riêng
+ * dưới dạng mảnh HTML và tải sau khi trang đã hiển thị, nên mở trang không phải chờ tổng hợp.
  */
 @Controller
 public class AdminAnalyticsController {
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final AnalyticsService analytics;
+    private final ReferenceDataService references;
 
-    public AdminAnalyticsController(AnalyticsService analytics) {
+    public AdminAnalyticsController(AnalyticsService analytics, ReferenceDataService references) {
         this.analytics = analytics;
+        this.references = references;
     }
 
-    @GetMapping("/admin/analytics")
-    public String panel(@RequestParam(name = "for", required = false) String target,
-                        @RequestParam(required = false) String period,
-                        @RequestParam(required = false) String date,
-                        @RequestParam(required = false) String from,
-                        @RequestParam(required = false) String to,
-                        @RequestParam(required = false) String groupBy,
-                        @RequestParam(required = false) String reportPublisher,
-                        @RequestParam(required = false) String reportCategory,
-                        @RequestParam(required = false) String reportAuthor,
-                        Model model) {
-        // Chỉ chấp nhận đường dẫn admin thật sự có báo cáo, vì tham số này do client gửi lên.
-        AnalyticsScope scope = AnalyticsScope.of(target);
-        if (scope == null) throw new NoSuchElementException();
-        // Lặp lại các tham số lọc để phần chú thích trong mảnh HTML mô tả đúng phạm vi đang xem.
-        model.addAttribute("analyticsDetail", scope.detail());
-        model.addAttribute("analyticsCatalog", scope.catalog());
-        model.addAttribute("areportPublisher", reportPublisher);
-        model.addAttribute("areportCategory", reportCategory);
-        model.addAttribute("areportAuthor", reportAuthor);
+    @GetMapping("/admin/reports")
+    public String reports(@ModelAttribute AnalyticsParams params, HttpServletRequest request, Model model) {
+        // Nạp các lựa chọn tham chiếu cho bộ lọc nhà xuất bản, thể loại và tác giả (đã được cache).
+        model.addAttribute("reportPublishers", references.list(ReferenceType.PUBLISHERS));
+        model.addAttribute("reportCategories", references.list(ReferenceType.CATEGORIES));
+        model.addAttribute("reportAuthors", references.list(ReferenceType.AUTHORS));
+        // Kiểm tra bộ lọc ngay tại đây để báo lỗi trước khi trình duyệt bỏ công gọi endpoint số liệu.
+        if (params.apply(model) != null) {
+            String query = request.getQueryString();
+            model.addAttribute("analyticsUrl", request.getContextPath() + "/admin/reports/panel"
+                    + (query == null || query.isBlank() ? "" : "?" + query));
+        }
+        return "admin/reports";
+    }
+
+    @GetMapping("/admin/reports/panel")
+    public String panel(@ModelAttribute AnalyticsParams params, Model model) {
         try {
-            var filter = AnalyticsFilter.resolve(period, date(date), date(from), date(to), groupBy,
-                    id(reportPublisher), id(reportCategory), id(reportAuthor));
-            model.addAttribute("analytics", analytics.build(filter, scope.section(), scope.detailId()));
-            // Trang báo cáo có bố cục chi tiết riêng; các trang quản lý dùng khối tóm tắt chung.
-            return "fragments/admin-analytics :: " + (scope.section().equals("reports") ? "report" : "panel");
-        } catch (DateTimeParseException | NumberFormatException exception) {
-            model.addAttribute("analyticsError", "Ngày hoặc mã danh mục không hợp lệ. Hãy kiểm tra bộ lọc.");
-            return "fragments/admin-analytics :: panelError";
+            model.addAttribute("analytics", analytics.build(params.resolve()));
+            return "fragments/admin-analytics :: report";
         } catch (IllegalArgumentException exception) {
             model.addAttribute("analyticsError", exception.getMessage());
             return "fragments/admin-analytics :: panelError";
@@ -68,26 +60,15 @@ public class AdminAnalyticsController {
 
     /** Xuất toàn bộ số liệu của trang báo cáo theo đúng bộ lọc đang xem thành tệp CSV mở được bằng Excel. */
     @GetMapping("/admin/reports/export")
-    public ResponseEntity<byte[]> export(@RequestParam(required = false) String period,
-                                         @RequestParam(required = false) String date,
-                                         @RequestParam(required = false) String from,
-                                         @RequestParam(required = false) String to,
-                                         @RequestParam(required = false) String groupBy,
-                                         @RequestParam(required = false) String reportPublisher,
-                                         @RequestParam(required = false) String reportCategory,
-                                         @RequestParam(required = false) String reportAuthor) {
+    public ResponseEntity<byte[]> export(@ModelAttribute AnalyticsParams params) {
         AnalyticsFilter filter;
         try {
-            filter = AnalyticsFilter.resolve(period, date(date), date(from), date(to), groupBy,
-                    id(reportPublisher), id(reportCategory), id(reportAuthor));
-        } catch (DateTimeParseException | NumberFormatException exception) {
-            return ResponseEntity.badRequest().contentType(new MediaType("text", "plain", StandardCharsets.UTF_8))
-                    .body("Ngày hoặc mã danh mục không hợp lệ.".getBytes(StandardCharsets.UTF_8));
+            filter = params.resolve();
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.badRequest().contentType(new MediaType("text", "plain", StandardCharsets.UTF_8))
                     .body(exception.getMessage().getBytes(StandardCharsets.UTF_8));
         }
-        AnalyticsView view = analytics.build(filter, "reports", null);
+        AnalyticsView view = analytics.build(filter);
         String name = "bao-cao-" + filter.range().from() + "_" + filter.range().to() + ".csv";
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename(name).build().toString())
@@ -147,12 +128,5 @@ public class AdminAnalyticsController {
     }
     private String num(long value) {
         return Long.toString(value);
-    }
-
-    private LocalDate date(String value) {
-        return value == null || value.isBlank() ? null : LocalDate.parse(value);
-    }
-    private Long id(String value) {
-        return value == null || value.isBlank() ? null : Long.valueOf(value);
     }
 }

@@ -4,12 +4,12 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Locale;
 
-final class UserSpecifications {
+public final class UserSpecifications {
 
     private UserSpecifications() {
     }
 
-    static Specification<User> customers(UserSearchQuery query) {
+    public static Specification<User> customers(UserSearchQuery query) {
         return Specification.allOf(hasRole(Role.CUSTOMER), keywordContains(query.keyword()), hasStatus(query.status()));
     }
 
